@@ -1,0 +1,263 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Header styles */
+:root {
+    --header-height: 60px; /* Thay đổi giá trị này nếu chiều cao header thay đổi */
+}
+
+.chart-container {
+    margin-bottom: 20px; /* Thêm khoảng cách dưới mỗi biểu đồ */
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        margin-bottom: 40px; /* Tăng khoảng cách trên thiết bị di động */
+    }
+}
+
+.chart-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center; /* Căn giữa các phần tử theo chiều dọc */
+}
+
+.chart-separator {
+    border-top: 1px solid #ccc; /* Đường kẻ ngang */
+    margin: 20px 0; /* Khoảng cách trên dưới */
+}
+
+@media (max-width: 768px) {
+    .chart-separator {
+        border-top: none; /* Bỏ đường kẻ trên thiết bị di động */
+        margin: 0;
+    }
+}
+
+/* Utility classes */
+.bg-green { background-color: #28a745; }
+.bg-blue { background-color: #007bff; }
+.bg-orange { background-color: #fd7e14; }
+.bg-red { background-color: #dc3545; }
+
+/* Edit Panel and Remove Panel styles */
+.edit-panel, .remove {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    max-width: 500px;
+    width: 90%;
+}
+
+.edit-header, .remove-header {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.info-column {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.info-column:last-child {
+    margin-right: 0;
+}
+
+.info-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.info-value {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.info-value-readonly {
+    background-color: #f0f0f0;
+}
+
+.remove-warning {
+    text-align: center;
+    color: #dc3545;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn {
+    /* padding: 10px 20px; */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-save {
+    background-color: #28a745;
+    color: white;
+    margin-right: 10px;
+}
+
+.btn-cancel {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+#add-product-btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+#add-product-btn:hover {
+    background-color: #218838;
+}
+
+/* Form styles */
+/* .add-product-form {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+} */
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -10px;
+}
+
+.form-field {
+    flex: 1 1 calc(50% - 20px);  /* 50% width với khoảng cách giữa các trường */
+    margin: 10px;
+    min-width: 200px;  /* Đảm bảo các trường không quá nhỏ trên màn hình nhỏ */
+
+}
+
+.form-field:last-child {
+    margin-right: 0;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+
+}
+
+.form-input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 100px;
+}
+
+
+.form-actions.btn-center {
+    margin-top: 20px;
+}
+
+.form-actions .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+.reply-count {
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+}
+
+#messageContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 15000;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/*alert*/
+.success {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.warning {
+    background-color: #ffc107;
+    color: #ffffff;
+}
+
+.error {
+    background-color: #dc3545;
+    color: #ffffff;
+}

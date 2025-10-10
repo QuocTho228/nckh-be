@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+    <title>Trang nhà sản xuất</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/trangchu.css">
+    <link rel="stylesheet" href="../css/chatbox.css">
+    <link rel="stylesheet" href="../css/nav-bar.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    
+</head>
+<body>
+    <!-- Thanh điều hướng -->
+    <nav class="navbar custom-navbar navbar-expand-lg navbar-light bg-light custom-navbar-height">
+        <div class="logo-home">
+            <a href="/">
+                <img src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="logo" class="logo" />
+            </a>
+        </div>
+        <a class="navbar-brand" href="#">Nhà sản xuất</a>
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="./allsanpham.html">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Nhà sản xuất</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="./allnhakiemduyet.html">Nhà kiểm duyệt</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="./account/dangnhap.html">Đăng nhập</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- <div class="banner d-flex justify-content-center">
+            <img src=".\hinhanh\banner.jpg" class="img-fluid custom-img" alt="Responsive image">
+        </div> -->
+
+        <div class="search-bar mt-4 mb-4" data-aos="fade-up">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <form class="form-inline">
+                            <div class="input-group w-100">
+                                <input type="text" class="form-control" placeholder="Tìm kiếm nhà sản xuất..." aria-label="Tìm kiếm">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nhasanxuat">
+            <h2 class="highlighted-heading" data-aos="fade-up">
+                Thông tin nhà sản xuất
+            </h2>
+            <div class="row" id="nhasanxuat-container">
+                <!-- Nội dung sẽ được thêm vào đây bằng JavaScript -->
+            </div>
+        </div>
+
+        <div class="chat-icon" id="openChat" onclick="toggleChat()">
+            <i class="fas fa-comments"></i>
+            <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
+        </div>
+    
+        <!-- Khung chat -->
+        <div id="chatbox" class="chatbox">
+            <div class="chatbox-header">
+                <strong>Hỗ trợ</strong>
+                <button id="closeChat" class="btn-close" onclick="toggleChat()">x</button>
+            </div>
+            <div class="chatbox-body">
+                <ul id="messages" class="list-group">
+                    <li class="list-group-item system-message"><strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.</li>
+                </ul>
+            </div>
+            <div class="chatbox-footer">
+                <form id="messageForm" class="d-flex">
+                    <input id="messageInput" type="text" class="form-control" placeholder="type message">
+                    <button type="submit" class="btn btn-primary">Gửi</button>
+                </form>
+            </div>
+        </div>
+
+        
+    </div>
+    <div class="footer bg-dark text-white py-4" data-aos="fade-up">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h3>Thông tin liên hệ</h3>
+                    <p>Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ</p>
+                    <p>Điện thoại: 0337267892</p>
+                    <p>Email: thob2203474@student.ctu.edu.vn</p>
+                </div>
+                <div class="col-md-4 d-none d-md-block">
+                    <h3>Về chúng tôi</h3>
+                    <p> Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng bằng công nghệ Blockchain.</p>
+                </div>
+                <div class="col-md-4 d-none d-md-block">
+                    <h3>Theo dõi chúng tôi</h3>
+                    <p>
+                        <a href="#" class="text-white">Facebook</a><br>
+                        <a href="#" class="text-white">Twitter</a><br>
+                        <a href="#" class="text-white">Instagram</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <!-- jQuery và Bootstrap JavaScript -->
+     <!-- AOS JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+    AOS.init();
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../chatbox/chatbox.js"></script>
+
+    <script>
+       function toggleChat() {
+            var chatbox = document.getElementById("chatbox");
+            if (chatbox.classList.contains("show")) {
+                chatbox.classList.remove("show");
+                chatbox.classList.add("hide");
+                setTimeout(() => {
+                    chatbox.style.display = "none";
+                    chatbox.classList.remove("hide");
+                }, 300); // Match this to the animation duration
+            } else {
+                chatbox.style.display = "block";
+                // Force a reflow before adding the 'show' class
+                chatbox.offsetHeight;
+                chatbox.classList.add("show");
+            }
+        }
+    </script>
+    
+    <script src="../js_giaodien/loaditem.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load nhà sản xuất với 8 items mỗi trang
+            await loadItems(
+                '/api/nhasanxuat',
+                '#nhasanxuat-container',
+                8,
+                createProducerCard
+            );
+        });
+    </script>
+</body>
+</html>

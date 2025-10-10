@@ -1,0 +1,657 @@
+/* Modern Modal Styles */
+.modal-content {
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    padding: 25px 30px;
+    border: none;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.modal-title {
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    flex-grow: 1;
+    position: relative;
+    padding-left: 45px;
+}
+
+.modal-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    backdrop-filter: blur(5px);
+}
+
+.modal-title::after {
+    content: '\f067';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+}
+
+.modal-header .close {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    opacity: 1;
+    position: relative;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    padding: 0;
+}
+
+.modal-header .close:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 40px;
+    background: #f8f9fa;
+    text-align: left !important;
+}
+
+/* Modern Form Styles */
+.form-group {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+/* Xóa pseudo-element :before trên label */
+.form-group label::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Style cho form labels */
+.form-group label {
+    display: block;
+    text-align: left !important;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #2c3e50;
+    position: relative;
+}
+
+.form-control {
+    background: #fff;
+    border: 2px solid #edf2f7;
+    border-radius: 16px;
+    padding: 15px 20px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.form-control:focus {
+    border-color: #00b09b;
+    box-shadow: 0 0 0 4px rgba(0, 176, 155, 0.1);
+    outline: none;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Modern Select2 Styles */
+.select2-container--default .select2-selection--multiple {
+    background: #fff;
+    border: 2px solid #edf2f7;
+    border-radius: 16px;
+    min-height: 55px;
+    padding: 8px 15px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 15px;
+    margin: 4px;
+    font-size: 0.9rem;
+}
+
+.select2-container--default .select2-selection__choice__remove {
+    color: white;
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Modern File Input */
+.form-control-file {
+    display: none;
+}
+
+.file-upload-wrapper {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    border: 2px dashed #edf2f7;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.file-upload-wrapper:hover {
+    border-color: #00b09b;
+    background: rgba(0, 176, 155, 0.05);
+}
+
+.file-upload-wrapper i {
+    font-size: 2.5rem;
+    color: #00b09b;
+    margin-bottom: 15px;
+}
+
+.file-upload-wrapper .upload-text {
+    color: #2c3e50;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Preview Images Container */
+.preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.preview-container img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid #edf2f7;
+}
+
+/* Modern Submit Button */
+.add-activity-btn {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 176, 155, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    float: left !important;
+}
+
+.add-activity-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.add-activity-btn:hover::before {
+    left: 100%;
+}
+
+.add-activity-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 176, 155, 0.3);
+}
+
+.add-activity-btn i {
+    font-size: 0.9rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .modal-body {
+        padding: 25px;
+    }
+    
+    .modal-title {
+        font-size: 1.3rem;
+    }
+    
+    .form-control {
+        padding: 12px 15px;
+    }
+    
+    .file-upload-wrapper {
+        height: 120px;
+    }
+
+    .add-activity-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        float: left !important;
+        text-align: left !important;
+        width: auto !important;
+        margin: 0 !important;
+        transform: none !important;
+    }
+}
+
+/* Style cho loading spinner trên button */
+.add-activity-btn.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.add-activity-btn.loading::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Style cho toast notification */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+}
+
+.toast {
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px 25px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+    border-left: 4px solid #2ecc71;
+}
+
+.toast.error {
+    border-left-color: #e74c3c;
+}
+
+.toast-icon {
+    font-size: 20px;
+    color: #2ecc71;
+}
+
+.toast.error .toast-icon {
+    color: #e74c3c;
+}
+
+.toast-message {
+    color: #2c3e50;
+    font-size: 14px;
+    margin: 0;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Điều chỉnh modal cho mobile */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+    }
+
+    .modal-content {
+        height: 100%;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        flex-shrink: 0; /* Không cho header co lại */
+    }
+
+    .modal-body {
+        flex: 1; /* Cho phép body mở rộng */
+        overflow-y: auto; /* Cho phép cuộn */
+        -webkit-overflow-scrolling: touch; /* Cuộn mượt trên iOS */
+        padding: 15px;
+    }
+
+    /* Đảm bảo nút submit luôn ở dưới cùng và không bị scroll */
+    .modal-footer {
+        flex-shrink: 0; /* Không cho footer co lại */
+        padding: 15px;
+        background: #fff;
+        border-top: 1px solid #eee;
+    }
+
+    /* Điều chỉnh form để scroll */
+    #addActivityLogForm {
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 20px; /* Thêm padding để tránh nội dung bị che khi scroll */
+    }
+
+    /* Đảm bảo nút submit không bị che khi scroll */
+    .add-activity-btn[type="submit"] {
+        position: sticky;
+        bottom: 0;
+        margin-top: 20px;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .modal-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        font-size: 16px; /* Ngăn iOS zoom vào input */
+        padding: 10px;
+    }
+
+    /* Điều chỉnh select2 trên mobile */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-selection {
+        height: auto !important;
+        min-height: 38px;
+    }
+
+    /* Điều chỉnh nút submit */
+    .add-activity-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    /* Điều chỉnh input file */
+    input[type="file"] {
+        width: 100%;
+        padding: 8px;
+    }
+}
+
+/* Animation cho modal mobile */
+@media (max-width: 768px) {
+    .modal.fade .modal-dialog {
+        transform: translate3d(0, 100%, 0);
+        transition: transform 0.3s ease-out;
+    }
+
+    .modal.show .modal-dialog {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+/* Container style */
+.dashboard-table {
+    width: 100%;
+    padding: 10px;
+    text-align: left !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    margin-bottom: 20px;
+}
+
+/* Button style */
+.add-activity-btn {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 176, 155, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    float: left !important;
+}
+
+/* Override any Bootstrap or other framework styles */
+.btn {
+    text-align: left !important;
+    float: none !important;
+    position: relative !important;
+    left: 0 !important;
+    transform: none !important;
+}
+
+/* Ensure container doesn't center its contents */
+.container, 
+.container-fluid, 
+.row, 
+.col, 
+.col-12 {
+    text-align: left !important;
+    display: block !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+}
+
+/* Mobile specific overrides */
+@media (max-width: 768px) {
+    body .dashboard-table {
+        text-align: left !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+    }
+    
+    body .add-activity-btn {
+        float: left !important;
+        margin-left: 0 !important;
+    }
+}
+
+/* Ghi đè style từ san-xuat.css */
+body .dashboard-table {
+    text-align: left !important;
+}
+
+/* Style cho modal content */
+.modal-content .form-group {
+    text-align: left !important;
+    margin-bottom: 20px;
+}
+
+/* Reset và style cơ bản cho navbar */
+.custom-navbar {
+    background-color: #4CAF50 !important;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    color: white !important;
+}
+
+.logo-image {
+    height: 40px;
+    width: auto;
+    margin-right: 10px;
+}
+
+/* Style cho menu items */
+.navbar-nav {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.nav-link {
+    color: white !important;
+    padding: 8px 15px !important;
+}
+
+/* Style cho dropdown */
+.dropdown-menu {
+    margin-top: 0;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background-color: white;
+}
+
+.notification-menu {
+    width: 300px;
+    padding: 0;
+}
+
+/* Mobile styles */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background-color: #4CAF50;
+        padding: 1rem;
+        z-index: 1029;
+    }
+
+    .navbar-collapse.show {
+        display: block !important;
+    }
+
+    .navbar-nav {
+        flex-direction: column !important;
+        width: 100%;
+    }
+
+    .nav-item {
+        width: 100%;
+        text-align: center;
+    }
+
+    .dropdown-menu {
+        position: static !important;
+        float: none;
+        width: 100%;
+        text-align: center;
+    }
+
+    .notification-menu {
+        width: 100%;
+    }
+}
+
+/* Đảm bảo các phần tử con trong navbar hiển thị đúng */
+.navbar .container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.navbar-toggler {
+    display: none !important;
+}
+
+@media (max-width: 991px) {
+    .navbar-toggler {
+        display: block !important;
+    }
+}
+
+/* Style cho notification badge */
+.badge-danger {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+}
+
+/* Style cho notification items */
+.notification-item {
+    border-bottom: 1px solid #eee;
+}
+
+.notification-content {
+    padding: 10px 15px;
+}

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+    <title>Đăng Nhập</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        .container {
+            max-width: 400px;
+            margin-top: 120px;
+            background-color: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #2d3436;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            height: 45px;
+            padding: 10px 15px;
+            border: 2px solid #d1d8e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            background-color: #ffffff;
+            color: #2d3436;
+        }
+
+        .form-control:focus {
+            border-color: #55b563;
+            box-shadow: 0 0 0 0.2rem rgba(85, 181, 99, 0.3);
+        }
+
+        .btn-primary {
+            height: 45px;
+            background: linear-gradient(45deg, #55b563, #2d8659);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 134, 89, 0.4);
+            background: linear-gradient(45deg, #2d8659, #55b563);
+        }
+
+        .form-check {
+            margin: 15px 0;
+        }
+
+        .form-check-label {
+            color: #2d3436;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-check-input {
+            margin-top: 0.2rem;
+        }
+
+        .dangky, .quenmk {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .dangky p, .quenmk p {
+            color: #2d3436;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .dangky a, .quenmk a {
+            color: #2d8659;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .dangky a:hover, .quenmk a:hover {
+            color: #55b563;
+        }
+
+        /* Animation cho form */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        body{
+            background-image: url("/hinhanh/background-saurieng.jpg");
+            background-size: cover;
+        }
+        
+        #messageContainer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 1000;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .success {
+            background-color: #28a745;
+            color: #ffffff;
+            border-radius: 10px;
+        }
+        
+        .error {
+            background-color: #dc3545;
+            color: #ffffff;
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                margin-top: 100px;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin-top: 20px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+            }
+
+            .back-button {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 1000;
+            }
+            
+            .back-button .btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                background-color: rgba(255, 255, 255, 0.95);
+            }
+
+            .form-group {
+                margin-bottom: 12px;
+            }
+
+            .dangky, .quenmk {
+                margin-top: 10px;
+                font-size: 0.9rem;
+            }
+
+            #loginForm {
+                margin-top: 15px;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .container {
+                margin-top: 70px;
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .back-button .btn {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Style mới cho nút quay lại */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        
+        .back-button .btn {
+            background-color: rgba(255, 255, 255, 0.98);
+            border: 2px solid #55b563;
+            color: #2d3436;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+        }
+        
+        .back-button .btn:hover {
+            background-color: #55b563;
+        }
+        
+        .back-button i {
+            transition: transform 0.3s ease;
+        }
+        
+        .back-button .btn:hover i {
+            transform: translateX(-3px);
+        }
+        
+        /* Custom styles cho toast */
+        .toastify {
+            padding: 12px 20px;
+            color: #ffffff;
+            font-size: 15px;
+            border-radius: 6px;
+            max-width: 300px;
+        }
+
+        .toast-success {
+            background: linear-gradient(to right, #2d8659, #55b563);
+        }
+
+        .toast-error {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+    </style>
+</head>
+<body>
+    <!-- Di chuyển nút back ra ngoài container -->
+    <div class="back-button">
+        <a href="/" class="btn">
+            <i class="fas fa-arrow-left"></i>
+            Trang chủ
+        </a>
+    </div>
+
+    <div class="container">
+        <h1 class="text-center">Đăng Nhập</h1>
+        <form id="loginForm" class="mt-4">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required 
+                       placeholder="Nhập địa chỉ email">
+            </div>
+            <div class="form-group">
+                <label for="password">Mật Khẩu:</label>
+                <input type="password" class="form-control" id="password" name="password" required
+                       placeholder="Nhập mật khẩu">
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="adminCheck">
+                <label class="form-check-label" for="adminCheck">Đăng nhập với tư cách Admin</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Đăng Nhập</button>
+        </form>
+        
+        <div class="dangky">
+            <p>Chưa có tài khoản? <a href="/account/dangky.html">Đăng ký ngay</a></p>
+        </div>
+        <div class="quenmk">
+            <p><a href="/account/quenmatkhau.html">Quên mật khẩu?</a></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS và các thư viện phụ thuộc -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const isAdmin = document.getElementById('adminCheck').checked;
+
+            try {
+                const response = await fetch('/api/dangnhap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password, isAdmin }),
+                });
+
+                const data = await response.json();
+                console.log('Phản hồi đăng nhập:', data);
+
+                if (response.ok) {
+                    // Hiển thị toast thành công
+                    Toastify({
+                        text: "Đăng nhập thành công!",
+                        duration: 2000,
+                        gravity: "top",
+                        position: "right",
+                        className: "toast-success",
+                        close: true,
+                    }).showToast();
+
+                    // Chuyển hướng sau 2 giây
+                    setTimeout(() => {
+                        if (data.admin) {
+                            window.location.href = '../admin/admintest.html';
+                        } else if (data.user) {
+                            switch (data.user.roleId) {
+                                case 1:
+                                    window.location.href = '../san-xuat/sanxuat.html';
+                                    break;
+                                case 2:
+                                    window.location.href = '../kiem-duyet/nhakiemduyet.html';
+                                    break;
+                                case 6:
+                                    window.location.href = '../van-chuyen/van-chuyen.html';
+                                    break;
+                                case 8:
+                                    window.location.href = '../nha-kho/nha-kho.html';
+                                    break;
+                                default:
+                                    Toastify({
+                                        text: "Không có trang phù hợp cho vai trò của bạn",
+                                        duration: 3000,
+                                        gravity: "top",
+                                        position: "right",
+                                        className: "toast-error",
+                                        close: true,
+                                    }).showToast();
+                            }
+                        }
+                    }, 2000);
+                } else {
+                    // Hiển thị toast lỗi
+                    Toastify({
+                        text: data.message || "Đăng nhập thất bại",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        className: "toast-error",
+                        close: true,
+                    }).showToast();
+                }
+            } catch (error) {
+                console.error('Lỗi khi đăng nhập:', error);
+                // Hiển thị toast lỗi
+                Toastify({
+                    text: "Đã xảy ra lỗi khi đăng nhập",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    className: "toast-error",
+                    close: true,
+                }).showToast();
+            }
+        });
+    </script>
+</body>
+</html>

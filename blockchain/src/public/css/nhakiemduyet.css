@@ -1,0 +1,948 @@
+/* Background color for the entire webpage */
+body {
+  background-color: white; /* Màu xanh lá cây nhạt */
+  color: #333; /* Màu chữ */
+  font-family: Arial, sans-serif; /* Font chữ */
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.custom-navbar-height {
+  height: 120px; /* Bạn có thể thay đổi giá trị này theo nhu cầu */
+}
+
+.card {
+  border: 1px solid #ddd;
+  
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* CSS for the card image */
+.card-img-top {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* CSS for the card title */
+.card-title {
+  font-size: 1.25rem;
+  color: #333;
+  font-weight: bold;
+}
+
+/* CSS for the product ID */
+.sanpham-id {
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 10px;
+}
+
+/* Keyframes for fadeInUp animation */
+@keyframes fadeInUp {
+  from {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+/* CSS for the highlighted product heading */
+.highlighted-heading {
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+  margin: 20px 0;
+  position: relative;
+  animation: fadeIn 1s ease-out;
+}
+
+/* Keyframes for fadeIn animation */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+
+.highlighted-heading::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 3px;
+  background: #ff6347;
+  margin: 10px auto 0;
+}
+
+/* Footer styles */
+.footer {
+  background-color: #91a9c0; 
+  color: #ffffff;
+  padding: 40px 0;
+  border-radius: 20px;
+  height: 220px;
+}
+
+.footer h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #21b678;
+}
+
+.footer p {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.footer a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer a:hover {
+  color: #ff6347;
+}
+
+.footer .col-md-4 {
+  margin-bottom: 20px;
+}
+
+.footer .social-links a {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+/* Custom styles for the image */
+.custom-img {
+  border-radius: 10px; /* Bo tròn các góc */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng chuyển đổi */
+}
+
+.custom-img:hover {
+  transform: scale(1.05); /* Phóng to khi hover */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Tăng bóng đổ khi hover */
+}
+
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.overlay img {
+  max-width: 90%;
+  max-height: 90%;
+}
+.overlay.active {
+  display: flex;
+}
+
+/* Đảm bảo menu dropdown nằm trên cùng bên phải */
+.dropdown-menu {
+  right: 0;
+  left: auto;
+  z-index: 2000;
+}
+
+.custom-navbar-height {
+  height: 75px;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-table table, td, th {
+  border: 1px #dee2e6 solid;
+  border-collapse: collapse;
+  text-align: center;
+  vertical-align: center;
+  background-color: white;
+}
+
+/* Tùy chỉnh các nút */
+.check-button {
+  background-color: white;
+  border: none;
+  color: #4cd137;
+  padding: 3px 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 0px;
+  height: 30px;
+  cursor: pointer;
+  border: 1px #dee2e6 solid;
+  border-radius: 5px;
+}
+
+.check-button:hover {
+  background-color: #44bd32;
+  color: white;
+}
+
+.check-button-wide {
+  display: block;
+}
+
+.check-button-wide:hover {
+  background-color: #44bd32;
+  color: white;
+}
+
+.function-button {
+  flex: 1;
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: red;
+  display: block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.accept-button {
+  background-color: white;
+  border: 1px #dee2e6 solid;
+  color: #00a8ff;
+  padding: 3px 8px;
+  margin: 5px 0px 5px 0px;
+}
+
+.accept-button:hover {
+  background-color: #0097e6;
+  color: white;
+}
+
+.accept-button-big {
+  background-color: white;
+  border: 1px #dee2e6 solid;
+  color: #00a8ff;
+  padding: 8px 8px;
+}
+
+.accept-button-big:hover {
+  background-color: #0097e6;
+  color: white;
+}
+
+.cancel-button {
+  background-color: white;
+  border: 1px #dee2e6 solid;
+  color: #c23616;
+  padding: 3px 8px;
+  margin: 5px 0px 5px 0px;
+}
+
+.cancel-button:hover {
+  background-color: #c23616;
+  color: white;
+}
+
+.cancel-button-big {
+  background-color: white;
+  border: 1px #dee2e6 solid;
+  color: #c23616;
+  padding: 8px 8px;
+}
+
+.cancel-button-big:hover {
+  background-color: #c23616;
+  color: white;
+}
+
+.bottom-button {
+  display: flex;
+  gap: 5px;
+}
+
+
+.img {
+  height: 10%;
+  width: 10% ;
+}
+
+.table-title {
+  text-align: center;
+}
+
+.address {
+  padding: 12px 12px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.address hr {
+  margin: 0px;
+  padding: 0px;
+}
+
+.address p {
+  margin: 0px 0px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.dropbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #3e8e41;
+}
+
+#myInput {
+  box-sizing: border-box;
+  background-image: url('searchicon.png');
+  background-position: 14px 12px;
+  background-repeat: no-repeat;
+  font-weight: bold;
+  padding: 8px 8px;
+  height: 30px;
+  width: 100%;
+  margin: 0px 5px 0px 0px;
+  border: 1px #dee2e6 solid;
+  border-radius: 5px;
+}
+
+#myInput:focus {
+  outline: 3px solid #ddd;
+}
+
+.searchbox-filter {
+  display: flex;
+  align-items: center;
+}
+
+
+.filter-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  width: 100%;
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 230px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  z-index: 1;
+  right: auto;
+  left: auto;
+}
+
+.dropdown-content a {
+  width: 100%;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.show {display: block;}
+
+/* Tùy chỉnh giao diện cài đặt*/
+.settings-container {
+  padding: 20px;
+  background-color: white;
+  border-radius: 5px;
+  border: 1px #dee2e6 solid;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.settings-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.settings-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-container form .form-group {
+  margin-bottom: 15px;
+}
+
+.settings-container form .form-group label {
+  font-weight: bold;
+}
+
+.settings-container form .form-group select,
+.settings-container form .form-group input[type="checkbox"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.settings-container form button {
+  padding: 10px;
+  background-color: #04AA6D;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.settings-container form button:hover {
+  background-color: #6ab04c;
+}
+
+/* Tùy chỉnh giao diện trang cá nhân */
+.profile-container {
+  padding: 20px;
+  background-color: white;
+  border-radius: 5px;
+  border: 1px #dee2e6 solid;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.profile-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-container form .form-group {
+  margin-bottom: 15px;
+}
+
+.profile-container form .form-group label {
+  font-weight: bold;
+}
+
+.profile-container form .form-group input,
+.profile-container form .form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.profile-container form .form-group textarea {
+  resize: vertical;
+}
+
+.profile-container form button {
+  padding: 10px;
+  background-color: #04AA6D;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.profile-container form button:hover {
+  background-color: #6ab04c;
+}
+
+.form-title {
+  text-align: center;
+}
+
+.add-container form .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.functionGroup {
+  display: block;
+  margin: 5px;
+}
+
+.batchPicture {
+  height: 100px;
+  margin: 5px;
+  border-radius: 5px;
+}
+
+.notification-container h5 {
+  text-align: center;
+}
+
+.notificationGroup {
+  display: flex;
+  align-items: center;
+}
+
+.notificationGroup p {
+  margin: 0px;
+}
+
+.notification-bell {
+  position: relative;
+  display: inline-block;
+}
+.notification-dot {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+}
+
+.seeAll hr {
+  margin: 0px;
+}
+
+.seeAll a {
+  text-align: center;
+}
+
+/* CSS Animation cho nút */
+.function-button {
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.function-button:hover {
+  transform: scale(1.05);
+}
+
+.function-button.disabled {
+  opacity: 0.5; /* Làm mờ nút khi không thể bấm */
+  cursor: not-allowed; /* Thay đổi con trỏ */
+  pointer-events: none; /* Ngăn chặn các sự kiện chuột */
+}
+
+.check-button {
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.check-button:hover {
+  transform: scale(1.05);
+}
+
+
+/* Animation cho Modal */
+.modal.fade .modal-dialog {
+  transform: translateY(-100px);
+  transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0);
+}
+
+.popupButton {
+  display: flex;
+  gap: 5px;
+  margin: 0px 5px 0px 5px;
+}
+
+.notification-badge {
+  position: relative;
+  background-color: red; /* Red background for the badge */
+  color: white;
+  border-radius: 5px; /* Rounded corners */
+  padding: 2px 6px 2px 6px; /* Padding to create a rectangle shape */
+  font-size: 12px;
+}
+
+
+#notificationButtonGroup {
+  position: relative;
+  display: inline-block;
+}
+
+/* CSS cho lớp phủ */
+.overlay {
+  display: none; /* Ẩn mặc định */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 168px;
+  background-color: #f8f9fa; /* Đen mờ */
+  z-index: 1; /* Đảm bảo lớp phủ nằm trên cùng */
+}
+
+.overlay.active {
+  display: block; /* Hiển thị khi active */
+}
+
+/* Đảm bảo modal được căn giữa màn hình */
+.modal {
+display: none;
+position: fixed;
+z-index: 1050; /* Đảm bảo modal nằm trên các thành phần khác */
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0,0,0,0.4); /* Màu nền mờ */
+justify-content: center;
+align-items: center;
+display: flex;
+}
+
+/* Đảm bảo nội dung modal được căn giữa và có khoảng cách hợp lý */
+.modal-content {
+background-color: #fefefe;
+margin: auto;
+padding: 20px;
+border: 1px solid #888;
+width: 90%; /* Giới hạn chiều rộng tối đa */
+max-width: 500px; /* Giới hạn chiều rộng tối đa */
+border-radius: 10px; /* Bo tròn góc */
+box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Đổ bóng */
+text-align: center; /* Căn giữa nội dung */
+position: relative; /* Để căn chỉnh nút đóng */
+}
+
+/* Nút đóng modal */
+.close {
+color: #aaa;
+position: absolute;
+top: 10px;
+right: 10px;
+font-size: 28px;
+font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+}
+
+/* Nút chức năng */
+.function-button {
+padding: 10px 20px;
+background-color: #4CAF50;
+color: white;
+border: none;
+cursor: pointer;
+border-radius: 5px;
+margin: 10px;
+font-size: 16px;
+transition: background-color 0.3s ease;
+}
+
+.function-button:hover {
+background-color: #45a049;
+}
+
+/* Căn chỉnh các nút */
+.button-container {
+display: flex;
+justify-content: center;
+gap: 20px; /* Khoảng cách giữa các nút */
+margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+.modal-content {
+  width: 95%; /* Giới hạn chiều rộng tối đa cho màn hình nhỏ */
+  padding: 15px;
+}
+
+.function-button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.button-container {
+  flex-direction: column;
+  gap: 10px; /* Khoảng cách giữa các nút */
+}
+}
+
+/* Đảm bảo modal backdrop có giá trị z-index thấp hơn modal */
+.modal-backdrop {
+z-index: 1040; /* Đảm bảo backdrop nằm dưới modal */
+}
+  .status-pending { color: orange; }
+  .status-approved { color: green; }
+  .status-rejected { color: red; }
+  .table-container {
+width: 100%;
+overflow-x: auto;
+margin-bottom: 1em;
+}
+
+.table-responsive {
+overflow-x: auto;
+-webkit-overflow-scrolling: touch; /* Đảm bảo cuộn mượt mà trên các thiết bị cảm ứng */
+}
+
+.dashboard-table {
+width: 100%;
+border-collapse: collapse;
+min-width: 800px; /* Đảm bảo bảng có chiều rộng tối thiểu */
+}
+
+.dashboard-table th, .dashboard-table td {
+border: 1px solid #ddd;
+padding: 12px;
+text-align: left;
+}
+
+.dashboard-table th {
+background-color: #5bd657;
+position: sticky;
+top: 0;
+z-index: 0;
+}
+
+.dashboard-table tr:nth-child(even) {
+background-color: #f9f9f9;
+}
+
+.dashboard-table tr:hover {
+background-color: #f5f5f5;
+}
+
+.product-image, .certificate-image {
+width: 50px;
+height: 50px;
+object-fit: cover;
+margin: 2px;
+cursor: pointer;
+}
+
+/* Responsive design */
+@media screen and (max-width: 600px) {
+.dashboard-table {
+  font-size: 14px;
+}
+
+.dashboard-table th, .dashboard-table td {
+  padding: 8px;
+}
+}
+
+/* Styles cho loading spinner */
+.spinner-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: #007bff;
+}
+
+.spinner-text {
+    margin-top: 10px;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Button loading spinner */
+.button-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: button-spin 0.6s linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Toast notification */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  min-width: 250px;
+  margin-bottom: 10px;
+  background-color: white;
+  border-radius: 4px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  animation: slide-in 0.5s ease-out, stay 50s 0.5s ease-in, fade-out 0.5s 55s ease-in forwards;
+}
+
+.toast.success {
+  border-left: 4px solid #4caf50;
+}
+
+.toast.error {
+  border-left: 4px solid #f44336;
+}
+
+.toast-icon {
+  margin-right: 12px;
+  font-size: 20px;
+}
+
+.toast.success .toast-icon {
+  color: #4caf50;
+}
+
+.toast.error .toast-icon {
+  color: #f44336;
+}
+
+.toast-message {
+  flex-grow: 1;
+  font-size: 14px;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes stay {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Style cho tiêu đề danh sách */
+.table-title h5 {
+    position: relative;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.table-title h5 i {
+    font-style: italic;
+    color: #34495e;
+    font-weight: 500;
+}
+
+.table-title h5::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #2ecc71, #27ae60);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: slideIn 0.6s ease-out forwards;
+}
+
+@keyframes slideIn {
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* Hover effect */
+.table-title h5:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-title h5 {
+        font-size: 1.25rem;
+    }
+}

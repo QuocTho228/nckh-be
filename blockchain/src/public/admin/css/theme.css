@@ -1,0 +1,419 @@
+/* Theme sáng (hiện đại hóa) */
+body.light-theme {
+    background-color: #f8f9fa;
+    color: #333333;
+}
+
+body.light-theme header {
+    background-color: #74c365;
+    color: #ffffff;
+}
+
+body.light-theme nav {
+    background-color: #ffffff;
+    color: #333333;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+body.light-theme .sidebar {
+    background-color: #ffffff;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+}
+
+body.light-theme .sidebar .menu-item {
+    color: #333333;
+}
+
+body.light-theme .sidebar .menu-item:hover,
+body.light-theme .sidebar .menu-item.active {
+    background-color: #e8f5e9;
+    color: #4caf50;
+}
+
+body.light-theme .btn-primary {
+    background-color: #4caf50;
+    border-color: #4caf50;
+    color: #ffffff;
+}
+
+body.light-theme .btn-primary:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
+
+body.light-theme .card {
+    background-color: #ffffff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+body.light-theme .form-input {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+}
+
+body.light-theme .form-label {
+    color: #666666;
+}
+
+body.light-theme .clock {
+    color: #333333; /* Màu chữ của đồng hồ trong giao diện sáng */
+}
+
+/* Theme tối */
+body.dark-theme {
+    background-color: #0a0e17; /* Màu nền tối hơn */
+    color: #e0e0e0;
+}
+
+body.dark-theme header {
+    background-color: #1c2236; /* Màu nền header tối hơn */
+    color: #ffffff;
+}
+
+body.dark-theme header .header-title h2 {
+    color: #ffffff;
+}
+
+body.dark-theme header .header-icons i {
+    color: #ffffff;
+}
+
+body.dark-theme main {
+    background-color: #0a0e17; /* Màu nền main tối hơn */
+    color: #e0e0e0;
+}
+
+body.dark-theme nav {
+    background-color: #1a1f2c; /* Màu nền nav tối hơn */
+    color: #e0e0e0;
+}
+
+body.dark-theme .sidebar {
+    background-color: #1c2236; /* Màu nền sidebar tối hơn */
+}
+
+body.dark-theme .sidebar .menu-item:hover,
+body.dark-theme .sidebar .menu-item.active {
+    background-color: #2a3142; /* Màu nền khi hover hoặc active */
+    color: #4fd1c5; /* Màu chữ xanh mint khi active */
+}
+
+body.dark-theme .btn-primary {
+    background-color: #4fd1c5; /* Màu nút chính xanh mint */
+    border-color: #4fd1c5;
+    color: #0a0e17;
+}
+
+body.dark-theme .btn-primary:hover {
+    background-color: #45b7ab; /* Màu nút chính khi hover */
+    border-color: #45b7ab;
+}
+
+body.dark-theme .card {
+    background-color: #1a1f2c; /* Màu nền card tối hơn */
+    color: #ffffff;
+}
+
+body.dark-theme .form-input {
+    background-color: #2a3142; /* Màu nền input tối hơn */
+    color: #e0e0e0;
+    border: 1px solid #3a4255; /* Màu viền input */
+}
+
+body.dark-theme .chat-box {
+    background-color: #1a1f2c; /* Màu nền chat box tối hơn */
+    color: #e0e0e0;
+    border: 1px solid #2a3142;
+}
+
+body.dark-theme .chat-box input[type="text"] {
+    background-color: #2a3142; /* Màu nền input chat tối hơn */
+    color: #e0e0e0;
+    border: 1px solid #3a4255;
+}
+
+body.dark-theme .chat-box button {
+    background-color: #4fd1c5; /* Màu nút gửi tin nhắn */
+    border-color: #4fd1c5;
+    color: #0a0e17;
+}
+
+body.dark-theme .online-user {
+    background-color: #2a3142; /* Màu nền của phần hiển thị người dùng online */
+    color: #ffffff;
+}
+
+body.dark-theme .clock {
+    color: #333333; /* Màu chữ của đồng hồ trong giao diện tối */
+}
+
+/* Theme tối - bổ sung */
+body.dark-theme .header-logo img {
+    filter: brightness(0) invert(1); /* Đảo ngược màu logo để hiển thị trên nền tối */
+}
+
+body.dark-theme #clock {
+    color: #e0e0e0; /* Màu sáng hơn cho đồng hồ */
+}
+
+body.dark-theme .dropdown-header,
+body.dark-theme .dropdown-item {
+    color: #e0e0e0;
+    background-color: #1a1f2c;
+}
+
+body.dark-theme .dropdown-item:hover {
+    background-color: #2a3142;
+}
+
+body.dark-theme #section-title-red {
+    color: #ff6b6b; /* Màu đỏ nhạt hơn cho tiêu đề "XIN CHÀO" */
+}
+
+body.dark-theme .list-group-item {
+    background-color: #1a1f2c;
+    color: #e0e0e0;
+    border-color: #2a3142;
+}
+
+body.dark-theme .notification-panel {
+    background-color: #1a1f2c;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-top: 10px;
+}
+
+body.dark-theme .notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #2a3142;
+}
+
+body.dark-t heme .notification-title {
+    color: #e0e0e0;
+    font-size: 18px;
+    margin: 0;
+}
+
+body.dark-theme #confirmRead {
+    background-color: transparent;
+    border: 1px solid #4fd1c5;
+    color: #4fd1c5;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+body.dark-theme #confirmRead:hover {
+    background-color: #4fd1c5;
+    color: #1a1f2c;
+}
+
+body.dark-theme #confirmRead i {
+    margin-right: 5px;
+}
+
+/* Nếu cần điều chỉnh #notificationList */
+body.dark-theme #notificationList {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
+
+body.dark-theme #notificationList::-webkit-scrollbar {
+    width: 6px;
+}
+
+body.dark-theme #notificationList::-webkit-scrollbar-thumb {
+    background-color: #4fd1c5;
+    border-radius: 3px;
+}
+
+body.dark-theme #notificationList::-webkit-scrollbar-track {
+    background-color: #2a3142;
+}   
+
+/* body.dark-theme .fas,
+body.dark-theme .far {
+    color: #4fd1c5;
+} */
+
+body.dark-theme .dropdown-divider {
+    border-top-color: #2a3142;
+}
+
+/* Style cho card và form trong dark theme */
+body.dark-theme .card-custom {
+    background-color: #1a1f2c;
+    border-color: #2a3142;
+}
+
+body.dark-theme .card-body {
+    background-color: #1a1f2c;
+    color: #e0e0e0;
+}
+
+body.dark-theme .form-control {
+    background-color: #2a3142;
+    border-color: #3a4255;
+    color: #e0e0e0;
+}
+
+body.dark-theme .form-control:focus {
+    background-color: #2a3142;
+    border-color: #4fd1c5;
+    color: #e0e0e0;
+    box-shadow: 0 0 0 0.2rem rgba(79, 209, 197, 0.25);
+}
+
+body.dark-theme .form-label {
+    color: #e0e0e0; /* Màu sáng cho các nhãn form trong chế độ tối */
+}
+
+/* Style cho input file trong dark theme */
+body.dark-theme .custom-file-label {
+    background-color: #2a3142;
+    border-color: #3a4255;
+    color: #e0e0e0;
+}
+
+body.dark-theme .custom-file-label::after {
+    background-color: #3a4255;
+    border-color: #3a4255;
+    color: #e0e0e0;
+}
+
+body.dark-theme .custom-file-input:focus~.custom-file-label {
+    border-color: #4fd1c5;
+    box-shadow: 0 0 0 0.2rem rgba(79, 209, 197, 0.25);
+}
+
+body.dark-theme label[for="language"],
+body.dark-theme label[for="background-color"] {
+    color: #e0e0e0; 
+}
+
+body.dark-theme .table {
+    color: #e0e0e0; 
+    background-color: #1a2035; 
+}
+
+body.dark-theme .table thead th {
+    background-color: #252d47; 
+    color: #ffffff; 
+    border-color: #3a4255; 
+}
+
+body.dark-theme .table tbody tr {
+    background-color: #141822; 
+    transition: background-color 0.3s ease, color 0.3s ease; 
+}
+
+body.dark-theme .table-hover tbody tr:hover {
+    background-color: #2a3142; 
+    color: #ffffff; 
+}
+
+body.dark-theme .table td,
+body.dark-theme .table th {
+    border-color: #3a4255; 
+}
+
+
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #1e2439; 
+}
+
+
+body.dark-theme .table-striped tbody tr:nth-of-type(odd):hover {
+    background-color: #2a3142; 
+    color: #ffffff;
+}
+
+/* Light theme cho notification */
+body.light-theme .notification-panel {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 12px;
+}
+
+body.light-theme .notification-header {
+    border-bottom: 1px solid #e0e0e0;
+    color: #333333;
+    padding: 0 0 12px 0;
+}
+
+body.light-theme .notification-header h5 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+body.light-theme .notification-item {
+    padding: 10px 0;
+    font-size: 0.9rem;
+}
+
+body.light-theme .header-right .action-item:hover i {
+    color: #f5f5f5;
+}
+
+body.light-theme .btn-mark-read {
+    background-color: transparent;
+    border: 1px solid #4caf50;
+    color: #4caf50;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}
+
+body.light-theme .btn-mark-read:hover {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+/* Dark theme cho notification */
+body.dark-theme .notification-panel {
+    background-color: #1a1f2c;
+    border: 1px solid #2a3142;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 12px;
+}
+
+body.dark-theme .notification-header {
+    border-bottom: 1px solid #2a3142;
+    color: #e0e0e0;
+    padding: 0 0 12px 0;
+}
+
+body.dark-theme .notification-header h5 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+body.dark-theme .notification-item {
+    padding: 10px 0;
+    font-size: 0.9rem;
+}
+
+body.dark-theme .btn-mark-read {
+    background-color: transparent;
+    border: 1px solid #4fd1c5;
+    color: #4fd1c5;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}
+
+body.dark-theme .btn-mark-read:hover {
+    background-color: #4fd1c5;
+    color: #1a1f2c;
+}

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+    <title>Trang Cá Nhân</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- AOS CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/nav-bar.css">
+    <link rel="stylesheet" href="../css/trangcanhan.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/chatbox.css">
+    <style>
+        .modal-dialog {
+            max-width: 90%;
+        }
+
+        .modal-body img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Thanh điều hướng -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light custom-navbar-height">
+        <div class="container-fluid">
+            <!-- Logo và brand -->
+            <div class="logo-home">
+                <a href="/">
+                    <img src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="logo" class="logo" />
+                </a>
+            </div>
+            <a class="navbar-brand" href="#">Trang cá nhân</a>
+
+            <!-- Nút toggle cho mobile -->
+            <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./allsanpham.html">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./allnongdan.html">Nhà sản xuất</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./allnhakiemduyet.html">Nhà kiểm duyệt</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="./account/dangnhap.html">Đăng nhập</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container w-100">
+        <div class="container my-3">
+            <div class="row justify-content-center">
+                <div class="col-md-8 profile-container p-4">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <!-- Ảnh đại diện -->
+                            <img src="" alt="Avatar" class="profile-img">
+                        </div>
+                        <div class="col-md-8">
+                            <!-- Thông tin cá nhân -->
+                            <h2 class="profile-name"></h2>
+                            <ul class="list-unstyled">
+                                <li><strong>Vùng sản xuất:</strong> <span class="profile-region"></span></li>
+                                <li class="position-relative">
+                                    <strong>Điện thoại:</strong>
+                                    <div class="position-relative">
+                                        <span id="phoneNumber" data-phone="904521281" class="phone-number-trigger">
+                                            <i class="fas fa-phone-alt"></i> 904521281
+                                        </span>
+                                        <div id="contactOptions" class="contact-options-dropdown">
+                                            <a href="#" id="callOption" class="dropdown-item call-option">
+                                                <i class="fas fa-phone-alt"></i>
+                                                Gọi điện
+                                            </a>
+                                            <a href="#" id="zaloOption" class="dropdown-item zalo-option">
+                                                <i class="fab fa-facebook-messenger"></i>
+                                                Nhắn Zalo
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="address-container">
+                                <strong>Địa chỉ:</strong>
+                                <address class="profile-address"></address>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+         
+            <div id="activityLogsContainer" class="mt-4">
+                <h2 class="text-danger">Nhật ký hoạt động</h2>
+                <div id="activityLogs"></div>
+            </div>
+        
+            <button id="loadMore" class="load-more-btn" aria-label="Xem thêm">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+       
+        <div class="chat-icon" id="openChat" onclick="toggleChat()">
+            <i class="fas fa-comments"></i>
+            <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
+        </div>
+    
+        <!-- Khung chat -->
+        <div id="chatbox" class="chatbox">
+            <div class="chatbox-header">
+                <strong>Hỗ trợ</strong>
+                <button id="closeChat" class="btn-close" onclick="toggleChat()">x</button>
+            </div>
+            <div class="chatbox-body">
+                <ul id="messages" class="list-group">
+                    <li class="list-group-item system-message"><strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.</li>
+                </ul>
+            </div>
+            <div class="chatbox-footer">
+                <form id="messageForm" class="d-flex">
+                    <input id="messageInput" type="text" class="form-control" placeholder="type message">
+                    <button type="submit" class="btn btn-primary">Gửi</button>
+                </form>
+            </div>
+        </div>
+    
+        <div class="footer bg-dark text-white py-4" data-aos="fade-up">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                    <h3>Thông tin liên hệ</h3>
+                    <p>Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ</p>
+                    <p>Điện thoại: 0337267892</p>
+                    <p>Email: thob2203474@student.ctu.edu.vn</p>
+                </div>
+                <div class="col-md-4 d-none d-md-block">
+                    <h3>Về chúng tôi</h3>
+                    <p> Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng bằng công nghệ Blockchain.</p>
+                </div>
+                    <div class="col-md-4 d-none d-md-block">
+                        <h3>Theo dõi chúng tôi</h3>
+                        <p>
+                            <a href="mailto:truxuat.blockchain@gmail.com" class="text-white">Email</a><br>
+                            <a href="#" class="text-white">Facebook</a><br>
+                            <a href="#" class="text-white">Instagram</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script>
+        $('.carousel .carousel-item').each(function () {
+            var minPerSlide = 4;
+            var next = $(this).next();
+            if (!next.length) {
+            next = $(this).siblings(':first');
+            }
+            next.children(':first-child').clone().appendTo($(this));
+
+            for (var i = 0; i < minPerSlide; i++) { next=next.next(); if (!next.length) { next=$(this).siblings(':first'); } next.children(':first-child').clone().appendTo($(this)); 
+        } });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+    AOS.init();
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
+
+    <script src="../chatbox/chatbox.js"></script>
+
+    <script>
+       function toggleChat() {
+            var chatbox = document.getElementById("chatbox");
+            if (chatbox.classList.contains("show")) {
+                chatbox.classList.remove("show");
+                chatbox.classList.add("hide");
+                setTimeout(() => {
+                    chatbox.style.display = "none";
+                    chatbox.classList.remove("hide");
+                }, 300); // Match this to the animation duration
+            } else {
+                chatbox.style.display = "block";
+                // Force a reflow before adding the 'show' class
+                chatbox.offsetHeight;
+                chatbox.classList.add("show");
+            }
+        }
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const userId = getUserIdFromURL();
+        
+        if (!userId) {
+            console.error('Không tìm thấy userId');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/user/${userId}`);
+            const userData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(userData.error || 'Lỗi không xác định');
+            }
+
+            // Cập nhật thông tin người dùng
+            const phoneNumber = document.getElementById('phoneNumber');
+            const contactOptions = document.getElementById('contactOptions');
+            const callOption = document.getElementById('callOption');
+            const zaloOption = document.getElementById('zaloOption');
+
+            if (phoneNumber && userData.phone) {
+                phoneNumber.textContent = userData.phone;
+                phoneNumber.setAttribute('data-phone', userData.phone);
+                
+                // Xử lý click vào số điện thoại
+                phoneNumber.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    contactOptions.classList.toggle('show');
+                });
+
+                // Xử lý click vào nút gọi điện
+                callOption.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const phone = phoneNumber.getAttribute('data-phone');
+                    window.location.href = `tel:${phone}`;
+                });
+
+                // Xử lý click vào nút Zalo
+                zaloOption.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const phone = phoneNumber.getAttribute('data-phone');
+                    window.location.href = `https://zalo.me/${phone}`;
+                });
+
+                // Đóng dropdown khi click ra ngoài
+                document.addEventListener('click', function(e) {
+                    if (!phoneNumber.contains(e.target) && !contactOptions.contains(e.target)) {
+                        contactOptions.classList.remove('show');
+                    }
+                });
+            }
+
+            // Cập nhật selector cho đúng với cấu trúc HTML
+            const profileImg = document.querySelector('.profile-img');
+            const profileName = document.querySelector('.profile-name');
+            const profileAddress = document.querySelector('.profile-address');
+            const profileRegion = document.querySelector('.profile-region');
+
+            if (profileImg) profileImg.src = userData.avatar || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg';
+            if (profileName) profileName.textContent = userData.name;
+            if (profileAddress) profileAddress.textContent = userData.address;
+            if (profileRegion) profileRegion.textContent = userData.region_name || 'Không xác định';
+
+            // Thêm log để debug
+            console.log('Dữ liệu người dùng:', userData);
+            console.log('Các phần tử DOM:', {
+                profileImg: !!profileImg,
+                profileName: !!profileName,
+                phoneNumber: !!phoneNumber,
+                profileAddress: !!profileAddress,
+                profileRegion: !!profileRegion
+            });
+        } catch (error) {
+            console.error('Lỗi khi lấy thông tin người dùng:', error);
+        }
+    });
+
+    function getUserIdFromURL() {
+        // Hàm để lấy userId từ URL hoặc session
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('uid') || sessionStorage.getItem('userId');
+    }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const phoneNumber = document.getElementById('phoneNumber');
+    const contactOptions = document.getElementById('contactOptions');
+    const callOption = document.getElementById('callOption');
+    const zaloOption = document.getElementById('zaloOption');
+
+    // Xử lý click vào số điện thoại
+    phoneNumber.addEventListener('click', function(event) {
+        event.stopPropagation();
+        contactOptions.classList.toggle('show');
+    });
+
+    // Đóng dropdown khi click ra ngoài
+    document.addEventListener('click', function(event) {
+        if (!phoneNumber.contains(event.target) && !contactOptions.contains(event.target)) {
+            contactOptions.classList.remove('show');
+        }
+    });
+
+    // Xử lý click vào nút gọi điện
+    callOption.addEventListener('click', function(e) {
+        e.preventDefault();
+        const phone = phoneNumber.getAttribute('data-phone');
+        window.location.href = `tel:${phone}`;
+    });
+
+    // Xử lý click vào nút Zalo
+    zaloOption.addEventListener('click', function(e) {
+        e.preventDefault();
+        const phone = phoneNumber.getAttribute('data-phone');
+        window.location.href = `https://zalo.me/${phone}`;
+    });
+});
+</script>
+<script>
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    let allActivities = [];
+    let displayedActivities = 0;
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        const userId = getUserIdFromURL();
+        await loadAllActivityLogs(userId);
+        displayActivities();
+    
+        document.getElementById('loadMore').addEventListener('click', () => {
+            displayActivities();
+        });
+    });
+    
+    async function loadAllActivityLogs(userId) {
+        try {
+            const response = await fetch(`/api/activity-logs/${userId}`);
+            const data = await response.json();
+    
+            if (response.status !== 200) {
+                throw new Error(data.error || 'Lỗi không xác định');
+            }
+    
+            allActivities = data.activityLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if (allActivities.length === 0) {
+                const activityLogsContainer = document.getElementById('activityLogs');
+                activityLogsContainer.innerHTML = `
+                    <div class="alert alert-info mt-4" role="alert">
+                         Chưa có hoạt động nào để hiển thị.
+                    </div>
+                `;
+                document.getElementById('loadMore').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy nhật ký hoạt động:', error);
+            const activityLogsContainer = document.getElementById('activityLogs');
+            activityLogsContainer.innerHTML = `<p class="text-danger">Lỗi khi tải nhật ký hoạt động: ${error.message}</p>`;
+        }
+    }
+    
+    function displayActivities() {
+        const activityLogsContainer = document.getElementById('activityLogs');
+        const loadMoreButton = document.getElementById('loadMore');
+        const remainingActivities = allActivities.length - displayedActivities;
+        const activitiesToDisplay = Math.min(itemsPerPage, remainingActivities);
+    
+        for (let i = 0; i < activitiesToDisplay; i++) {
+            const log = allActivities[displayedActivities + i];
+            const logElement = createActivityLogElement(log, displayedActivities + i);
+            activityLogsContainer.appendChild(logElement);
+        }
+    
+        displayedActivities += activitiesToDisplay;
+    
+        if (displayedActivities >= allActivities.length) {
+            loadMoreButton.style.display = 'none';
+        } else {
+            loadMoreButton.style.display = 'flex';
+            loadMoreButton.innerHTML = '<i class="fas fa-chevron-down"></i>';
+        }
+    }
+    
+    function createActivityLogElement(log, index) {
+        const logElement = document.createElement('div');
+        logElement.className = 'activity-card';
+        logElement.innerHTML = `
+            <div class="activity-header">
+                <h5 class="activity-name mb-1">${log.activityName}</h5>
+                <small class="text-muted">
+                    <i class="far fa-clock"></i> 
+                    ${new Date(log.timestamp).toLocaleString()}
+                </small>
+            </div>
+            
+            <div class="activity-content">
+                <!-- Phần mô tả -->
+                <div class="activity-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i> Mô tả hoạt động
+                    </div>
+                    <div class="activity-description">${log.description}</div>
+                </div>
+
+                <!-- Phần sản phẩm liên quan -->
+                ${log.relatedProducts && log.relatedProducts.length > 0 ? `
+                <div class="activity-section">
+                    <div class="section-title">
+                        <i class="fas fa-box"></i> Sản phẩm liên quan
+                    </div>
+                    <div class="products-carousel">
+                        <div id="carouselProducts${index}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                ${createCarouselItems(log.relatedProducts, 4)}
+                            </div>
+                            ${log.relatedProducts.length > 4 ? `
+                                <button class="carousel-control-prev product-carousel-control" type="button" data-bs-target="#carouselProducts${index}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                </button>
+                                <button class="carousel-control-next product-carousel-control" type="button" data-bs-target="#carouselProducts${index}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Phần gallery ảnh -->
+                ${log.imageUrls && log.imageUrls.length > 0 ? `
+                <div class="activity-section">
+                    <div class="section-title">
+                        <i class="fas fa-images"></i> Ảnh/video hoạt động
+                    </div>
+                    <div class="activity-gallery">
+                        ${log.imageUrls.map(url => `
+                            <div class="gallery-item">
+                                <img src="${url}" alt="Activity image" class="gallery-image" onclick="openImageModal(this.src)">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        return logElement;
+    }
+
+    function createCarouselItems(items, itemsPerSlide) {
+        let carouselItems = '';
+        for (let i = 0; i < items.length; i += itemsPerSlide) {
+            const slideItems = items.slice(i, i + itemsPerSlide);
+            carouselItems += `
+                <div class="carousel-item ${i === 0 ? 'active' : ''}">
+                    <div class="row">
+                        ${slideItems.map(item => `
+                            <div class="col-6 col-md-4 col-lg-3"> <!-- Sử dụng col-6 cho mobile, col-md-4 cho tablet và col-lg-3 cho desktop -->
+                                <div class="product-card" onclick="goToProductPage('${item.product_id}')">
+                                    <div class="product-name">${item.product_name}</div>
+                                    <img class="product-image" src="${item.image_url}" alt="${item.product_name}">
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        return carouselItems;
+    }
+    function goToProductPage(productId) {
+        window.location.href = `sanpham.html?id=${productId}`;
+    }
+    function getUserIdFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('uid');
+    }
+</script>
+<script>
+    document.addEventListener('click', function(event) {
+        var isClickInside = document.querySelector('.navbar').contains(event.target);
+
+        if (!isClickInside) {
+            var navbarCollapse = document.querySelector('.navbar-collapse');
+            if (navbarCollapse.classList.contains('show')) {
+                navbarCollapse.classList.remove('show');
+            }
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const phoneNumber = document.getElementById('phoneNumber');
+    const callOption = document.getElementById('callOption');
+    const zaloOption = document.getElementById('zaloOption');
+
+    // Lấy số điện thoại từ thuộc tính data-phone
+    const phone = phoneNumber.getAttribute('data-phone');
+
+    callOption.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = `tel:${phone}`;
+    });
+
+    zaloOption.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Chuyển hướng đến Zalo với số điện thoại
+        window.location.href = `https://zalo.me/${phone}`;
+    });
+});
+</script>
+
+    
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery (nếu cần) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- AOS JS -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../chatbox/chatbox.js"></script>
+
+    <!-- Modal -->
+    <div id="imageModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ảnh hoạt động</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" src="" alt="Activity image" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('.img-fluid.rounded');
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+
+            images.forEach(image => {
+                image.addEventListener('click', function() {
+                    modalImage.src = this.src;
+                    $(modal).modal('show');
+                });
+            });
+        });
+    </script>
+
+    <!-- Thêm Modal cho gallery images -->
+    <div id="galleryModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xem ảnh</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <img id="galleryModalImage" src="" alt="Gallery image" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Thêm hàm mở modal
+    function openImageModal(imageSrc) {
+        const modal = document.getElementById('galleryModal');
+        const modalImg = document.getElementById('galleryModalImage');
+        modalImg.src = imageSrc;
+        $(modal).modal('show');
+    }
+
+    // Thêm sự kiện click cho tất cả ảnh trong gallery
+    document.addEventListener('DOMContentLoaded', function() {
+        const galleryImages = document.querySelectorAll('.gallery-image');
+        galleryImages.forEach(image => {
+            image.addEventListener('click', function() {
+                openImageModal(this.src);
+            });
+        });
+    });
+    </script>
+</body>
+</html>
