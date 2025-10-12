@@ -1122,3 +1122,93 @@ body.menu-open {
 .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
 }
+
+
+
+/* Danh sách hoạt động */
+/* Container chính cho danh sách */
+.table-responsive {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-top: 25px;
+}
+
+.table-responsive h5 {
+    font-size: 1.8rem !important;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #00b09b;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-responsive h5::before {
+    content: '\f0ca';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: #00b09b;
+    font-size: 1.6rem;
+}
+
+/* Item hoạt động - Card style */
+.activity-log-item {
+    border: none;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 25px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.activity-log-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+}
+
+.activity-log-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+/* Tiêu đề hoạt động */
+.activity-log-item h5 {
+    font-size: 1.6rem !important;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding: 10 !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.activity-log-item h5::before {
+    content: '\f111';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: #00b09b;
+    font-size: 0.6rem;
+}
+
+.table-title h5{
+    font-size: 2.5rem;
+    font-weight: 600;
+    font-family: 'Times New Roman', Times, serif;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}

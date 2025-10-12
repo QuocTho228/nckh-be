@@ -667,3 +667,62 @@ body .dashboard-table {
         font-size: 1.1rem;
     }
 }
+
+/* Style cho bảng hoạt động */
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+    position: relative;
+    z-index: 1;
+    margin-top: 20px;
+}
+
+.table {
+    min-width: 1000px;
+}
+
+.activity-image {
+    width: 100px; /* Tăng kích thước ảnh lên tối đa hợp lý */
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 2px;
+}
+
+.activity-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Tùy chỉnh trạng thái */
+.status-pending {
+    color: #ffa500; /* Màu vàng */
+    font-weight: bold;
+}
+
+.status-approved {
+    color: #008000; /* Màu xanh lá */
+    font-weight: bold;
+}
+
+/* Đảm bảo header cố định */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .activity-image {
+        width: 80px;
+        height: 80px;
+    }
+    .table td, .table th {
+        min-width: 80px;
+        padding: 6px;
+    }
+}
