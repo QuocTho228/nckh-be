@@ -582,7 +582,8 @@ function setupRoutes(app, db) {
           certificateImageUrl = result.ipfsUrl;
           console.log("Certificate image uploaded:", certificateImageUrl);
         } else {
-          certificateImageUrl = "/Uploads/default/certificate.jpg";
+          //certificateImageUrl = "/Uploads/default/certificate.jpg";
+          certificateImageUrl = "/uploads/noimage.png";
         }
 
         console.log("Calling createBatch with params:", {
@@ -2652,6 +2653,66 @@ function setupRoutes(app, db) {
     "/uploads",
     express.static(path.join(__dirname, "public", "uploads"))
   );
+
+
+  //New
+  app.get("/api/all-batches-by-region", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: "Người dùng chưa đăng nhập" });
+    }
+
+    const userId = req.session.userId;
+    console.log("Đang lấy tất cả lô hàng theo khu vực cho userId:", userId);
+
+    // Lấy region của user
+    const [user] = await db.query("SELECT region_id FROM users WHERE uid = ?", [userId]);
+    if (user.length === 0) {
+      return res.status(404).json({ error: "Không tìm thấy thông tin người dùng" });
+    }
+    const regionId = user[0].region_id;
+
+    // Lấy tất cả producers trong cùng region
+    const [producers] = await db.query("SELECT uid, name FROM users WHERE role_id = 1 AND region_id = ?", [regionId]);
+
+    // Lấy tất cả batches của từng producer
+    let allBatches = [];
+    for (const producer of producers) {
+      const producerId = producer.uid;
+      const producerName = producer.name;
+
+      const batches = await traceabilityContract.methods
+        .getBatchesByProducer(producerId)
+        .call();
+
+      const convertedBatches = convertBigIntToString(batches);
+
+      const formattedBatches = convertedBatches.map((batch) => ({
+        batchId: batch.batchId,
+        name: batch.name,
+        producerName: producerName,
+        quantity: batch.quantity,
+        productionDate: batch.productionDate,
+        productImageUrls: batch.productImageUrls,
+        certificateImageUrl: batch.certificateImageUrl,
+        status: translateStatus(batch.status)  // Hàm translateStatus đã có sẵn trong backend.js
+      }));
+
+      allBatches = [...allBatches, ...formattedBatches];
+    }
+
+    // Sắp xếp theo ngày tạo (mới nhất trước)
+    allBatches.sort((a, b) => Number(b.productionDate) - Number(a.productionDate));
+
+    res.status(200).json(allBatches);
+  } catch (error) {
+    console.error("Lỗi khi lấy tất cả lô hàng theo khu vực:", error);
+    res.status(500).json({
+      error: "Không thể lấy tất cả lô hàng theo khu vực: " + error.message
+    });
+  }
+});
+
 }
 
 module.exports = {

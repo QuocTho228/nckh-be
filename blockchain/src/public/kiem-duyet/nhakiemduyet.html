@@ -73,7 +73,7 @@
     <main>
         <div class="container mt-4">
             <div class="table-title">
-                <h5><b>Quản lí lô hàng</b></h5>
+                <h5><b>Quản lý lô hàng</b></h5>
             </div>
             <br>
             <div class="container-fluid mt-3">
@@ -105,6 +105,7 @@
             <div class="filter-container">
                 <label for="statusFilter" class="filter-label">Lọc theo trạng thái:</label>
                 <select id="statusFilter" class="custom-select">
+                    <option value="Tất cả" selected>Tất cả</option>
                     <option value="Chờ phê duyệt">Chờ phê duyệt</option>
                     <option value="Đã phê duyệt">Đã phê duyệt</option>
                     <option value="Đã từ chối">Đã từ chối</option>
@@ -255,23 +256,23 @@
       let currentBatchId;
 
       document.addEventListener("DOMContentLoaded", function () {
-        loadPendingBatches();
+        loadAllBatches();
       });
 
-      async function loadPendingBatches() {
+      async function loadAllBatches() {
         try {
           const baseUrl = window.location.origin;
-          const response = await fetch(`${baseUrl}/api/pending-batches-by-region`);
+          const response = await fetch(`${baseUrl}/api/all-batches-by-region`);
           
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Network response was not ok");
           }
           const batches = await response.json();
-          allBatches = batches; // Lưu dữ liệu gốc
-          displayPendingBatches(batches);
+          allBatches = batches; // Lưu dữ liệu gốc (tất cả batches)
+          displayBatches(batches);  // Hiển thị tất cả batches mặc định
         } catch (error) {
-          console.error("Lỗi khi lấy danh sách lô hàng chờ duyệt:", error);
+          console.error("Lỗi khi lấy danh sách tất cả lô hàng:", error);
           showToast('Không thể lấy danh sách lô hàng. Vui lòng thử lại sau.', 'error');
         }
       }
@@ -320,7 +321,7 @@
             filteredBatches = allBatches;
         }
         
-        displayPendingBatches(filteredBatches);
+        displayBatches(filteredBatches);  // Hiển thị batches đã lọc
         
         if (filteredBatches.length === 0) {
           showToast('Không tìm thấy lô hàng phù hợp với bộ lọc', 'error');
@@ -328,6 +329,16 @@
           showToast(`Đã lọc ${filteredBatches.length} lô hàng`, 'success');
         }
       }
+
+      // Thêm listener cho select filter
+      document.getElementById('statusFilter').addEventListener('change', function() {
+        const selectedStatus = this.value;
+        let filterType;
+        if (selectedStatus === 'Chờ phê duyệt') filterType = 'uncheck';
+        else if (selectedStatus === 'Đã phê duyệt') filterType = 'checked';
+        else if (selectedStatus === 'Đã từ chối') filterType = 'cancel';
+        filterBatches(filterType);
+      });
 
       // Thêm chức năng tìm kiếm
       document.getElementById('myInput').addEventListener('keyup', function() {
@@ -530,7 +541,8 @@
         }, 3000);
       }
 
-      function displayPendingBatches(batches) {
+      // Hàm hiển thị batches
+      function displayBatches(batches) {
         const tableBody = document.getElementById("d-table");
         tableBody.innerHTML = "";
 
@@ -542,41 +554,45 @@
         batches.forEach((batch) => {
           const row = document.createElement("tr");
           const statusClass = getStatusClass(batch.status);
-          row.innerHTML = `
-                <td>${batch.name}</td>
-                <td>${batch.producerName}</td>
-                <td>${batch.quantity}</td>
-                <td>${new Date(
-                  Number(batch.productionDate) * 1000
-                ).toLocaleDateString()}</td>
-                <td>${batch.productImageUrls
-                  .map(
-                    (url) =>
-                      `<img src="${url}" alt="Product Image" class="product-image" onclick="showImage('${url}')">`
-                  )
-                  .join("")}</td>
-                <td><img src="${
-                  batch.certificateImageUrl
-                }" alt="Certificate" class="certificate-image" onclick="showImage('${
-            batch.certificateImageUrl
-          }')"></td>
-                <td class="${statusClass}">${batch.status}</td>
-                <td>
-                    <button class="function-button detail-button" data-batch-id="${
-                      batch.batchId
-                    }">Chi tiết</button>
-                    <button class="function-button approve-button" data-batch-id="${
-                      batch.batchId
-                    }" style="display: none;">Phê duyệt</button>
-                    <button class="function-button reject-button" data-batch-id="${
-                      batch.batchId
-                    }" style="display: none;">Từ chối</button>
-                </td>
+          
+          // Quyết định hiển thị button dựa trên trạng thái
+          let buttonHtml = '';
+          if (batch.status === 'Chờ phê duyệt') {
+            buttonHtml = `
+              <div class="d-flex align-items-center">
+                <button class="btn btn-success" style="margin-right: 20px;" 
+                        onclick="if (confirm('Bạn có chắc chắn muốn PHÊ DUYỆT lô này không?')) approveBatch('${batch.batchId}')">
+                  <span class="button-spinner d-none"></span>
+                  <span class="button-text">Phê duyệt</span>
+                </button>
+
+                <button class="btn btn-danger" 
+                        onclick="if (confirm('Bạn có chắc chắn muốn TỪ CHỐI lô này không?')) rejectBatch('${batch.batchId}')">
+                  <span class="button-spinner d-none"></span>
+                  <span class="button-text">Từ chối</span>
+                </button>
+              </div>
             `;
+          } else {
+            buttonHtml = `
+              <button class="function-button detail-button" data-batch-id="${batch.batchId}">Chi tiết</button>
+            `;
+          }
+
+          row.innerHTML = `
+            <td>${batch.name}</td>
+            <td>${batch.producerName}</td>
+            <td>${batch.quantity}</td>
+            <td>${new Date(Number(batch.productionDate) * 1000).toLocaleDateString()}</td>
+            <td>${batch.productImageUrls.map((url) => `<img src="${url}" alt="Product Image" class="product-image" onclick="showImage('${url}')">`).join("")}</td>
+            <td><img src="${batch.certificateImageUrl}" alt="Certificate" class="certificate-image" onclick="showImage('${batch.certificateImageUrl}')"></td>
+            <td class="${statusClass}">${batch.status}</td>
+            <td>${buttonHtml}</td>
+          `;
           tableBody.appendChild(row);
         });
 
-        addEventListeners();
+        addEventListeners(); // Giữ nguyên để thêm event cho các button
       }
 
       function showImage(src) {
