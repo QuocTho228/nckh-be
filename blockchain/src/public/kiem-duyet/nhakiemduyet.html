@@ -1,172 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
     <title>Bảng thông tin - Nhà kiểm duyệt</title>
-    <link
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../css/nhakiemduyet.css" />
-    <link rel="stylesheet" href="../css/nav-bar.css" />
-    <link rel="stylesheet" href="../css/chatbox.css" />
-    <link rel="stylesheet" href="../css/thongbao.css" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  </head>
-  <body>
-    <!-- Đặt ngay sau thẻ body mở đầu -->
-    <div class="toast-container"></div>
-
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/nav-bar.css">
+    <link rel="stylesheet" href="../css/san-xuat.css">
+    <link rel="stylesheet" href="../css/thongbao.css">
+    <link rel="stylesheet" href="../css/chatbox.css">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+<body>
     <!-- Thanh điều hướng -->
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
-      <div class="container">
-        <a class="navbar-brand" href="sanxuat.html">
-          <img
-            src="..\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
-            alt="Logo"
-            class="logo-image"
-          />
-          <span>Nhà kiểm duyệt</span>
-        </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="sanxuat.html">Quản lí lô hàng</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="nhatky-hoatdong.html"
-                >Quản lí hoạt động</a
-              >
-            </li>
-            <!-- Thêm nút thông báo vào navbar -->
-            <li class="nav-item dropdown" style="position: relative;">
-              <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown">
-                  <i class="fas fa-bell"></i>
-                  <span class="badge badge-danger" id="notification-count">0</span>
-              </a>
-              <div class="dropdown-menu notification-menu" aria-labelledby="notificationDropdown">
-                  <div class="notification-header">
-                      <h6 class="dropdown-header">Thông báo</h6>
-                      <button class="btn btn-sm" id="markAllRead">
-                        <i class="fas fa-check-double mr-1"></i>
-                        Đánh dấu tất cả đã đọc
-                    </button>
-                  </div>
-                  <div class="notification-list" id="notificationList">
-                       <!-- Notifications will be inserted here   -->
-                  </div>
-              </div>
-          </li>
-          </ul>
-          <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              >
-                <span id="userName">Nguyễn Văn Thuần</span>
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="#" id="userRole"
-                  >Vai trò: Người sản xuất</a
-                >
-                <a class="dropdown-item" href="#" id="userRegion"
-                  >Khu vực: Vùng Thốt Nốt</a
-                >
-                <a
-                  class="dropdown-item common-user-info"
-                  href="../trangcanhan_caidat.html"
-                  >Thông Tin Cá Nhân</a
-                >
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" id="logoutButton"
-                  >Đăng xuất</a
-                >
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <div id="alertContainer" class="container mt-3"></div>
-
-    <main>
-      <div class="container mt-4">
-        <div class="table-title">
-          <h5><i>Danh sách lô hàng</i></h5>
-        </div>
-        <br />
-        <div class="searchbox-filter">
-          <input
-            class="searchbox"
-            id="myInput"
-            type="text"
-            placeholder="Tìm kiếm"
-          />
-          <div class="dropdown">
-            <button onclick="searchFilter()" class="check-button">
-              <b>Lọc</b>
+        <div class="container">
+            <a class="navbar-brand" href="sanxuat.html">
+                <img src="..\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="Logo" class="logo-image">
+                <span>Nhà kiểm duyệt</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
             </button>
-            <div id="filterDropdown" class="dropdown-content">
-              <a href="#checked">Đã kiểm định</a>
-              <a href="#uncheck">Chưa kiểm định</a>
-              <a href="#cancel">Đã từ chối</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="nhakiemduyet.html">Quản lý lô hàng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="nhatky-hoatdong.html">Quản lý hoạt động</a>
+                    </li>
+                    <li class="nav-item dropdown" style="position: relative;">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge badge-danger" id="notification-count">0</span>
+                        </a>
+                        <div class="dropdown-menu notification-menu" aria-labelledby="notificationDropdown">
+                            <div class="notification-header">
+                                <h6 class="dropdown-header">Thông báo</h6>
+                                <button class="btn btn-sm" id="markAllRead">
+                                  <i class="fas fa-check-double mr-1"></i>
+                                  Đánh dấu tất cả đã đọc
+                              </button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                 <!-- Notifications will be inserted here   -->
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                            <span id="userName">Võ Quốc Thọ</span>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="#" id="userRole">Vai trò: Người sản xuất</a>
+                            <a class="dropdown-item" href="#" id="userRegion">Khu vực: Vùng Thốt Nốt</a>
+                            <a class="dropdown-item common-user-info" href="../trangcanhan_caidat.html">Thông Tin Cá Nhân</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" id="logoutButton">Đăng xuất</a>
+                        </div>
+                    </li>
+                </ul>
             </div>
-          </div>
         </div>
-        <p></p>
-        <div class="table-container">
-          <div class="table-responsive">
-            <table class="dashboard-table">
-              <thead>
-                <tr>
-                  <th>Tên lô</th>
-                  <th>Người sản xuất</th>
-                  <th>Số lượng (tấn)</th>
-                  <th>Ngày tạo</th>
-                  <th>Hình ảnh</th>
-                  <th>Giấy chứng nhận</th>
-                  <th>Trạng thái</th>
-                  <th>Chức năng</th>
-                </tr>
-              </thead>
-              <tbody id="d-table">
-                <!-- Các hàng sẽ được thêm động từ JavaScript -->
-              </tbody>
-            </table>
-          </div>
+    </nav>
+    <div class="menu-overlay"></div>
+    <main>
+        <div class="container mt-4">
+            <div class="table-title">
+                <h5><b>Quản lí lô hàng</b></h5>
+            </div>
+            <br>
+            <div class="container-fluid mt-3">
+                <div class="row justify-content-center">
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="myInput" placeholder="Tìm kiếm lô hàng..." aria-label="Tìm kiếm lô hàng">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="dashboard-table">
+                <button type="button" class="check-button" id="addBatchBtn">
+                    <i class="fas fa-plus"></i>
+                    <b>Thêm lô hàng</b>
+                </button>
+            </div> -->
+            <!-- <div id="loadingSpinner" class="text-center mt-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Đang tải...</span>
+                </div>
+                <p class="mt-2">Đang tải lô hàng...</p>
+            </div> -->
+            <div class="filter-container">
+                <label for="statusFilter" class="filter-label">Lọc theo trạng thái:</label>
+                <select id="statusFilter" class="custom-select">
+                    <option value="Chờ phê duyệt">Chờ phê duyệt</option>
+                    <option value="Đã phê duyệt">Đã phê duyệt</option>
+                    <option value="Đã từ chối">Đã từ chối</option>
+                </select>
+            </div>
+            <div class="table-responsive">
+                <h5><i>Danh sách lô hàng</i></h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Tên lô</th>
+                            <th>Người sản xuất</th>
+                            <th>Số lượng (tấn)</th>
+                            <th>Ngày tạo</th>
+                            <th>Hình ảnh</th>
+                            <th>Giấy chứng nhận</th>
+                            <th>Trạng thái</th>
+                            <th>Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="d-table">
+                        <!-- Các hàng sẽ được thêm động từ JavaScript -->
+                    </tbody>
+                </table>
+                <div id="pendingBatchesList" style="display: none;"></div>
+                <div id="approvedBatchesList" style="display: none;"></div>
+                <div id="rejectedBatchesList" style="display: none;"></div>
+            </div>
         </div>
-      </div>
     </main>
 
- 
- 
     <div class="chat-icon" id="openChat" onclick="toggleChat()">
       <i class="fas fa-comments"></i>
       <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
-  </div>
+    </div>
     <!-- Khung chat -->
     <div id="chatbox" class="chatbox">
       <div class="chatbox-header">
@@ -195,6 +168,55 @@
       </div>
     </div>
 
+    <!-- Modal for batch details -->
+    <div
+      class="modal fade"
+      id="batchDetailsModal"
+      tabindex="-1"
+      aria-labelledby="batchDetailsModalLabel"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="batchDetailsModalLabel">
+              Chi tiết lô hàng
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="batchDetailsContent">
+            <p>Bạn có muốn phê duyệt hoặc từ chối lô hàng này?</p>
+            <div class="d-flex justify-content-center">
+              <button id="approveBtn" class="btn btn-success mx-2">
+                <span class="button-spinner d-none"></span>
+                <span class="button-text">Phê duyệt</span>
+              </button>
+              <button id="rejectBtn" class="btn btn-danger mx-2">
+                <span class="button-spinner d-none"></span>
+                <span class="button-text">Từ chối</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spinner container -->
+    <!-- <div class="spinner-container">
+        <div class="spinner-content">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="spinner-text">Vui lòng đợi...</div>
+        </div>
+    </div> -->
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -208,9 +230,6 @@
     <script type="module" src="../js_giaodien/thongbaoNKD.js"></script>
     <script src="..//thongbao.js"></script>
     <script src="../chatbox/chatbox.js"></script>
-    <!-- <script>
-      const socket = io();
-    </script> -->
 
     <script>
       function toggleChat() {
@@ -221,10 +240,9 @@
           setTimeout(() => {
             chatbox.style.display = "none";
             chatbox.classList.remove("hide");
-          }, 300); // Match this to the animation duration
+          }, 300);
         } else {
           chatbox.style.display = "block";
-          // Force a reflow before adding the 'show' class
           chatbox.offsetHeight;
           chatbox.classList.add("show");
         }
@@ -232,11 +250,14 @@
     </script>
 
     <script>
+      // Biến lưu trữ dữ liệu gốc
+      let allBatches = [];
       let currentBatchId;
 
       document.addEventListener("DOMContentLoaded", function () {
         loadPendingBatches();
       });
+
       async function loadPendingBatches() {
         try {
           const baseUrl = window.location.origin;
@@ -247,6 +268,7 @@
             throw new Error(errorData.message || "Network response was not ok");
           }
           const batches = await response.json();
+          allBatches = batches; // Lưu dữ liệu gốc
           displayPendingBatches(batches);
         } catch (error) {
           console.error("Lỗi khi lấy danh sách lô hàng chờ duyệt:", error);
@@ -254,12 +276,76 @@
         }
       }
 
-      
+      // Hàm toggle dropdown
+      function searchFilter() {
+        document.getElementById("filterDropdown").classList.toggle("show");
+      }
+
+      // Đóng dropdown khi click bên ngoài
+      window.onclick = function(event) {
+        const batchModal = document.getElementById("batchDetailsModal");
+        const imageModal = document.getElementById("imageModal");
+        
+        if (!event.target.matches('.check-button')) {
+          var dropdowns = document.getElementsByClassName("dropdown-content");
+          for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+              openDropdown.classList.remove('show');
+            }
+          }
+        }
+        
+        if (event.target == batchModal || event.target == imageModal || event.target.className == "close") {
+          if (batchModal) batchModal.style.display = "none";
+        }
+      }
+
+      // Hàm lọc dữ liệu
+      function filterBatches(filterType) {
+        let filteredBatches = [];
+        
+        switch(filterType) {
+          case 'checked':
+            filteredBatches = allBatches.filter(batch => batch.status === 'Đã phê duyệt');
+            break;
+          case 'uncheck':
+            filteredBatches = allBatches.filter(batch => batch.status === 'Chờ phê duyệt');
+            break;
+          case 'cancel':
+            filteredBatches = allBatches.filter(batch => batch.status === 'Đã từ chối');
+            break;
+          case 'all':
+          default:
+            filteredBatches = allBatches;
+        }
+        
+        displayPendingBatches(filteredBatches);
+        
+        if (filteredBatches.length === 0) {
+          showToast('Không tìm thấy lô hàng phù hợp với bộ lọc', 'error');
+        } else {
+          showToast(`Đã lọc ${filteredBatches.length} lô hàng`, 'success');
+        }
+      }
+
+      // Thêm chức năng tìm kiếm
+      document.getElementById('myInput').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        
+        const filteredBatches = allBatches.filter(batch => {
+          return batch.name.toLowerCase().includes(searchValue) ||
+                 batch.producerName.toLowerCase().includes(searchValue) ||
+                 batch.status.toLowerCase().includes(searchValue);
+        });
+        
+        displayPendingBatches(filteredBatches);
+      });
 
       async function viewBatchDetails(batchId) {
-        console.log("Đang lấy chi tiết cho lô hàng với ID:", batchId); // Thêm log để kiểm tra
+        console.log("Đang lấy chi tiết cho lô hàng với ID:", batchId);
+        currentBatchId = batchId;
 
-        // Hiển thị modal với hai nút "Phê duyệt" và "Từ chối"
         const content = document.getElementById("batchDetailsContent");
         content.innerHTML = `
                 <p>Bạn có muốn phê duyệt hoặc từ chối lô hàng này?</p>
@@ -274,16 +360,16 @@
                     </button>
                 </div>
             `;
-        $("#batchDetailsModal").modal("show"); // Sử dụng Bootstrap để hiển thị modal
+        $("#batchDetailsModal").modal("show");
       }
 
       function closeModal() {
-        $("#batchDetailsModal").modal("hide"); // Sử dụng Bootstrap để ẩn modal
+        $("#batchDetailsModal").modal("hide");
       }
 
       function addEventListeners() {
         const detailButtons = document.querySelectorAll(".detail-button");
-        console.log("Detail buttons:", detailButtons); // Thêm log để kiểm tra
+        console.log("Detail buttons:", detailButtons);
 
         detailButtons.forEach((button) => {
           button.addEventListener("click", function () {
@@ -293,7 +379,7 @@
         });
 
         const approveButtons = document.querySelectorAll(".approve-button");
-        console.log("Approve buttons:", approveButtons); // Thêm log để kiểm tra
+        console.log("Approve buttons:", approveButtons);
 
         approveButtons.forEach((button) => {
           button.addEventListener("click", function () {
@@ -303,12 +389,23 @@
         });
 
         const rejectButtons = document.querySelectorAll(".reject-button");
-        console.log("Reject buttons:", rejectButtons); // Thêm log để kiểm tra
+        console.log("Reject buttons:", rejectButtons);
 
         rejectButtons.forEach((button) => {
           button.addEventListener("click", function () {
             const batchId = this.getAttribute("data-batch-id");
             rejectBatch(batchId);
+          });
+        });
+
+        // Xử lý click vào các tùy chọn lọc
+        const filterLinks = document.querySelectorAll('#filterDropdown a');
+        filterLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filterType = this.getAttribute('href').substring(1);
+            filterBatches(filterType);
+            document.getElementById("filterDropdown").classList.remove("show");
           });
         });
       }
@@ -326,7 +423,6 @@
         }
       }
 
-      // Thêm hàm hiển thị/ẩn spinner
       function showSpinner() {
         document.querySelector('.spinner-container').style.display = 'flex';
       }
@@ -335,7 +431,6 @@
         document.querySelector('.spinner-container').style.display = 'none';
       }
 
-      // Cập nhật hàm approveBatch
       async function approveBatch(blockchainBatchId) {
         const approveBtn = document.getElementById('approveBtn');
         const spinner = approveBtn.querySelector('.button-spinner');
@@ -348,14 +443,12 @@
 
           const baseUrl = window.location.origin;
           
-          // Lấy local batch ID
           const localBatchResponse = await fetch(`${baseUrl}/api/local-batch-id/${blockchainBatchId}`);
           if (!localBatchResponse.ok) {
             throw new Error("Không thể lấy local batch ID");
           }
           const localBatchData = await localBatchResponse.json();
           
-          // Gọi API approve
           const response = await fetch(`${baseUrl}/approve-batch/${blockchainBatchId}`, {
             method: "POST",
             headers: {
@@ -382,7 +475,6 @@
         }
       }
 
-      // Cập nhật hàm rejectBatch
       async function rejectBatch(blockchainBatchId) {
         const rejectBtn = document.getElementById('rejectBtn');
         const spinner = rejectBtn.querySelector('.button-spinner');
@@ -393,14 +485,12 @@
           spinner.classList.remove('d-none');
           text.textContent = 'Đang xử lý...';
 
-          // Lấy local batch ID trước
           const localBatchResponse = await fetch(`/api/local-batch-id/${blockchainBatchId}`);
           if (!localBatchResponse.ok) {
             throw new Error("Không thể lấy local batch ID");
           }
           const localBatchData = await localBatchResponse.json();
           
-          // Gọi API reject với cả blockchain ID và local ID
           const response = await fetch(`/reject-batch/${blockchainBatchId}`, {
             method: "POST",
             headers: {
@@ -437,20 +527,17 @@
 
         setTimeout(() => {
           alert.remove();
-        }, 3000); // Thông báo sẽ tự động biến mất sau 3 giây
+        }, 3000);
       }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        loadPendingBatches();
-
-        function closeModal() {
-          $("#batchDetailsModal").modal("hide");
-        }
-      });
 
       function displayPendingBatches(batches) {
         const tableBody = document.getElementById("d-table");
         tableBody.innerHTML = "";
+
+        if (batches.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Không có lô hàng nào</td></tr>';
+          return;
+        }
 
         batches.forEach((batch) => {
           const row = document.createElement("tr");
@@ -499,20 +586,6 @@
         modalImg.src = src;
       }
 
-      // Đóng modal khi click vào nút đóng hoặc bên ngoài modal
-      window.onclick = function (event) {
-        const batchModal = document.getElementById("batchDetailsModal");
-        const imageModal = document.getElementById("imageModal");
-        if (
-          event.target == batchModal ||
-          event.target == imageModal ||
-          event.target.className == "close"
-        ) {
-          batchModal.style.display = "none";
-          // imageModal.style.display = "none";
-        }
-      };
-
       document.addEventListener("DOMContentLoaded", async function () {
         try {
           const response = await fetch("/api/user-info");
@@ -533,7 +606,6 @@
         }
       });
 
-      // Xử lý đăng xuất
       document
         .getElementById("logoutButton")
         .addEventListener("click", async function (e) {
@@ -541,10 +613,10 @@
           try {
             const response = await fetch("/api/dangxuat", {
               method: "POST",
-              credentials: "same-origin", // Đảm bảo gửi cookie session
+              credentials: "same-origin",
             });
             if (response.ok) {
-              window.location.href = "../account/dangnhap.html"; // Sử dụng đường dẫn tương đối đến root
+              window.location.href = "../account/dangnhap.html";
             } else {
               console.error("Không thể đăng xuất");
               alert("Đăng xuất không thành công. Vui lòng thử lại.");
@@ -611,12 +683,10 @@
           }
         });
 
-        // Ngăn sự kiện click trên menu lan ra ngoài
         navbarCollapse.addEventListener("click", function (e) {
           e.stopPropagation();
         });
 
-        // Xử lý riêng cho dropdown thông báo
         const notificationDropdown = document.getElementById("notificationDropdown");
         const notificationMenu = notificationDropdown.nextElementSibling;
         
@@ -626,7 +696,6 @@
             notificationMenu.classList.toggle("show");
         });
 
-        // Xử lý riêng cho user dropdown
         const userDropdown = document.getElementById("navbarDropdown");
         const userMenu = userDropdown.nextElementSibling;
         
@@ -636,7 +705,6 @@
             userMenu.classList.toggle("show");
         });
 
-        // Đóng tất cả dropdown khi click ra ngoài
         document.addEventListener("click", function (e) {
             if (!notificationDropdown.contains(e.target)) {
                 notificationMenu.classList.remove("show");
@@ -648,54 +716,6 @@
       });
     </script>
 
-    <script>
-      window.addEventListener("scroll", function () {
-        var navbar = document.querySelector(".navbar");
-        if (window.scrollY > 50) {
-          navbar.classList.add("navbar-scrolled");
-        } else {
-          navbar.classList.remove("navbar-scrolled");
-        }
-      });
-    </script>
-    <div
-      class="modal fade"
-      id="batchDetailsModal"
-      tabindex="-1"
-      aria-labelledby="batchDetailsModalLabel"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="batchDetailsModalLabel">
-              Chi tiết lô hàng
-            </h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body" id="batchDetailsContent">
-            <p>Bạn có muốn phê duyệt hoặc từ chối lô hàng này?</p>
-            <div class="d-flex justify-content-center">
-              <button id="approveBtn" class="btn btn-success mx-2" onclick="approveBatch('${batchId}')">
-                <span class="button-spinner d-none"></span>
-                <span class="button-text">Phê duyệt</span>
-              </button>
-              <button id="rejectBtn" class="btn btn-danger mx-2" onclick="rejectBatch('${batchId}')">
-                <span class="button-spinner d-none"></span>
-                <span class="button-text">Từ chối</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
       AOS.init();
@@ -704,14 +724,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <div class="spinner-container">
+    <!-- <div class="spinner-container">
         <div class="spinner-content">
             <div class="spinner-border" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
             <div class="spinner-text">Vui lòng đợi...</div>
         </div>
-    </div>
+    </div> -->
 
     <script>
       function showToast(message, type = 'success') {
@@ -735,11 +755,10 @@
         
         toastContainer.appendChild(toast);
         
-        // Tăng thời gian hiển thị lên 10 giây
         setTimeout(() => {
           toast.style.animation = 'fade-out 1s ease-out forwards';
-          setTimeout(() => toast.remove(), 1000); // Tăng thời gian fade-out lên 1 giây
-        }, 10000); // Tăng thời gian hiển thị từ 3000 lên 10000 (10 giây)
+          setTimeout(() => toast.remove(), 1000);
+        }, 10000);
       }
     </script>
   </body>
