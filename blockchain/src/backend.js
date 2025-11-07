@@ -212,25 +212,69 @@ const { CID } = require("multiformats/cid");
 const { sha256 } = require("multiformats/hashes/sha2");
 const { base58btc } = require("multiformats/bases/base58");
 
-const BUCKET_NAME = "nckh";
+//const BUCKET_NAME = "nckh"
+const BUCKET_NAME = process.env.BUCKET_NAME; //BUCKET_NAME
+
+//Upload file to local storage (máy cục bộ server) and return public URL
+// async function uploadFile(file) {
+//   try {
+//     let relativePath = path.relative(path.join(__dirname, "public"), file.path);
+//     // Chuẩn hóa path: Thay tất cả '\' bằng '/' để phù hợp với URL web
+//     relativePath = relativePath.replace(/\\/g, "/");
+
+//     const publicUrl = `/${relativePath}`;
+//     console.log(`File uploaded successfully: ${publicUrl}`);
+//     return {
+//       success: true,
+//       ipfsUrl: publicUrl
+//     };
+//   } catch (error) {
+//     console.error("Lỗi khi xử lý file:", error);
+//     throw error;
+//   }
+// }
+
+//Upload file to S3 and return public URL
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
+});
 
 async function uploadFile(file) {
   try {
-    let relativePath = path.relative(
-      path.join(__dirname, "public"),
-      file.path
-    );
-    // Chuẩn hóa path: Thay tất cả '\' bằng '/' để phù hợp với URL web
-    relativePath = relativePath.replace(/\\/g, '/');
-    
-    const publicUrl = `/${relativePath}`;
-    console.log(`File uploaded successfully: ${publicUrl}`);
+    // Tạo tên file duy nhất (dựa trên thời gian và tên gốc)
+    const fileName = `uploads/${Date.now()}_${file.originalname}`;
+
+    // Chuẩn bị params cho S3
+    const params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: fileName, // Đường dẫn file trên S3
+      Body: fs.createReadStream(file.path), // Đọc file từ local (do multer lưu tạm)
+      ContentType: file.mimetype // Loại file (image/jpeg, v.v.)
+    };
+
+    // Upload file lên S3
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+
+    // Tạo URL công khai
+    const publicUrl = `https://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    console.log(`File uploaded successfully to S3: ${publicUrl}`);
+
+    // Xóa file tạm trên local (nếu không cần giữ lại)
+    if (fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
+
     return {
       success: true,
-      ipfsUrl: publicUrl
+      ipfsUrl: publicUrl // Giữ key "ipfsUrl" để tương thích với code hiện tại
     };
   } catch (error) {
-    console.error("Lỗi khi xử lý file:", error);
+    console.error("Lỗi khi upload file lên S3:", error);
     throw error;
   }
 }
@@ -2657,65 +2701,73 @@ function setupRoutes(app, db) {
     express.static(path.join(__dirname, "public", "uploads"))
   );
 
-
   //New
   app.get("/api/all-batches-by-region", async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: "Người dùng chưa đăng nhập" });
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Người dùng chưa đăng nhập" });
+      }
+
+      const userId = req.session.userId;
+      console.log("Đang lấy tất cả lô hàng theo khu vực cho userId:", userId);
+
+      // Lấy region của user
+      const [user] = await db.query(
+        "SELECT region_id FROM users WHERE uid = ?",
+        [userId]
+      );
+      if (user.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "Không tìm thấy thông tin người dùng" });
+      }
+      const regionId = user[0].region_id;
+
+      // Lấy tất cả producers trong cùng region
+      const [producers] = await db.query(
+        "SELECT uid, name FROM users WHERE role_id = 1 AND region_id = ?",
+        [regionId]
+      );
+
+      // Lấy tất cả batches của từng producer
+      let allBatches = [];
+      for (const producer of producers) {
+        const producerId = producer.uid;
+        const producerName = producer.name;
+
+        const batches = await traceabilityContract.methods
+          .getBatchesByProducer(producerId)
+          .call();
+
+        const convertedBatches = convertBigIntToString(batches);
+
+        const formattedBatches = convertedBatches.map((batch) => ({
+          batchId: batch.batchId,
+          name: batch.name,
+          producerName: producerName,
+          quantity: batch.quantity,
+          productionDate: batch.productionDate,
+          productImageUrls: batch.productImageUrls,
+          certificateImageUrl: batch.certificateImageUrl,
+          status: translateStatus(batch.status) // Hàm translateStatus đã có sẵn trong backend.js
+        }));
+
+        allBatches = [...allBatches, ...formattedBatches];
+      }
+
+      // Sắp xếp theo ngày tạo (mới nhất trước)
+      allBatches.sort(
+        (a, b) => Number(b.productionDate) - Number(a.productionDate)
+      );
+
+      res.status(200).json(allBatches);
+    } catch (error) {
+      console.error("Lỗi khi lấy tất cả lô hàng theo khu vực:", error);
+      res.status(500).json({
+        error: "Không thể lấy tất cả lô hàng theo khu vực: " + error.message
+      });
     }
-
-    const userId = req.session.userId;
-    console.log("Đang lấy tất cả lô hàng theo khu vực cho userId:", userId);
-
-    // Lấy region của user
-    const [user] = await db.query("SELECT region_id FROM users WHERE uid = ?", [userId]);
-    if (user.length === 0) {
-      return res.status(404).json({ error: "Không tìm thấy thông tin người dùng" });
-    }
-    const regionId = user[0].region_id;
-
-    // Lấy tất cả producers trong cùng region
-    const [producers] = await db.query("SELECT uid, name FROM users WHERE role_id = 1 AND region_id = ?", [regionId]);
-
-    // Lấy tất cả batches của từng producer
-    let allBatches = [];
-    for (const producer of producers) {
-      const producerId = producer.uid;
-      const producerName = producer.name;
-
-      const batches = await traceabilityContract.methods
-        .getBatchesByProducer(producerId)
-        .call();
-
-      const convertedBatches = convertBigIntToString(batches);
-
-      const formattedBatches = convertedBatches.map((batch) => ({
-        batchId: batch.batchId,
-        name: batch.name,
-        producerName: producerName,
-        quantity: batch.quantity,
-        productionDate: batch.productionDate,
-        productImageUrls: batch.productImageUrls,
-        certificateImageUrl: batch.certificateImageUrl,
-        status: translateStatus(batch.status)  // Hàm translateStatus đã có sẵn trong backend.js
-      }));
-
-      allBatches = [...allBatches, ...formattedBatches];
-    }
-
-    // Sắp xếp theo ngày tạo (mới nhất trước)
-    allBatches.sort((a, b) => Number(b.productionDate) - Number(a.productionDate));
-
-    res.status(200).json(allBatches);
-  } catch (error) {
-    console.error("Lỗi khi lấy tất cả lô hàng theo khu vực:", error);
-    res.status(500).json({
-      error: "Không thể lấy tất cả lô hàng theo khu vực: " + error.message
-    });
-  }
-});
-
+  });
 }
 
 module.exports = {
