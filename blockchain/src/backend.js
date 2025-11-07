@@ -216,10 +216,13 @@ const BUCKET_NAME = "nckh";
 
 async function uploadFile(file) {
   try {
-    const relativePath = path.relative(
+    let relativePath = path.relative(
       path.join(__dirname, "public"),
       file.path
     );
+    // Chuẩn hóa path: Thay tất cả '\' bằng '/' để phù hợp với URL web
+    relativePath = relativePath.replace(/\\/g, '/');
+    
     const publicUrl = `/${relativePath}`;
     console.log(`File uploaded successfully: ${publicUrl}`);
     return {
