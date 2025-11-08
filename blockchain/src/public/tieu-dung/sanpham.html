@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
     <title>Trang sản phẩm</title>
     <!-- Bootstrap CSS -->
     <link
@@ -11,8 +11,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/trangchu.css" />
-    <link rel="stylesheet" href="../css/nav-bar.css">
-    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/nav-bar.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
     <link rel="stylesheet" href="../css/sanpham.css" />
     <link rel="stylesheet" href="../css/chatbox.css" />
     <!-- <link rel="stylesheet" href="../css/trangcanhan.css" /> -->
@@ -20,7 +20,7 @@
       href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
       rel="stylesheet"
     />
-    
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -87,15 +87,28 @@
     </style>
   </head>
   <body>
-    <nav class="navbar custom-navbar navbar-expand-lg navbar-light bg-light custom-navbar-height">
+    <nav
+      class="navbar custom-navbar navbar-expand-lg navbar-light bg-light custom-navbar-height"
+    >
       <div class="logo-home">
         <a href="trangchu.html">
-          <img src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="logo" class="logo" />
+          <img
+            src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+            alt="logo"
+            class="logo"
+          />
         </a>
       </div>
       <a class="navbar-brand" href="#">Trang chủ</a>
-      <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <button
+        class="navbar-toggler ml-auto"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -112,7 +125,7 @@
           <li class="nav-item">
             <a class="nav-link" href="./allnhakiemduyet.html">Nhà kiểm duyệt</a>
           </li>
-          
+
           <li class="nav-item">
             <a class="nav-link" href="./account/dangnhap.html">Đăng nhập</a>
           </li>
@@ -122,9 +135,11 @@
     <div class="container">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="./allsanpham.html">Sản phẩm</a></li>
+          <li class="breadcrumb-item">
+            <a href="./allsanpham.html">Sản phẩm</a>
+          </li>
           <li class="breadcrumb-item active" aria-current="page">
-            Bưởi da xanh
+            Sầu riêng Ri6
           </li>
         </ol>
       </nav>
@@ -142,10 +157,10 @@
                   />
                 </div>
               </div>
-              
+
               <div class="product-info">
                 <h2 class="product-name text-center"></h2>
-                
+
                 <!-- Thông tin cơ bản -->
                 <div class="product-meta text-center">
                   <div class="meta-item">
@@ -193,13 +208,18 @@
         <div class="row">
           <div class="col-md-4">
             <h3>Thông tin liên hệ</h3>
-            <p>Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ</p>
+            <p>
+              Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ
+            </p>
             <p>Điện thoại: 0337267892</p>
             <p>Email: thob2203474@student.ctu.edu.vn</p>
           </div>
           <div class="col-md-4 d-none d-md-block">
             <h3>Về chúng tôi</h3>
-            <p> Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng bằng công nghệ Blockchain.</p>
+            <p>
+              Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng
+              bằng công nghệ Blockchain.
+            </p>
           </div>
           <div class="col-md-4 d-none d-md-block">
             <h3>Theo dõi chúng tôi</h3>
@@ -281,89 +301,94 @@
 
     <script>
       // Hàm để cập nhật breadcrumb
-        function updateBreadcrumb(productName) {
-          const breadcrumbItem = document.querySelector('.breadcrumb-item.active');
-          if (breadcrumbItem) {
-            breadcrumbItem.textContent = productName;
+      function updateBreadcrumb(productName) {
+        const breadcrumbItem = document.querySelector(
+          ".breadcrumb-item.active"
+        );
+        if (breadcrumbItem) {
+          breadcrumbItem.textContent = productName;
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get("id");
+
+        if (productId) {
+          try {
+            const response = await fetch(`/api/product/${productId}`);
+            const product = await response.json();
+
+            if (response.ok) {
+              // Cập nhật hình ảnh sản phẩm
+              const productImg = document.querySelector(".product-img");
+              if (productImg && product.img) {
+                productImg.src = `${product.img}`;
+                productImg.alt = product.product_name;
+              }
+
+              // Cập nhật tên sản phẩm
+              const productName = document.querySelector(".product-name");
+              if (productName) {
+                productName.textContent = product.product_name;
+              }
+
+              // Cập nhật breadcrumb
+              updateBreadcrumb(product.product_name);
+
+              // Cập nhật mã sản phẩm
+              const productId = document.querySelector(".product-id");
+              if (productId) {
+                productId.textContent = product.product_id;
+              }
+
+              // Cập nhật giá
+              const productPrice = document.querySelector(".product-price");
+              if (productPrice) {
+                productPrice.textContent = `${new Intl.NumberFormat(
+                  "vi-VN"
+                ).format(product.price)}đ/kg`;
+              }
+
+              // Cập nhật mô tả
+              const productDesc = document.querySelector(".mota p");
+              if (productDesc) {
+                productDesc.textContent = product.description;
+              }
+
+              // Cập nhật công dụng
+              const productUses = document.querySelector(".congdung ul");
+              if (productUses && product.uses) {
+                productUses.innerHTML = product.uses
+                  .split("\n")
+                  .map((use) => `<li>${use.trim()}</li>`)
+                  .filter((use) => use !== "<li></li>")
+                  .join("");
+              }
+
+              // Cập nhật quy trình
+              const productProcess = document.querySelector(".quytrinh ul");
+              if (productProcess && product.process) {
+                productProcess.innerHTML = product.process
+                  .split("\n")
+                  .map((step) => `<li>${step.trim()}</li>`)
+                  .filter((step) => step !== "<li></li>")
+                  .join("");
+              }
+            } else {
+              console.error("Lỗi khi lấy thông tin sản phẩm:", product.error);
+              // Hiển thị thông báo lỗi cho người dùng
+              alert("Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.");
+            }
+          } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+            // Hiển thị thông báo lỗi cho người dùng
+            alert(
+              "Đã xảy ra lỗi khi tải thông tin sản phẩm. Vui lòng thử lại sau."
+            );
           }
         }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-          const urlParams = new URLSearchParams(window.location.search);
-          const productId = urlParams.get("id");
-
-          if (productId) {
-            try {
-              const response = await fetch(`/api/product/${productId}`);
-              const product = await response.json();
-
-              if (response.ok) {
-                // Cập nhật hình ảnh sản phẩm
-                const productImg = document.querySelector(".product-img");
-                if (productImg && product.img) {
-                  productImg.src = `${product.img}`;
-                  productImg.alt = product.product_name;
-                }
-
-                // Cập nhật tên sản phẩm
-                const productName = document.querySelector(".product-name");
-                if (productName) {
-                  productName.textContent = product.product_name;
-                }
-
-                // Cập nhật breadcrumb
-                updateBreadcrumb(product.product_name);
-
-                // Cập nhật mã sản phẩm
-                const productId = document.querySelector(".product-id");
-                if (productId) {
-                  productId.textContent = product.product_id;
-                }
-
-                // Cập nhật giá
-                const productPrice = document.querySelector(".product-price");
-                if (productPrice) {
-                  productPrice.textContent = `${new Intl.NumberFormat('vi-VN').format(product.price)}đ/kg`;
-                }
-
-                // Cập nhật mô tả
-                const productDesc = document.querySelector(".mota p");
-                if (productDesc) {
-                  productDesc.textContent = product.description;
-                }
-
-                // Cập nhật công dụng
-                const productUses = document.querySelector(".congdung ul");
-                if (productUses && product.uses) {
-                  productUses.innerHTML = product.uses
-                    .split("\n")
-                    .map(use => `<li>${use.trim()}</li>`)
-                    .filter(use => use !== "<li></li>")
-                    .join("");
-                }
-
-                // Cập nhật quy trình
-                const productProcess = document.querySelector(".quytrinh ul");
-                if (productProcess && product.process) {
-                  productProcess.innerHTML = product.process
-                    .split("\n")
-                    .map(step => `<li>${step.trim()}</li>`)
-                    .filter(step => step !== "<li></li>")
-                    .join("");
-                }
-
-              } else {
-                console.error("Lỗi khi lấy thông tin sản phẩm:", product.error);
-                // Hiển thị thông báo lỗi cho người dùng
-                alert("Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.");
-              }
-            } catch (error) {
-              console.error("Lỗi khi gọi API:", error);
-              // Hiển thị thông báo lỗi cho người dùng
-              alert("Đã xảy ra lỗi khi tải thông tin sản phẩm. Vui lòng thử lại sau.");
-            }
-          }
-        });
+      });
     </script>
   </body>
 </html>
