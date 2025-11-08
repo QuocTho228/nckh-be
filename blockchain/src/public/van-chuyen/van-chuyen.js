@@ -7,13 +7,13 @@ let fileSelected;
 let scanButton;
 let qrReader;
 
-// Thêm các hàm này vào đầu file, sau các khai báo biến toàn cục
+// Hàm định nghĩa hành động vận chuyển
 function translateAction(action) {
   const actions = {
     0: "Bắt đầu vận chuyển",
     1: "Tạm dừng vận chuyển",
     2: "Tiếp tục vận chuyển",
-    3: "Hoàn thành vận chuyển",
+    3: "Hoàn thành vận chuyển"
   };
   return actions[action] || action;
 }
@@ -21,7 +21,7 @@ function translateAction(action) {
 function translateParticipantType(type) {
   const types = {
     0: "Người vận chuyển",
-    1: "Kho",
+    1: "Kho"
   };
   return types[type] || type;
 }
@@ -40,38 +40,59 @@ async function displayTransportHistory(sscc) {
       throw new Error("Lịch sử vận chuyển không phải là một mảng");
     }
 
-    let historyHTML =
-      '<h3>Lịch sử vận chuyển</h3><ul class="transport-history">';
-    history.forEach((event) => {
+    let historyHTML = `
+      <h3>Lịch sử vận chuyển</h3>
+      <div class="timeline">
+    `;
+
+    history.forEach((event, index) => {
       // Xử lý địa chỉ để loại bỏ phần trùng lặp
       const addressParts = event.transporterAddress.split(", ");
       const uniqueAddressParts = [...new Set(addressParts)];
       const formattedAddress = uniqueAddressParts.join(", ");
 
+      // Thêm class để tạo hiệu ứng xen kẽ (trái/phải)
+      const positionClass =
+        index % 2 === 0 ? "timeline-left" : "timeline-right";
+
       historyHTML += `
-                <li class="transport-event">
-                    <div class="event-details">
-                        <strong>Hành động:</strong> ${event.action}<br>
-                        <strong>Thời gian:</strong> ${event.timestamp}<br>
-                        <strong>Loại người tham gia:</strong> ${
-                          event.participantType
-                        }<br>
-                    </div>
-                    <div class="transporter-info">
-                        <strong>Người vận chuyển:</strong> ${
-                          event.transporterName || "Không có thông tin"
-                        }<br>
-                        <strong>Số điện thoại:</strong> ${
-                          event.transporterPhone || "Không có thông tin"
-                        }<br>
-                        <strong>Địa chỉ:</strong> ${
-                          formattedAddress || "Không có thông tin"
-                        }
-                    </div>
-                </li>
-            `;
+        <div class="timeline-item ${positionClass}">
+          <div class="timeline-content">
+            <div class="timeline-dot"></div>
+            <div class="timeline-details">
+              <h4>${translateAction(event.action)}</h4>
+              <p><strong>Thời gian:</strong> ${new Date(
+                event.timestamp
+              ).toLocaleString("vi-VN", {
+                hour12: false,
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+              })}</p>
+              <p><strong>Loại người tham gia:</strong> ${translateParticipantType(
+                event.participantType
+              )}</p>
+              <p><strong>Người vận chuyển:</strong> ${
+                event.transporterName || "Không có thông tin"
+              }</p>
+              <p><strong>Số điện thoại:</strong> ${
+                event.transporterPhone || "Không có thông tin"
+              }</p>
+              <p><strong>Địa chỉ:</strong> ${
+                formattedAddress || "Không có thông tin"
+              }</p>
+            </div>
+          </div>
+        </div>
+      `;
     });
-    historyHTML += "</ul>";
+
+    historyHTML += `
+      </div>
+    `;
 
     const transportHistoryElement = document.getElementById("transportHistory");
     if (transportHistoryElement) {
@@ -89,6 +110,7 @@ function displayBatchInfo(info) {
   console.log("Displaying batch info:", info);
   const batchInfoDiv = document.getElementById("batchInfo");
   const batchDetailsDiv = document.getElementById("batchDetails");
+  const transportActionsDiv = document.getElementById("transportActions");
 
   let tableHTML = '<table class="batch-info-table">';
 
@@ -117,7 +139,6 @@ function displayBatchInfo(info) {
   addRow("Địa chỉ", info.producer.address);
   addRow("Số điện thoại", info.producer.phone);
 
-  // Hiển thị nút xem hình ảnh sản phẩm
   if (info.productImageUrls && Object.keys(info.productImageUrls).length > 0) {
     const imageCount = Object.keys(info.productImageUrls).length;
     addRow(
@@ -126,7 +147,6 @@ function displayBatchInfo(info) {
     );
   }
 
-  // Hiển thị nút xem giấy chứng nhận
   if (info.certificateImageUrl) {
     addRow(
       "Giấy chứng nhận",
@@ -135,33 +155,42 @@ function displayBatchInfo(info) {
   }
 
   tableHTML += "</table>";
+  batchDetailsDiv.innerHTML = tableHTML;
 
-  // Thêm nút cập nhật trạng thái vận chuyển
-  let transportButton = "";
-  if (info.detailedTransportStatus === "Chưa bắt đầu" || info.detailedTransportStatus === "Tạm dừng") {
-    transportButton = `
-      <button onclick="updateTransportStatus('${info.sscc}', 'Bat dau van chuyen')" class="btn btn-success mt-3">
+  // Thêm các nút hành động với icon vào transportActionsDiv
+  let transportButtonsHTML = "";
+  if (
+    info.detailedTransportStatus === "Chưa bắt đầu" ||
+    info.detailedTransportStatus === "Tạm dừng"
+  ) {
+    transportButtonsHTML = `
+      <button onclick="updateTransportStatus('${info.sscc}', 'Bat dau van chuyen')" class="btn btn-success">
+        <i class="fas fa-play-circle"></i>
         <span class="button-text">Bắt đầu vận chuyển</span>
         <div class="loading-spinner"></div>
       </button>`;
   } else if (info.detailedTransportStatus === "Đang vận chuyển") {
-    transportButton = `
-      <button onclick="updateTransportStatus('${info.sscc}', 'Tam dung van chuyen')" class="btn btn-warning mt-3">
+    transportButtonsHTML = `
+      <button onclick="updateTransportStatus('${info.sscc}', 'Tam dung van chuyen')" class="btn btn-warning">
+        <i class="fas fa-pause-circle"></i>
         <span class="button-text">Tạm dừng vận chuyển</span>
         <div class="loading-spinner"></div>
       </button>
-      <button onclick="updateTransportStatus('${info.sscc}', 'Hoan thanh van chuyen')" class="btn btn-success mt-3">
+      <button onclick="updateTransportStatus('${info.sscc}', 'Hoan thanh van chuyen')" class="btn btn-success">
+        <i class="fas fa-check-circle"></i>
         <span class="button-text">Hoàn thành vận chuyển</span>
         <div class="loading-spinner"></div>
       </button>`;
   } else if (info.detailedTransportStatus === "Đã giao") {
-    //khi đã giao thì không thể bắt đầu vận chuyển mới
-    transportButton = `<button onclick="updateTransportStatus('${info.sscc}', 'Bat dau van chuyen')" class="btn btn-success mt-3">Bắt đầu vận chuyển mới</button>`;
+    transportButtonsHTML = `
+      <button onclick="updateTransportStatus('${info.sscc}', 'Bat dau van chuyen')" class="btn btn-success">
+        <i class="fas fa-redo-alt"></i> Bắt đầu vận chuyển mới
+      </button>`;
   }
 
-  tableHTML += transportButton;
-  batchDetailsDiv.innerHTML = tableHTML;
+  transportActionsDiv.innerHTML = transportButtonsHTML;
   batchInfoDiv.style.display = "block";
+  transportActionsDiv.style.display = transportButtonsHTML ? "flex" : "none";
 
   displayTransportHistory(info.sscc);
 }
@@ -194,18 +223,18 @@ function closeCompletionModalAndRefresh() {
 
 async function updateTransportStatus(sscc, action) {
   console.log("Updating transport status:", { sscc, action });
-  
+
   // Tìm và thêm loading state cho nút được click
-  const clickedButton = event.target.closest('button');
-  clickedButton.classList.add('btn-loading');
-  
+  const clickedButton = event.target.closest("button");
+  clickedButton.classList.add("btn-loading");
+
   try {
     const response = await fetch("/api/accept-transport", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ sscc, action }),
+      body: JSON.stringify({ sscc, action })
     });
 
     const data = await response.json();
@@ -224,7 +253,7 @@ async function updateTransportStatus(sscc, action) {
     );
   } finally {
     // Xóa loading state
-    clickedButton.classList.remove('btn-loading');
+    clickedButton.classList.remove("btn-loading");
   }
 }
 
@@ -239,74 +268,238 @@ function showTransportCompletionMessage() {
         <p class="mb-0">Trang sẽ tự động tải lại sau 5 giây.</p>
     `;
 
-    // Ẩn thông tin lô hàng và các nút hành động nếu có
-    const batchInfoDiv = document.getElementById("batchInfo");
-    const transportActionsDiv = document.getElementById("transportActions");
-    if (batchInfoDiv) batchInfoDiv.style.display = "none";
-    if (transportActionsDiv) transportActionsDiv.style.display = "none";
+  // Ẩn thông tin lô hàng và các nút hành động nếu có
+  const batchInfoDiv = document.getElementById("batchInfo");
+  const transportActionsDiv = document.getElementById("transportActions");
+  if (batchInfoDiv) batchInfoDiv.style.display = "none";
+  if (transportActionsDiv) transportActionsDiv.style.display = "none";
 
-    // Chèn thông báo vào đầu trang
-    const container = document.querySelector(".container");
-    container.insertBefore(successMessage, container.firstChild);
+  // Chèn thông báo vào đầu trang
+  const container = document.querySelector(".container");
+  container.insertBefore(successMessage, container.firstChild);
 
-    // Cuộn trang đến thông báo
-    successMessage.scrollIntoView({ behavior: "smooth" });
+  // Cuộn trang đến thông báo
+  successMessage.scrollIntoView({ behavior: "smooth" });
 
-    // Đợi 2 giây và sau đó tải lại trang
-    setTimeout(() => {
-      window.location.reload();
-    }, 5000);
+  // Đợi 2 giây và sau đó tải lại trang
+  setTimeout(() => {
+    window.location.reload();
+  }, 5000);
 }
 
+let currentImages = [];
+let currentImageIndex = 0;
+
+// Hàm hiển thị modal ảnh
 function openImageModal(src) {
   console.log("Opening modal for:", src);
   const modal = document.getElementById("imageModal");
   const modalImg = document.getElementById("modalImage");
-  modal.style.display = "block";
-  modalImg.src = src;
+  const modalContent = document.getElementById("modalContent");
 
-  // Thêm event listener để đóng modal khi nhấn vào overlay
-  modal.querySelector(".modal-overlay").addEventListener("click", closeModal);
+  // Reset nội dung
+  modalContent.innerHTML = "";
+  modalImg.src = src;
+  modalImg.style.display = "block";
+  modal.style.display = "flex";
+
+  // Thêm nút tải về
+  let downloadBtn = modal.querySelector(".download-btn");
+  if (!downloadBtn) {
+    downloadBtn = document.createElement("button");
+    downloadBtn.className = "download-btn";
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Tải về';
+    modalContent.appendChild(downloadBtn); // Thêm vào modalContent
+  }
+  downloadBtn.style.display = "block"; // Đảm bảo nút hiển thị
+
+  downloadBtn.onclick = function (e) {
+    e.stopPropagation();
+    const fileName = src.split("/").pop() || `image-${Date.now()}.jpg`;
+    const link = document.createElement("a");
+    link.href = src;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Đóng modal khi click overlay
+  modal
+    .querySelector(".modal-overlay")
+    .addEventListener("click", closeModal, { once: true });
 }
 
+// Hàm hiển thị gallery ảnh
 function openImageGallery(type) {
   console.log("Opening gallery for:", type);
   console.log("Batch Info:", batchInfo);
   const modal = document.getElementById("imageModal");
   const modalContent = document.getElementById("modalContent");
-  modal.style.display = "block";
+  const modalImg = document.getElementById("modalImage");
 
-  let galleryHTML = '<div class="image-gallery">';
+  // Reset nội dung
+  modalContent.innerHTML = "";
+  modalImg.style.display = "none";
+  currentImages = [];
+  currentImageIndex = 0;
+
+  // Lấy danh sách ảnh
   const images =
     type === "product" ? batchInfo.productImageUrls : batchInfo.batchImageUrls;
-
-  console.log("Images:", images);
-
-  if (images && Object.keys(images).length > 0) {
-    Object.values(images).forEach((url) => {
-      console.log("Adding image:", url);
-      galleryHTML += `<img src="${url}" alt="${type} image" class="gallery-image" onclick="expandImage('${url}')">`;
+  if (images && Array.isArray(images) && images.length > 0) {
+    currentImages = images;
+    let galleryHTML = '<div class="image-gallery">';
+    currentImages.forEach((url, index) => {
+      galleryHTML += `<img src="${url}" alt="${type} image" class="gallery-image" onclick="expandImage(${index})">`;
     });
+    galleryHTML += "</div>";
+    modalContent.innerHTML = galleryHTML;
+
+    // Thêm nút điều hướng nếu có nhiều hơn 1 ảnh
+    if (currentImages.length > 1) {
+      let prevBtn = modal.querySelector(".prev-btn");
+      let nextBtn = modal.querySelector(".next-btn");
+      if (!prevBtn) {
+        prevBtn = document.createElement("button");
+        prevBtn.className = "prev-btn";
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        modal.appendChild(prevBtn);
+      }
+      if (!nextBtn) {
+        nextBtn = document.createElement("button");
+        nextBtn.className = "next-btn";
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        modal.appendChild(nextBtn);
+      }
+      prevBtn.style.display = "block";
+      nextBtn.style.display = "block";
+      prevBtn.onclick = () => {
+        currentImageIndex =
+          (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        expandImage(currentImageIndex);
+      };
+      nextBtn.onclick = () => {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        expandImage(currentImageIndex);
+      };
+    }
+
+    // Hiển thị ảnh đầu tiên
+    if (currentImages.length > 0) {
+      expandImage(0); // Gọi expandImage để hiển thị ảnh và nút tải về
+    }
+  } else if (
+    images &&
+    typeof images === "object" &&
+    Object.keys(images).length > 0
+  ) {
+    currentImages = Object.values(images);
+    let galleryHTML = '<div class="image-gallery">';
+    currentImages.forEach((url, index) => {
+      galleryHTML += `<img src="${url}" alt="${type} image" class="gallery-image" onclick="expandImage(${index})">`;
+    });
+    galleryHTML += "</div>";
+    modalContent.innerHTML = galleryHTML;
+
+    // Thêm nút điều hướng nếu có nhiều hơn 1 ảnh
+    if (currentImages.length > 1) {
+      let prevBtn = modal.querySelector(".prev-btn");
+      let nextBtn = modal.querySelector(".next-btn");
+      if (!prevBtn) {
+        prevBtn = document.createElement("button");
+        prevBtn.className = "prev-btn";
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        modal.appendChild(prevBtn);
+      }
+      if (!nextBtn) {
+        nextBtn = document.createElement("button");
+        nextBtn.className = "next-btn";
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        modal.appendChild(nextBtn);
+      }
+      prevBtn.style.display = "block";
+      nextBtn.style.display = "block";
+      prevBtn.onclick = () => {
+        currentImageIndex =
+          (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        expandImage(currentImageIndex);
+      };
+      nextBtn.onclick = () => {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        expandImage(currentImageIndex);
+      };
+    }
+
+    // Hiển thị ảnh đầu tiên
+    if (currentImages.length > 0) {
+      expandImage(0); // Gọi expandImage để hiển thị ảnh và nút tải về
+    }
   } else {
-    galleryHTML += "<p>Không có hình ảnh để hiển thị.</p>";
+    modalContent.innerHTML = "<p>Không có hình ảnh để hiển thị.</p>";
   }
 
-  galleryHTML += "</div>";
-  modalContent.innerHTML = galleryHTML;
+  modal.style.display = "flex"; // Sử dụng flex để căn giữa
 
-  // Thêm event listener để đóng modal khi nhấn vào overlay
-  modal.querySelector(".modal-overlay").addEventListener("click", closeModal);
+  // Đóng modal khi click overlay
+  modal
+    .querySelector(".modal-overlay")
+    .addEventListener("click", closeModal, { once: true });
 }
 
-function expandImage(src) {
+// Hàm mở rộng ảnh trong gallery
+function expandImage(index) {
+  const modal = document.getElementById("imageModal");
   const modalImg = document.getElementById("modalImage");
-  modalImg.src = src;
+  const modalContent = document.getElementById("modalContent");
+
+  currentImageIndex = index;
+  modalImg.src = currentImages[index];
   modalImg.style.display = "block";
+
+  // Ẩn gallery
+  const gallery = modalContent.querySelector(".image-gallery");
+  if (gallery) {
+    gallery.style.display = "none";
+  }
+
+  // Tạo hoặc tìm nút tải về
+  let downloadBtn = modalContent.querySelector(".download-btn");
+  if (!downloadBtn) {
+    downloadBtn = document.createElement("button");
+    downloadBtn.className = "download-btn";
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Tải về';
+    modalContent.appendChild(downloadBtn); // Thêm vào modalContent
+  }
+  downloadBtn.style.display = "block"; // Hiển thị nút
+
+  // Cập nhật sự kiện tải về
+  downloadBtn.onclick = function (e) {
+    e.stopPropagation();
+    const src = currentImages[index];
+    const fileName = src.split("/").pop() || `image-${Date.now()}.jpg`;
+    const link = document.createElement("a");
+    link.href = src;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 }
 
+// Hàm đóng modal
 function closeModal() {
   const modal = document.getElementById("imageModal");
+  const modalImg = document.getElementById("modalImage");
+  const modalContent = document.getElementById("modalContent");
   modal.style.display = "none";
+  modalImg.src = "";
+  modalImg.style.display = "none";
+  modalContent.innerHTML = ""; // Xóa toàn bộ nội dung, bao gồm download-btn
+  const prevBtn = modal.querySelector(".prev-btn");
+  const nextBtn = modal.querySelector(".next-btn");
+  if (prevBtn) prevBtn.style.display = "none";
+  if (nextBtn) nextBtn.style.display = "none";
 }
 
 // Event listener cho DOMContentLoaded
@@ -318,31 +511,31 @@ document.addEventListener("DOMContentLoaded", async function () {
   qrReader = document.getElementById("qr-reader");
 
   if (startCameraButton) {
-    startCameraButton.addEventListener("click", async function() {
+    startCameraButton.addEventListener("click", async function () {
       // Nếu đang quét, dừng quét
       if (html5QrCode && html5QrCode.isScanning) {
         stopScanner();
         return;
       }
-      
+
       // Nếu chưa quét, bắt đầu quét
       try {
         // Yêu cầu quyền camera khi nhấn nút này
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: "environment" } 
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
         });
         // Dừng stream ngay sau khi được cấp quyền
-        stream.getTracks().forEach(track => track.stop());
-        
+        stream.getTracks().forEach((track) => track.stop());
+
         // Bắt đầu quét sau khi được cấp quyền
         startScanner();
       } catch (err) {
         console.error("Camera permission error:", err);
-        alert('Vui lòng cấp quyền camera trong cài đặt trình duyệt của bạn.');
+        alert("Vui lòng cấp quyền camera trong cài đặt trình duyệt của bạn.");
       }
     });
   }
-  
+
   if (qrInput) {
     qrInput.addEventListener("change", handleFileInput);
   }
@@ -377,12 +570,12 @@ document.addEventListener("DOMContentLoaded", async function () {
       );
 
       // Đổi text của nút thành "Dừng quét"
-      startCameraButton.textContent = "Dừng quét";
+      startCameraButton.innerHTML =
+        '<i class="fas fa-stop-circle"></i> Dừng quét';
       scanButton.disabled = true;
-
     } catch (err) {
       console.error("Back camera error:", err);
-      
+
       // Thử camera trước nếu camera sau không được
       try {
         await html5QrCode.start(
@@ -398,11 +591,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             handleQRCode(decodedText);
           }
         );
-        
+
         // Đổi text của nút thành "Dừng quét"
-        startCameraButton.textContent = "Dừng quét";
+        startCameraButton.innerHTML =
+          '<i class="fas fa-stop-circle"></i> Dừng quét';
         scanButton.disabled = true;
-        
       } catch (frontErr) {
         console.error("Front camera error:", frontErr);
         alert("Không thể truy cập camera. Vui lòng kiểm tra quyền và thử lại.");
@@ -422,7 +615,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         html5QrCode = null;
       }
       qrReader.style.display = "none";
-      startCameraButton.textContent = "Quét QR bằng camera";
+      startCameraButton.innerHTML =
+        '<i class="fas fa-camera"></i> Quét QR bằng camera';
       scanButton.disabled = false;
     } catch (err) {
       console.error("Stop scanner error:", err);
@@ -500,38 +694,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log("Đã phát hiện mã QR:", decodedText);
     // Hiển thị loading spinner
     showLoadingSpinner();
-    
+
     // Trích xuất SSCC từ URL
     const sscc = extractSSCC(decodedText);
     if (sscc) {
-        console.log("Đã trích xuất SSCC:", sscc);
-        fetchBatchInfoBySSCC(sscc)
-            .finally(() => {
-                // Ẩn loading spinner khi hoàn thành (dù thành công hay thất bại)
-                hideLoadingSpinner();
-            });
-    } else {
-        console.error("Không thể trích xuất SSCC từ URL:", decodedText);
-        alert("Mã QR không hợp lệ hoặc không chứa SSCC");
+      console.log("Đã trích xuất SSCC:", sscc);
+      fetchBatchInfoBySSCC(sscc).finally(() => {
+        // Ẩn loading spinner khi hoàn thành (dù thành công hay thất bại)
         hideLoadingSpinner();
+      });
+    } else {
+      console.error("Không thể trích xuất SSCC từ URL:", decodedText);
+      alert("Mã QR không hợp lệ hoặc không chứa SSCC");
+      hideLoadingSpinner();
     }
   }
 
   function showLoadingSpinner() {
-    if (!document.getElementById('loadingSpinner')) {
-        const spinner = document.createElement('div');
-        spinner.id = 'loadingSpinner';
-        spinner.className = 'loading-spinner';
-        spinner.innerHTML = '<div class="spinner"></div>';
-        document.body.appendChild(spinner);
+    if (!document.getElementById("loadingSpinner")) {
+      const spinner = document.createElement("div");
+      spinner.id = "loadingSpinner";
+      spinner.className = "loading-spinner";
+      spinner.innerHTML = '<div class="spinner"></div>';
+      document.body.appendChild(spinner);
     }
-    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById("loadingSpinner").style.display = "block";
   }
 
   function hideLoadingSpinner() {
-    const spinner = document.getElementById('loadingSpinner');
+    const spinner = document.getElementById("loadingSpinner");
     if (spinner) {
-        spinner.style.display = 'none';
+      spinner.style.display = "none";
     }
   }
 
@@ -585,6 +778,3 @@ function showActionMessage(message, type) {
     }, 300); // Đợi cho animation kết thúc
   }, 3000);
 }
-
-
-
