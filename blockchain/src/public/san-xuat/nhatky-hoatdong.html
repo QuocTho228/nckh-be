@@ -50,8 +50,8 @@
       /* Modal content adjustments */
       .modal-content {
         position: relative;
-        max-width: 70%;
-        max-height: 80vh;
+        max-width: 100%;
+        max-height: 200vh;
         margin: auto;
         animation: modalFadeIn 0.3s ease;
         text-align: center;
@@ -423,7 +423,11 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addActivityLogModalLabel">
+            <h5
+              class="modal-title"
+              id="addActivityLogModalLabel"
+              style="text-align: center"
+            >
               Thêm nhật ký hoạt động
             </h5>
             <button
