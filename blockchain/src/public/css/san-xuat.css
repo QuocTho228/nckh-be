@@ -292,8 +292,8 @@ body.menu-open {
   margin: auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 90%; /* Giới hạn chiều rộng tối đa */
-  max-width: 500px; /* Giới hạn chiều rộng tối đa */
+  width: 100%; /* Giới hạn chiều rộng tối đa */
+  max-width: 700px; /* Giới hạn chiều rộng tối đa */
   border-radius: 10px; /* Bo tròn góc */
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Đổ bóng */
   text-align: center; /* Căn giữa nội dung */
