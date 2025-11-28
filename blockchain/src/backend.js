@@ -1496,107 +1496,12 @@ function setupRoutes(app, db) {
     }
   });
 
+  // API dành cho nhà quản lý và người vận chuyển - Sửa lỗi khi chưa đăng nhập
   app.get("/api/batch-info-by-sscc/:sscc", async (req, res) => {
-    try {
-      const sscc = req.params.sscc;
-      const userId = req.session.userId;
-
-      const batchInfo = await traceabilityContract.methods
-        .getBatchBySSCC(sscc)
-        .call();
-      const transportStatus = await traceabilityContract.methods
-        .getBatchTransportStatus(batchInfo.batchId)
-        .call();
-      const detailedTransportStatus = await traceabilityContract.methods
-        .getDetailedTransportStatus(batchInfo.batchId)
-        .call();
-
-      const producerInfo = await getProducerById(batchInfo.producerId);
-
-      console.log(
-        "Calling isWarehouseConfirmed with:",
-        batchInfo.batchId,
-        userId
-      );
-      const warehouseConfirmed = await traceabilityContract.methods
-        .isWarehouseConfirmed(batchInfo.batchId, userId)
-        .call();
-
-      const confirmedWarehouseIds = await traceabilityContract.methods
-        .getConfirmedWarehouses(batchInfo.batchId)
-        .call();
-
-      const confirmedWarehouses = await Promise.all(
-        confirmedWarehouseIds.map(async (warehouseId) => {
-          const warehouseInfo = await getWarehouseInfo(warehouseId);
-          return {
-            id: warehouseId.toString(),
-            name: warehouseInfo.name
-          };
-        })
-      );
-
-      const safeConvert = (value) => {
-        if (typeof value === "bigint") {
-          return value.toString();
-        }
-        if (Array.isArray(value)) {
-          return value.map(safeConvert);
-        }
-        if (typeof value === "object" && value !== null) {
-          return Object.fromEntries(
-            Object.entries(value).map(([k, v]) => [k, safeConvert(v)])
-          );
-        }
-        return value;
-      };
-
-      const serializedBatchInfo = safeConvert({
-        batchId: batchInfo.batchId,
-        name: batchInfo.name,
-        sscc: batchInfo.sscc,
-        producerId: batchInfo.producerId,
-        quantity: batchInfo.quantity,
-        productionDate: new Date(
-          Number(batchInfo.productionDate) * 1000
-        ).toISOString(),
-        status: translateStatus(batchInfo.status),
-        productImageUrls: batchInfo.productImageUrls,
-        certificateImageUrl: batchInfo.certificateImageUrl,
-        farmPlotNumber: batchInfo.farmPlotNumber,
-        productId: batchInfo.productId,
-        transportStatus: translateTransportStatus(transportStatus),
-        detailedTransportStatus: translateDetailedTransportStatus(
-          detailedTransportStatus
-        ),
-        producer: {
-          name: producerInfo.name,
-          address: producerInfo.address,
-          phone: producerInfo.phone
-        },
-        warehouseConfirmed: warehouseConfirmed,
-        confirmedWarehouses: confirmedWarehouses
-      });
-
-      console.log(
-        "Serialized Batch Info:",
-        JSON.stringify(serializedBatchInfo, null, 2)
-      );
-
-      res.json(serializedBatchInfo);
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin lô hàng từ SSCC:", error);
-      res
-        .status(500)
-        .json({ error: "Không thể lấy thông tin lô hàng: " + error.message });
-    }
-  });
-
-  app.get("/api/batch-info-by-sscc-for-consumer/:sscc", async (req, res) => {
     let connection;
     try {
       const sscc = req.params.sscc;
-      const userId = req.session.userId;
+      const userId = req.session.userId; // Có thể undefined nếu chưa đăng nhập
 
       const batchInfo = await traceabilityContract.methods
         .getBatchBySSCC(sscc)
@@ -1612,33 +1517,66 @@ function setupRoutes(app, db) {
 
       connection = await db.getConnection();
 
-      const [userResults] = await connection.query(
-        "SELECT * FROM users WHERE uid = ?",
-        [userId]
-      );
-      const userInfo = userResults[0];
-
+      // Khởi tạo giá trị mặc định
       let warehouseConfirmed = false;
-      if (userInfo && userInfo.role_id === 8) {
-        const warehouseId = userInfo.warehouse_id;
-        warehouseConfirmed = await traceabilityContract.methods
-          .isWarehouseConfirmed(batchInfo.batchId, warehouseId)
-          .call();
+      let confirmedWarehouses = [];
+
+      // Chỉ kiểm tra warehouse confirmation nếu user đã đăng nhập
+      if (userId) {
+        const [userResults] = await connection.query(
+          "SELECT * FROM users WHERE uid = ?",
+          [userId]
+        );
+
+        if (userResults.length > 0) {
+          const userInfo = userResults[0];
+          let warehouseId;
+
+          // Xác định warehouseId dựa trên role
+          if (userInfo.role_id === 8 && userInfo.warehouse_id) {
+            warehouseId = BigInt(userInfo.warehouse_id);
+          } else if (userInfo.role_id === 8 || userInfo.role_id === 6) {
+            warehouseId = BigInt(userId);
+          }
+
+          // Kiểm tra warehouse confirmation nếu có warehouseId
+          if (warehouseId) {
+            try {
+              console.log(
+                "Calling isWarehouseConfirmed with:",
+                batchInfo.batchId,
+                warehouseId.toString()
+              );
+              warehouseConfirmed = await traceabilityContract.methods
+                .isWarehouseConfirmed(batchInfo.batchId, warehouseId)
+                .call();
+            } catch (error) {
+              console.error("Lỗi khi kiểm tra warehouse confirmation:", error);
+              // Không throw error, chỉ log và tiếp tục với giá trị mặc định false
+            }
+          }
+        }
       }
 
-      const confirmedWarehouseIds = await traceabilityContract.methods
-        .getConfirmedWarehouses(batchInfo.batchId)
-        .call();
+      // Lấy danh sách các kho đã xác nhận (không phụ thuộc vào việc đăng nhập)
+      try {
+        const confirmedWarehouseIds = await traceabilityContract.methods
+          .getConfirmedWarehouses(batchInfo.batchId)
+          .call();
 
-      const confirmedWarehouses = await Promise.all(
-        confirmedWarehouseIds.map(async (warehouseId) => {
-          const warehouseInfo = await getWarehouseInfo(warehouseId);
-          return {
-            id: warehouseId.toString(),
-            name: warehouseInfo.name
-          };
-        })
-      );
+        confirmedWarehouses = await Promise.all(
+          confirmedWarehouseIds.map(async (warehouseId) => {
+            const warehouseInfo = await getWarehouseInfo(warehouseId);
+            return {
+              id: warehouseId.toString(),
+              name: warehouseInfo.name
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách kho đã xác nhận:", error);
+        // Tiếp tục với mảng rỗng
+      }
 
       const safeConvert = (value) => {
         if (typeof value === "bigint") {
@@ -1679,7 +1617,144 @@ function setupRoutes(app, db) {
           phone: producerInfo.phone
         },
         warehouseConfirmed: warehouseConfirmed,
-        confirmedWarehouses: confirmedWarehouses
+        confirmedWarehouses: confirmedWarehouses,
+        isLoggedIn: !!userId // Thêm flag để frontend biết user đã đăng nhập chưa
+      });
+
+      console.log(
+        "Serialized Batch Info:",
+        JSON.stringify(serializedBatchInfo, null, 2)
+      );
+
+      res.json(serializedBatchInfo);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin lô hàng từ SSCC:", error);
+      res.status(500).json({
+        error: "Không thể lấy thông tin lô hàng: " + error.message
+      });
+    } finally {
+      if (connection) connection.release();
+    }
+  });
+
+  // API dành cho người tiêu dùng
+  app.get("/api/batch-info-by-sscc-for-consumer/:sscc", async (req, res) => {
+    let connection;
+    try {
+      const sscc = req.params.sscc;
+      const userId = req.session.userId; // Có thể undefined nếu chưa đăng nhập
+
+      const batchInfo = await traceabilityContract.methods
+        .getBatchBySSCC(sscc)
+        .call();
+      const transportStatus = await traceabilityContract.methods
+        .getBatchTransportStatus(batchInfo.batchId)
+        .call();
+      const detailedTransportStatus = await traceabilityContract.methods
+        .getDetailedTransportStatus(batchInfo.batchId)
+        .call();
+
+      const producerInfo = await getProducerById(batchInfo.producerId);
+
+      connection = await db.getConnection();
+
+      // Khởi tạo giá trị mặc định
+      let warehouseConfirmed = false;
+      let confirmedWarehouses = [];
+
+      // Chỉ kiểm tra warehouse confirmation nếu user đã đăng nhập
+      if (userId) {
+        const [userResults] = await connection.query(
+          "SELECT * FROM users WHERE uid = ?",
+          [userId]
+        );
+
+        if (userResults.length > 0) {
+          const userInfo = userResults[0];
+          let warehouseId;
+
+          // Xác định warehouseId dựa trên role
+          if (userInfo.role_id === 8 && userInfo.warehouse_id) {
+            warehouseId = BigInt(userInfo.warehouse_id);
+          } else if (userInfo.role_id === 8 || userInfo.role_id === 6) {
+            warehouseId = BigInt(userId);
+          }
+
+          // Kiểm tra warehouse confirmation nếu có warehouseId
+          if (warehouseId) {
+            try {
+              warehouseConfirmed = await traceabilityContract.methods
+                .isWarehouseConfirmed(batchInfo.batchId, warehouseId)
+                .call();
+            } catch (error) {
+              console.error("Lỗi khi kiểm tra warehouse confirmation:", error);
+              // Không throw error, chỉ log và tiếp tục với giá trị mặc định false
+            }
+          }
+        }
+      }
+
+      // Lấy danh sách các kho đã xác nhận (không phụ thuộc vào việc đăng nhập)
+      try {
+        const confirmedWarehouseIds = await traceabilityContract.methods
+          .getConfirmedWarehouses(batchInfo.batchId)
+          .call();
+
+        confirmedWarehouses = await Promise.all(
+          confirmedWarehouseIds.map(async (warehouseId) => {
+            const warehouseInfo = await getWarehouseInfo(warehouseId);
+            return {
+              id: warehouseId.toString(),
+              name: warehouseInfo.name
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách kho đã xác nhận:", error);
+        // Tiếp tục với mảng rỗng
+      }
+
+      const safeConvert = (value) => {
+        if (typeof value === "bigint") {
+          return value.toString();
+        }
+        if (Array.isArray(value)) {
+          return value.map(safeConvert);
+        }
+        if (typeof value === "object" && value !== null) {
+          return Object.fromEntries(
+            Object.entries(value).map(([k, v]) => [k, safeConvert(v)])
+          );
+        }
+        return value;
+      };
+
+      const serializedBatchInfo = safeConvert({
+        batchId: batchInfo.batchId,
+        name: batchInfo.name,
+        sscc: batchInfo.sscc,
+        producerId: batchInfo.producerId,
+        quantity: batchInfo.quantity,
+        productionDate: new Date(
+          Number(batchInfo.productionDate) * 1000
+        ).toISOString(),
+        status: translateStatus(batchInfo.status),
+        productImageUrls: batchInfo.productImageUrls,
+        certificateImageUrl: batchInfo.certificateImageUrl,
+        farmPlotNumber: batchInfo.farmPlotNumber,
+        productId: batchInfo.productId,
+        transportStatus: translateTransportStatus(transportStatus),
+        detailedTransportStatus: translateDetailedTransportStatus(
+          detailedTransportStatus
+        ),
+        producer: {
+          name: producerInfo.name,
+          address: producerInfo.address,
+          phone: producerInfo.phone
+        },
+        warehouseConfirmed: warehouseConfirmed,
+        confirmedWarehouses: confirmedWarehouses,
+        isLoggedIn: !!userId // Thêm flag để frontend biết user đã đăng nhập chưa
       });
 
       console.log(
@@ -1716,6 +1791,7 @@ function setupRoutes(app, db) {
     });
   }
 
+  // API lấy thông tin lô hàng theo batchId
   app.get("/api/batch-info/:batchId", async (req, res) => {
     try {
       const batchId = req.params.batchId;
@@ -1729,9 +1805,17 @@ function setupRoutes(app, db) {
         .getDetailedTransportStatus(batchId)
         .call();
 
-      const warehouseConfirmed = await traceabilityContract.methods
-        .isWarehouseConfirmed(batchId, req.session.userId)
-        .call();
+      let warehouseConfirmed;
+      try {
+        warehouseConfirmed = await traceabilityContract.methods
+          .isWarehouseConfirmed(batchId, warehouseId)
+          .call();
+      } catch (error) {
+        console.error("Lỗi khi gọi isWarehouseConfirmed:", error.message);
+        throw new Error(
+          "Không thể kiểm tra trạng thái xác nhận kho: " + error.message
+        );
+      }
 
       const producerInfo = await getProducerById(batchInfo.producerId);
 
@@ -2241,7 +2325,7 @@ function setupRoutes(app, db) {
       const result = await traceabilityContract.methods
         .warehouseConfirmation(batchId, userId)
         .send({
-          from: adminAddress,
+          from: web3.eth.defaultAccount,
           gas: 500000 // Điều chỉnh gas nếu cần
         });
       console.log("Transaction result:", result);
