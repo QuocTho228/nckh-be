@@ -998,6 +998,7 @@
           <img id="modalImage" src="" alt="Large Image" />
         </div>
         <button class="btn btn-primary download-btn" onclick="downloadImage()">
+          <i class="fas fa-download"></i>
           Tải ảnh
         </button>
       </div>
@@ -1019,18 +1020,15 @@
 
       .modal-content {
         position: relative;
-        margin: 3% auto;
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 95%;
-        max-width: 800px;
       }
 
       .modal-image-container {
         width: 100%;
         max-width: 700px;
-        height: 600px; /* cố định khung chứa */
+        height: 500px; /* cố định khung chứa */
         background-color: white;
         border-radius: 12px;
         padding: 40px;
@@ -1077,12 +1075,8 @@
 
       .download-btn {
         margin-top: 20px;
-        padding: 14px 50px;
-        font-size: 17px;
-        font-weight: 500;
         background-color: #28a745;
         border: none;
-        border-radius: 50px;
         color: white;
         cursor: pointer;
         transition: background-color 0.3s ease;
