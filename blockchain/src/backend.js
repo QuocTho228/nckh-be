@@ -1791,6 +1791,133 @@ function setupRoutes(app, db) {
     });
   }
 
+  app.post("/api/verify-batch", async (req, res) => {
+    try {
+      const { sscc } = req.body;
+
+      console.log("=== Bắt đầu xác thực batch ===");
+      console.log("SSCC nhận được:", sscc);
+
+      if (!sscc) {
+        return res.status(400).json({
+          success: false,
+          error: "Thiếu SSCC"
+        });
+      }
+
+      // Lấy thông tin batch từ blockchain
+      const batchInfo = await traceabilityContract.methods
+        .getBatchBySSCC(sscc)
+        .call();
+
+      // Convert BigInt sang string
+      const batchInfoConverted = convertBigIntToString(batchInfo);
+
+      console.log("Thông tin batch:", {
+        batchId: batchInfoConverted.batchId,
+        name: batchInfoConverted.name,
+        sscc: batchInfoConverted.sscc,
+        dataHash: batchInfoConverted.dataHash
+      });
+
+      // Tính hash từ dữ liệu hiện tại
+      const calculatedHash = web3.utils.soliditySha3(
+        { type: "string", value: batchInfo.sscc },
+        { type: "uint256", value: batchInfo.producerId },
+        { type: "string", value: batchInfo.quantity },
+        { type: "uint256", value: batchInfo.productionDate },
+        { type: "string", value: batchInfo.farmPlotNumber },
+        { type: "uint256", value: batchInfo.productId },
+        { type: "string", value: batchInfo.name }
+      );
+
+      // QUAN TRỌNG: Chuẩn hóa cả 2 hash trước khi so sánh
+      const storedHash = (batchInfoConverted.dataHash || "")
+        .toLowerCase()
+        .trim();
+      const computedHash = (calculatedHash || "").toLowerCase().trim();
+
+      console.log("=== SO SÁNH HASH ===");
+      console.log("Hash đã lưu (raw):", batchInfoConverted.dataHash);
+      console.log("Hash đã lưu (normalized):", storedHash);
+      console.log("Hash tính toán (raw):", calculatedHash);
+      console.log("Hash tính toán (normalized):", computedHash);
+      console.log("Type of stored:", typeof storedHash);
+      console.log("Type of computed:", typeof computedHash);
+      console.log("Length stored:", storedHash.length);
+      console.log("Length computed:", computedHash.length);
+
+      // So sánh hash đã chuẩn hóa
+      const isValid = storedHash === computedHash;
+
+      console.log("=== KẾT QUẢ ===");
+      console.log("Khớp:", isValid ? "✓ CÓ" : "✗ KHÔNG");
+      console.log("Strict equality (===):", storedHash === computedHash);
+      console.log("Loose equality (==):", storedHash == computedHash);
+
+      // Lấy transaction info
+      let transactionInfo = null;
+      try {
+        const events = await traceabilityContract.getPastEvents(
+          "BatchCreated",
+          {
+            filter: { batchId: batchInfo.batchId },
+            fromBlock: 0,
+            toBlock: "latest"
+          }
+        );
+
+        if (events.length > 0) {
+          transactionInfo = {
+            transactionHash: events[0].transactionHash,
+            blockNumber: events[0].blockNumber.toString()
+          };
+          console.log("Transaction info:", transactionInfo);
+        }
+      } catch (eventError) {
+        console.error("Không thể lấy transaction info:", eventError.message);
+      }
+
+      // Tạo response
+      const response = {
+        success: true,
+        isValid: isValid,
+        verificationData: {
+          sscc: batchInfoConverted.sscc,
+          storedHash: storedHash,
+          calculatedHash: computedHash,
+          batchId: batchInfoConverted.batchId,
+          verifiedAt: new Date().toISOString(),
+          blockchainStatus: isValid ? "VERIFIED" : "TAMPERED",
+          transactionInfo: transactionInfo,
+          batchDetails: {
+            name: batchInfoConverted.name,
+            producerId: batchInfoConverted.producerId,
+            quantity: batchInfoConverted.quantity,
+            productionDate: new Date(
+              Number(batchInfoConverted.productionDate) * 1000
+            ).toISOString(),
+            farmPlotNumber: batchInfoConverted.farmPlotNumber,
+            productId: batchInfoConverted.productId
+          }
+        }
+      };
+
+      console.log("=== Response isValid ===:", response.isValid);
+      console.log("=== Xác thực hoàn tất ===");
+
+      res.json(response);
+    } catch (error) {
+      console.error("=== LỖI XÁC THỰC ===");
+      console.error(error);
+
+      res.status(500).json({
+        success: false,
+        error: "Không thể xác thực dữ liệu: " + error.message
+      });
+    }
+  });
+
   // API lấy thông tin lô hàng theo batchId
   app.get("/api/batch-info/:batchId", async (req, res) => {
     try {
@@ -2479,6 +2606,7 @@ function setupRoutes(app, db) {
       return null;
     }
   }
+
   // Hàm hỗ trợ để chuyển đổi BigInt thành string
   function convertBigIntToString(obj) {
     if (typeof obj !== "object" || obj === null) {

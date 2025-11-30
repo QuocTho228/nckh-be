@@ -1,151 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
     <title>Thông tin lô hàng</title>
     <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/trangchu.css">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/sanpham.css">
-    <link rel="stylesheet" href="../css/chatbox.css">
-    <link rel="stylesheet" href="../css/lo-hang.css">
-    <link rel="stylesheet" href="../css/trangcanhan.css">
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/trangchu.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/sanpham.css" />
+    <link rel="stylesheet" href="../css/chatbox.css" />
+    <link rel="stylesheet" href="../css/lo-hang.css" />
+    <link rel="stylesheet" href="../css/trangcanhan.css" />
     <!-- <link rel="stylesheet" href="../css/navbar.css"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <meta charset="UTF-8">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <meta charset="UTF-8" />
     <!-- Thêm Font Awesome từ Cloudflare CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar-height">
-        <div class="logo-home">
-            <a href="../">
-                <img src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="logo" class="logo">
-            </a>
-        </div>
-        <a class="navbar-brand" href="#">Lô hàng</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="allsanpham.html">Sản phẩm</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="allnongdan.html">Nhà sản xuất</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="allnhakiemduyet.html">Nhà kiểm duyệt</a>
-                </li>
-                
-                <li class="nav-item">
-                    <a class="nav-link" href="/api/dangnhap">Đăng nhập</a>
-                </li>
-            </ul>
-        </div>
+      <div class="logo-home">
+        <a href="../">
+          <img
+            src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+            alt="logo"
+            class="logo"
+          />
+        </a>
+      </div>
+      <a class="navbar-brand" href="#">Lô hàng</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="allsanpham.html">Sản phẩm</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="allnongdan.html">Nhà sản xuất</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="allnhakiemduyet.html">Nhà kiểm duyệt</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="/api/dangnhap">Đăng nhập</a>
+          </li>
+        </ul>
+      </div>
     </nav>
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
-                <li class="breadcrumb-item active" id="breadcrumbTitle" aria-current="page">Thông tin lô hàng</li>
-            </ol>
-        </nav>
-        <div class="sanpham">
-            <div class="row justify-content-center">
-                <div class="col-md-10">
-                    <div class="tieude text-center">
-                        <div class="row no-gutters justify-content-center">
-                            <div class="col-md-8 col-12 mb-4">
-                                <img src="" alt="" class="img-fluid custom-img" onclick="showImage(this)">
-                            </div>
-                        </div>
-                        <div class="ten_sanpham mb-3">
-                            <h3 class="font-weight-bold"></h3>
-                        </div>
-                        <div class="price mb-4">
-                            <h3 class="font-weight-bold"></h3>
-                        </div>
-                    </div>
-                    <div class="thanhphan">
-                        <div class="row no-gutters">
-                            <div class="col-3 p-2">
-                                <div class="tab-button" data-target="thongtin">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span class="tab-text">Thông tin</span>
-                                </div>
-                            </div>
-                            <div class="col-3 p-2">
-                                <div class="tab-button" data-target="lienket">
-                                    <i class="fas fa-link"></i>
-                                    <span class="tab-text">Các bên liên quan</span>
-                                </div>
-                            </div>
-                            <div class="col-3 p-2">
-                                <div class="tab-button" data-target="xacthuc">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span class="tab-text">Xác thực</span>
-                                </div>
-                            </div>
-                            <div class="col-3 p-2">
-                                <div class="tab-button" data-target="lohang">
-                                    <i class="fas fa-box"></i>
-                                    <span class="tab-text">Lô hàng</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-content" id="thongtin">
-                            <!-- Nội dung thông tin sản phẩm -->
-                        </div>
-                        <div class="tab-content" id="lienket">
-                            <!-- Nội dung các bên liên quan -->
-                        </div>
-                        <div class="tab-content" id="xacthuc">
-                            <!-- Nội dung thông tin xác thực -->
-                        </div>
-                        <div class="tab-content" id="lohang">
-                            <!-- Nội dung thông tin lô hàng -->
-                        </div>
-                    </div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+          <li
+            class="breadcrumb-item active"
+            id="breadcrumbTitle"
+            aria-current="page"
+          >
+            Thông tin lô hàng
+          </li>
+        </ol>
+      </nav>
+      <div class="sanpham">
+        <div class="row justify-content-center">
+          <div class="col-md-10">
+            <div class="tieude text-center">
+              <div class="row no-gutters justify-content-center">
+                <div class="col-md-8 col-12 mb-4">
+                  <img
+                    src=""
+                    alt=""
+                    class="img-fluid custom-img"
+                    onclick="showImage(this)"
+                  />
                 </div>
+              </div>
+              <div class="ten_sanpham mb-3">
+                <h3 class="font-weight-bold"></h3>
+              </div>
+              <div class="price mb-4">
+                <h3 class="font-weight-bold"></h3>
+              </div>
             </div>
+            <div class="thanhphan">
+              <div class="row no-gutters">
+                <div class="col-3 p-2">
+                  <div class="tab-button" data-target="thongtin">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="tab-text">Thông tin</span>
+                  </div>
+                </div>
+                <div class="col-3 p-2">
+                  <div class="tab-button" data-target="lienket">
+                    <i class="fas fa-link"></i>
+                    <span class="tab-text">Các bên liên quan</span>
+                  </div>
+                </div>
+                <div class="col-3 p-2">
+                  <div class="tab-button" data-target="xacthuc">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="tab-text">Xác thực</span>
+                  </div>
+                </div>
+                <div class="col-3 p-2">
+                  <div class="tab-button" data-target="lohang">
+                    <i class="fas fa-box"></i>
+                    <span class="tab-text">Lô hàng</span>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-content" id="thongtin">
+                <!-- Nội dung thông tin sản phẩm -->
+              </div>
+              <div class="tab-content" id="lienket">
+                <!-- Nội dung các bên liên quan -->
+              </div>
+              <div class="tab-content" id="xacthuc">
+                <h2>Thông tin xác thực</h2>
+                <div class="verification-container">
+                  <div class="verification-status" id="verificationStatus">
+                    <p>
+                      <strong>Trạng thái lô hàng:</strong>
+                      <span id="batchStatus"></span>
+                    </p>
+                    <p>
+                      <strong>Chứng nhận:</strong>
+                      <a href="#" id="certificateLink" target="_blank"
+                        >Xem chứng nhận</a
+                      >
+                    </p>
+                  </div>
+
+                  <div class="blockchain-verify-section">
+                    <h3>
+                      <i class="fas fa-shield-alt"></i>
+                      Xác thực Blockchain
+                    </h3>
+                    <p class="verify-description">
+                      Xác minh tính toàn vẹn của dữ liệu lô hàng trên blockchain
+                      để đảm bảo thông tin không bị giả mạo.
+                    </p>
+
+                    <div class="text-center">
+                      <button id="btnVerifyBlockchain" class="btn-verify">
+                        <i class="fas fa-check-circle"></i>
+                        Xác thực ngay
+                      </button>
+                    </div>
+
+                    <div
+                      id="verificationResult"
+                      class="verification-result"
+                      style="display: none"
+                    >
+                      <!-- Kết quả xác thực sẽ được hiển thị ở đây -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-content" id="lohang">
+                <!-- Nội dung thông tin lô hàng -->
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    
-
     <div class="chat-icon" id="openChat" onclick="toggleChat()">
-        <i class="fas fa-comments"></i>
-        <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
+      <i class="fas fa-comments"></i>
+      <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
     </div>
 
     <!-- Khung chat -->
     <div id="chatbox" class="chatbox">
-        <div class="chatbox-header">
-            <strong>Hỗ trợ</strong>
-            <button id="closeChat" class="btn-close" onclick="toggleChat()">x</button>
-        </div>
-        <div class="chatbox-body">
-            <ul id="messages" class="list-group">
-                <li class="list-group-item system-message"><strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.</li>
-            </ul>
-        </div>
-        <div class="chatbox-footer">
-            <form id="messageForm" class="d-flex">
-                <input id="messageInput" type="text" class="form-control" placeholder="type message">
-                <button type="submit" class="btn btn-primary">Gửi</button>
-            </form>
-        </div>
+      <div class="chatbox-header">
+        <strong>Hỗ trợ</strong>
+        <button id="closeChat" class="btn-close" onclick="toggleChat()">
+          x
+        </button>
+      </div>
+      <div class="chatbox-body">
+        <ul id="messages" class="list-group">
+          <li class="list-group-item system-message">
+            <strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.
+          </li>
+        </ul>
+      </div>
+      <div class="chatbox-footer">
+        <form id="messageForm" class="d-flex">
+          <input
+            id="messageInput"
+            type="text"
+            class="form-control"
+            placeholder="type message"
+          />
+          <button type="submit" class="btn btn-primary">Gửi</button>
+        </form>
+      </div>
     </div>
 
     <div class="overlay" id="overlay" onclick="hideImage()">
-        <img id="overlay-img" src="" alt="">
+      <img id="overlay-img" src="" alt="" />
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
@@ -158,107 +246,126 @@
     <script src="../chatbox/chatbox.js"></script>
 
     <script>
-       function toggleChat() {
-            var chatbox = document.getElementById("chatbox");
-            if (chatbox.classList.contains("show")) {
-                chatbox.classList.remove("show");
-                chatbox.classList.add("hide");
-                setTimeout(() => {
-                    chatbox.style.display = "none";
-                    chatbox.classList.remove("hide");
-                }, 300); // Match this to the animation duration
-            } else {
-                chatbox.style.display = "block";
-                // Force a reflow before adding the 'show' class
-                chatbox.offsetHeight;
-                chatbox.classList.add("show");
-            }
+      function toggleChat() {
+        var chatbox = document.getElementById("chatbox");
+        if (chatbox.classList.contains("show")) {
+          chatbox.classList.remove("show");
+          chatbox.classList.add("hide");
+          setTimeout(() => {
+            chatbox.style.display = "none";
+            chatbox.classList.remove("hide");
+          }, 300); // Match this to the animation duration
+        } else {
+          chatbox.style.display = "block";
+          // Force a reflow before adding the 'show' class
+          chatbox.offsetHeight;
+          chatbox.classList.add("show");
         }
+      }
     </script>
 
     <script>
-  document.addEventListener('DOMContentLoaded', async function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sscc = urlParams.get('sscc');
-    if (sscc) {
-        try {
-            const response = await fetch(`/api/batch-info-by-sscc-for-consumer/${sscc}`);
+      document.addEventListener("DOMContentLoaded", async function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sscc = urlParams.get("sscc");
+        if (sscc) {
+          try {
+            const response = await fetch(
+              `/api/batch-info-by-sscc-for-consumer/${sscc}`
+            );
             const batchInfo = await response.json();
             if (response.ok) {
-                updateBatchInfo(batchInfo);
+              updateBatchInfo(batchInfo);
             } else {
-                console.error('Lỗi khi lấy thông tin lô hàng:', batchInfo.error);
+              console.error("Lỗi khi lấy thông tin lô hàng:", batchInfo.error);
             }
-        } catch (error) {
-            console.error('Lỗi khi gọi API:', error);
+          } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+          }
+        } else {
+          console.error("Không tìm thấy SSCC trong URL");
         }
-    } else {
-        console.error('Không tìm thấy SSCC trong URL');
-    }
-});
-    async function updateBatchInfo(batchInfo) {
-    // Lấy thông tin sản phẩm từ SQL
-    try {
-        const response = await fetch(`/api/product/${batchInfo.productId}`);
-        if (response.ok) {
+      });
+      async function updateBatchInfo(batchInfo) {
+        // Lấy thông tin sản phẩm từ SQL
+        try {
+          const response = await fetch(`/api/product/${batchInfo.productId}`);
+          if (response.ok) {
             const productInfo = await response.json();
             updateProductInfo(productInfo);
-            
+
             // Cập nhật tên sản phẩm, hình ảnh và giá
-            document.querySelector('.ten_sanpham h3').textContent = productInfo.product_name;
-            document.querySelector('.custom-img').src = productInfo.img || '';
-            document.querySelector('.price h3').innerHTML = `Giá: <span>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(productInfo.price)}</span>`;
-             } else {
-            console.error('Không thể lấy thông tin sản phẩm');
+            document.querySelector(".ten_sanpham h3").textContent =
+              productInfo.product_name;
+            document.querySelector(".custom-img").src = productInfo.img || "";
+            document.querySelector(
+              ".price h3"
+            ).innerHTML = `Giá: <span>${new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND"
+            }).format(productInfo.price)}</span>`;
+          } else {
+            console.error("Không thể lấy thông tin sản phẩm");
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy thông tin sản phẩm:", error);
         }
-    } catch (error) {
-        console.error('Lỗi khi lấy thông tin sản phẩm:', error);
-    }
 
-    await updateRelatedParties(batchInfo);
-    updateAuthenticationInfo(batchInfo);
-    updateBatchDetails(batchInfo);
+        await updateRelatedParties(batchInfo);
+        updateAuthenticationInfo(batchInfo);
+        updateBatchDetails(batchInfo);
 
-    document.querySelector('[data-target="lohang"]').click();
-}
+        document.querySelector('[data-target="lohang"]').click();
+      }
 
-    function updateProductInfo(productInfo) {
-        const thongtinContent = document.getElementById('thongtin');
+      function updateProductInfo(productInfo) {
+        const thongtinContent = document.getElementById("thongtin");
         thongtinContent.innerHTML = `
             <h2>Thông tin sản phẩm</h2>
             <table class="table table-bordered">
             
             <h4>Mô tả:</h4>
             <ul>
-                ${productInfo.description.split('\n').map(desc => `<li>${desc.trim()}</li>`).join('')}
+                ${productInfo.description
+                  .split("\n")
+                  .map((desc) => `<li>${desc.trim()}</li>`)
+                  .join("")}
             </ul>
-            <h4>Công dụng:</h4>
+            <h4>Xuất xứ:</h4>
             <ul>
-                ${productInfo.uses.split('\n').map(use => `<li>${use.trim()}</li>`).join('')}
+                ${productInfo.uses
+                  .split("\n")
+                  .map((use) => `<li>${use.trim()}</li>`)
+                  .join("")}
             </ul>
             <h4>Quy trình sản xuất:</h4>
             <ol>
-                ${productInfo.process.split('\n').map(step => `<li>${step.trim()}</li>`).join('')}
+                ${productInfo.process
+                  .split("\n")
+                  .map((step) => `<li>${step.trim()}</li>`)
+                  .join("")}
             </ol>
         `;
-    }
-    async function updateRelatedParties(batchInfo) {
-        const lienketContent = document.getElementById('lienket');
-        
-        console.log('Batch Info:', batchInfo);
+      }
+      async function updateRelatedParties(batchInfo) {
+        const lienketContent = document.getElementById("lienket");
+
+        console.log("Batch Info:", batchInfo);
 
         const producerId = batchInfo.producerId;
-        console.log('Producer ID:', producerId);
+        console.log("Producer ID:", producerId);
 
         if (!batchInfo.producer) {
-            console.error('Không có thông tin về nhà sản xuất');
-            lienketContent.innerHTML = '<p>Không có thông tin về nhà sản xuất</p>';
-            return;
+          console.error("Không có thông tin về nhà sản xuất");
+          lienketContent.innerHTML =
+            "<p>Không có thông tin về nhà sản xuất</p>";
+          return;
         }
 
-        const producerName = batchInfo.producer.name || 'Không có tên';
-        const producerAddress = batchInfo.producer.address || 'Không có thông tin';
-        const producerPhone = batchInfo.producer.phone || 'Không có thông tin';
+        const producerName = batchInfo.producer.name || "Không có tên";
+        const producerAddress =
+          batchInfo.producer.address || "Không có thông tin";
+        const producerPhone = batchInfo.producer.phone || "Không có thông tin";
 
         lienketContent.innerHTML = `
         <h2>Các bên có liên quan</h2>
@@ -275,430 +382,693 @@
 
         // Phần còn lại của hàm giữ nguyên
         try {
-            const response = await fetch(`/api/system-activity-logs/${batchInfo.sscc}`);
-            if (response.ok) {
-                const data = await response.json();
-                displayActivityLogs(data.activityLogs);
-            } else {
-                console.error('Không thể lấy nhật ký hoạt động');
-                document.getElementById('activityLogs').innerHTML = 'Không thể tải nhật ký hoạt động.';
-            }
+          const response = await fetch(
+            `/api/system-activity-logs/${batchInfo.sscc}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            displayActivityLogs(data.activityLogs);
+          } else {
+            console.error("Không thể lấy nhật ký hoạt động");
+            document.getElementById("activityLogs").innerHTML =
+              "Không thể tải nhật ký hoạt động.";
+          }
         } catch (error) {
-            console.error('Lỗi khi lấy nhật ký hoạt động:', error);
-            document.getElementById('activityLogs').innerHTML = 'Đã xảy ra lỗi khi tải nhật ký hoạt động.';
+          console.error("Lỗi khi lấy nhật ký hoạt động:", error);
+          document.getElementById("activityLogs").innerHTML =
+            "Đã xảy ra lỗi khi tải nhật ký hoạt động.";
         }
-}
+      }
 
-// Thêm hàm này vào script của bạn
-function goToProducerPage(producerId) {
-    if (producerId) {
-        window.location.href = `trangcanhan.html?uid=${producerId}`;
-    } else {
-        console.error('Không có ID người sản xuất');
-    }
-}
-function displayActivityLogs(logs) {
-    const logsContainer = document.getElementById('activityLogs');
-    if (logs.length === 0) {
-        logsContainer.innerHTML = 'Không có hoạt động nào được ghi nhận.';
-        return;
-    }
+      // Thêm hàm này vào script của bạn
+      function goToProducerPage(producerId) {
+        if (producerId) {
+          window.location.href = `trangcanhan.html?uid=${producerId}`;
+        } else {
+          console.error("Không có ID người sản xuất");
+        }
+      }
+      function displayActivityLogs(logs) {
+        const logsContainer = document.getElementById("activityLogs");
+        if (logs.length === 0) {
+          logsContainer.innerHTML = "Không có hoạt động nào được ghi nhận.";
+          return;
+        }
 
-    // Sắp xếp logs theo thời gian giảm dần (mới nhất lên đầu)
-    logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        // Sắp xếp logs theo thời gian giảm dần (mới nhất lên đầu)
+        logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    const initialDisplayCount = 5; // Số lượng hoạt động hiển thị ban đầu
-    const displayLogs = (start, end) => {
-        const logsHtml = logs.slice(start, end).map(log => {
-            const participant = log.participantInfo;
-            let roleClass = '';
-            let showDescription = true;
-            
-            if (participant) {
-                switch(participant.role.toLowerCase()) {
-                    case 'producer':
-                    case 'nhà sản xuất':
-                    case 'approver':
-                    case 'kiểm định':
-                    case 'người kiểm định':
-                        roleClass = participant.role.toLowerCase().includes('sản xuất') ? 'producer' : 'approver';
-                        showDescription = false;
-                        break;
-                    case 'warehouse':
-                    case 'nhà kho':
-                        roleClass = 'warehouse';
-                        break;
-                    case 'transporter':
-                    case 'vận chuyển':
-                        roleClass = 'transporter';
-                        break;
-                    default:
-                        roleClass = '';
+        const initialDisplayCount = 5; // Số lượng hoạt động hiển thị ban đầu
+        const displayLogs = (start, end) => {
+          const logsHtml = logs
+            .slice(start, end)
+            .map((log) => {
+              const participant = log.participantInfo;
+              let roleClass = "";
+              let showDescription = true;
+
+              if (participant) {
+                switch (participant.role.toLowerCase()) {
+                  case "producer":
+                  case "nhà sản xuất":
+                  case "approver":
+                  case "kiểm định":
+                  case "người kiểm định":
+                    roleClass = participant.role
+                      .toLowerCase()
+                      .includes("sản xuất")
+                      ? "producer"
+                      : "approver";
+                    showDescription = false;
+                    break;
+                  case "warehouse":
+                  case "nhà kho":
+                    roleClass = "warehouse";
+                    break;
+                  case "transporter":
+                  case "vận chuyển":
+                    roleClass = "transporter";
+                    break;
+                  default:
+                    roleClass = "";
                 }
-            }
+              }
 
-            const participantInfo = participant ? 
-                `
+              const participantInfo = participant
+                ? `
                 <div class="participant-info">
-                    <img src="${participant.avatar || '/images/default-avatar.png'}" 
+                    <img src="${
+                      participant.avatar || "/images/default-avatar.png"
+                    }" 
                          alt="${participant.name}" 
                          class="participant-avatar">
                     <div class="participant-details">
-                        <a href="${BASE_URL}/trangcanhan.html?uid=${participant.id}" 
+                        <a href="${BASE_URL}/trangcanhan.html?uid=${
+                    participant.id
+                  }" 
                            class="participant-link">
                             <p class="participant-name">${participant.name}</p>
                             <p class="participant-role">${participant.role}</p>
                         </a>
                     </div>
                 </div>
-                ` : 
-                `<p><strong>Người thực hiện ID:</strong> ${log.participantId}</p>`;
+                `
+                : `<p><strong>Người thực hiện ID:</strong> ${log.participantId}</p>`;
 
-            return `
-            <div class="activity-log ${roleClass} ${getActivityClass(log.activityName)}">
+              return `
+            <div class="activity-log ${roleClass} ${getActivityClass(
+                log.activityName
+              )}">
                 <p class="timestamp">
-                    <strong>Thời gian:</strong> ${new Date(log.timestamp).toLocaleString('vi-VN')}
+                    <strong>Thời gian:</strong> ${new Date(
+                      log.timestamp
+                    ).toLocaleString("vi-VN")}
                 </p>
                 <p class="activity-name">
-                    <strong>Hoạt động:</strong> ${getActivityIcon(log.activityName)} 
+                    <strong>Hoạt động:</strong> ${getActivityIcon(
+                      log.activityName
+                    )} 
                     ${translateActivityName(log.activityName)}
                 </p>
                 ${participantInfo}
-                ${showDescription ? `
+                ${
+                  showDescription
+                    ? `
                     <p class="description">
-                        <strong>Mô tả:</strong> ${decodeAndTranslateDescription(log.description)}
+                        <strong>Mô tả:</strong> ${decodeAndTranslateDescription(
+                          log.description
+                        )}
                     </p>
-                ` : ''}
-                ${log.imageUrls && log.imageUrls.length > 0 ? `
+                `
+                    : ""
+                }
+                ${
+                  log.imageUrls && log.imageUrls.length > 0
+                    ? `
                     <p><strong>Hình ảnh:</strong> 
                         <a href="${log.imageUrls[0]}" target="_blank" class="image-link">
                             Xem hình ảnh
                         </a>
                     </p>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
             `;
-        }).join('');
+            })
+            .join("");
 
-        logsContainer.innerHTML = logsHtml;
+          logsContainer.innerHTML = logsHtml;
 
-        if (end < logs.length) {
+          if (end < logs.length) {
             logsContainer.innerHTML += `
                     <button id="loadMoreLogs">Xem thêm</button>            `;
-            document.getElementById('loadMoreLogs').addEventListener('click', () => {
+            document
+              .getElementById("loadMoreLogs")
+              .addEventListener("click", () => {
                 displayLogs(0, end + 5);
-            });
-        }
-    };
+              });
+          }
+        };
 
-    displayLogs(0, initialDisplayCount);
-}
-function decodeAndTranslateDescription(description) {
-    // Giải mã HTML entities
-    const decodedDescription = decodeHTMLEntities(description);
-    
-    // Dịch mô tả
-    return translateDescription(decodedDescription);
-}
+        displayLogs(0, initialDisplayCount);
+      }
+      function decodeAndTranslateDescription(description) {
+        // Giải mã HTML entities
+        const decodedDescription = decodeHTMLEntities(description);
 
-function decodeHTMLEntities(text) {
-    const textArea = document.createElement('textarea');
-    textArea.innerHTML = text;
-    return textArea.value;
-}
+        // Dịch mô tả
+        return translateDescription(decodedDescription);
+      }
 
-function translateDescription(description) {
-    const translations = {
-        // Vận chuyển
-        "Transport status updated to": "Trạng thái vận chuyển được cập nhật thành",
-        "Bat dau van chuyen": "Bắt đầu vận chuyển",
-        "Hoan thanh van chuyen": "Hoàn thành vận chuyển", 
-        "Tam dung van chuyen": "Tạm dừng vận chuyển",
-        "Transport status updated to 'Bat dau van chuyen'": "Trạng thái vận chuyển được cập nhật thành 'Bắt đầu vận chuyển'",
-        "Transport status updated to 'Hoan thanh van chuyen'": "Trạng thái vận chuyển được cập nhật thành 'Hoàn thành vận chuyển'",
-        "Transport status updated to 'Tam dung van chuyen'": "Trạng thái vận chuyển được cập nhật thành 'Tạm dừng vận chuyển'",
+      function decodeHTMLEntities(text) {
+        const textArea = document.createElement("textarea");
+        textArea.innerHTML = text;
+        return textArea.value;
+      }
 
-        // Nhà kho
-        "Warehouse has confirmed receipt of batch": "Nhà kho đã xác nhận nhận lô hàng",
-        "Update inventory status": "Cập nhật trạng thái kho",
-        "Confirm receipt of goods": "Xác nhận nhận hàng",
-        "Inventory updated": "Đã cập nhật kho hàng",
+      function translateDescription(description) {
+        const translations = {
+          // Vận chuyển
+          "Transport status updated to":
+            "Trạng thái vận chuyển được cập nhật thành",
+          "Bat dau van chuyen": "Bắt đầu vận chuyển",
+          "Hoan thanh van chuyen": "Hoàn thành vận chuyển",
+          "Tam dung van chuyen": "Tạm dừng vận chuyển",
+          "Transport status updated to 'Bat dau van chuyen'":
+            "Trạng thái vận chuyển được cập nhật thành 'Bắt đầu vận chuyển'",
+          "Transport status updated to 'Hoan thanh van chuyen'":
+            "Trạng thái vận chuyển được cập nhật thành 'Hoàn thành vận chuyển'",
+          "Transport status updated to 'Tam dung van chuyen'":
+            "Trạng thái vận chuyển được cập nhật thành 'Tạm dừng vận chuyển'",
 
-        // Kiểm định
-        "Batch has been approved by the approver": "Lô hàng đã được kiểm định viên phê duyệt",
-        "Batch has been rejected": "Lô hàng đã bị từ chối",
-        "Quality check completed": "Hoàn thành kiểm tra chất lượng",
-        "Document verification completed": "Hoàn thành xác minh tài liệu",
-        "Batch review in progress": "Đang tiến hành xem xét lô hàng",
-        "Quality inspection passed": "Đã vượt qua kiểm tra chất lượng",
+          // Nhà kho
+          "Warehouse has confirmed receipt of batch":
+            "Nhà kho đã xác nhận nhận lô hàng",
+          "Update inventory status": "Cập nhật trạng thái kho",
+          "Confirm receipt of goods": "Xác nhận nhận hàng",
+          "Inventory updated": "Đã cập nhật kho hàng",
 
-        // Nhà sản xuất
-        "A new batch has been created": "Một lô hàng mới đã được tạo",
-        "Product information updated": "Thông tin sản phẩm đã được cập nhật",
-        "Batch has been approved": "Lô hàng đã được phê duyệt",
-        "Create new production batch": "Tạo lô sản xuất mới",
-        "Update batch information": "Cập nhật thông tin lô hàng",
-        "Production completed": "Hoàn thành sản xuất"
-    };
+          // Kiểm định
+          "Batch has been approved by the approver":
+            "Lô hàng đã được kiểm định viên phê duyệt",
+          "Batch has been rejected": "Lô hàng đã bị từ chối",
+          "Quality check completed": "Hoàn thành kiểm tra chất lượng",
+          "Document verification completed": "Hoàn thành xác minh tài liệu",
+          "Batch review in progress": "Đang tiến hành xem xét lô hàng",
+          "Quality inspection passed": "Đã vượt qua kiểm tra chất lượng",
 
-    // Tìm và thay thế các phần của mô tả
-    for (const [key, value] of Object.entries(translations)) {
-        if (description.includes(key)) {
+          // Nhà sản xuất
+          "A new batch has been created": "Một lô hàng mới đã được tạo",
+          "Product information updated": "Thông tin sản phẩm đã được cập nhật",
+          "Batch has been approved": "Lô hàng đã được phê duyệt",
+          "Create new production batch": "Tạo lô sản xuất mới",
+          "Update batch information": "Cập nhật thông tin lô hàng",
+          "Production completed": "Hoàn thành sản xuất"
+        };
+
+        // Tìm và thay thế các phần của mô tả
+        for (const [key, value] of Object.entries(translations)) {
+          if (description.includes(key)) {
             description = description.replace(key, value);
+          }
         }
-    }
-    return description;
-}
+        return description;
+      }
 
-function translateActivityName(activityName) {
-    const translations = {
-        // Vận chuyển
-        "Transport Status Updated": "Cập nhật trạng thái vận chuyển",
-        "Start Transport": "Bắt đầu vận chuyển",
-        "Stop Transport": "Tạm dừng vận chuyển", 
-        "Finish Transport": "Hoàn thành vận chuyển",
-        "Transport in progress": "Đang vận chuyển",
+      function translateActivityName(activityName) {
+        const translations = {
+          // Vận chuyển
+          "Transport Status Updated": "Cập nhật trạng thái vận chuyển",
+          "Start Transport": "Bắt đầu vận chuyển",
+          "Stop Transport": "Tạm dừng vận chuyển",
+          "Finish Transport": "Hoàn thành vận chuyển",
+          "Transport in progress": "Đang vận chuyển",
 
-        // Nhà kho
-        "Warehouse Confirmation": "Xác nhận từ nhà kho",
-        "Update Inventory": "Cập nhật kho hàng",
-        "Confirm Receipt": "Xác nhận nhận hàng",
-        "Stock check": "Kiểm tra kho",
+          // Nhà kho
+          "Warehouse Confirmation": "Xác nhận từ nhà kho",
+          "Update Inventory": "Cập nhật kho hàng",
+          "Confirm Receipt": "Xác nhận nhận hàng",
+          "Stock check": "Kiểm tra kho",
 
-        // Kiểm định
-        "Batch Approved": "Lô hàng được phê duyệt",
-        "Reject Batch": "Từ chối lô hàng",
-        "Review Batch": "Xem xét lô hàng",
-        "Quality Check": "Kiểm tra chất lượng",
-        "Verify Documents": "Xác minh tài liệu",
-        "Quality Control": "Kiểm soát chất lượng",
+          // Kiểm định
+          "Batch Approved": "Lô hàng được phê duyệt",
+          "Reject Batch": "Từ chối lô hàng",
+          "Review Batch": "Xem xét lô hàng",
+          "Quality Check": "Kiểm tra chất lượng",
+          "Verify Documents": "Xác minh tài liệu",
+          "Quality Control": "Kiểm soát chất lượng",
 
-        // Nhà sản xuất
-        "Create Batch": "Tạo lô hàng",
-        "Batch Created": "Đã tạo lô hàng",
-        "Update Product Info": "Cập nhật thông tin sản phẩm",
-        "Production Started": "Bắt đầu sản xuất",
-        "Production Completed": "Hoàn thành sản xuất"
-    };
+          // Nhà sản xuất
+          "Create Batch": "Tạo lô hàng",
+          "Batch Created": "Đã tạo lô hàng",
+          "Update Product Info": "Cập nhật thông tin sản phẩm",
+          "Production Started": "Bắt đầu sản xuất",
+          "Production Completed": "Hoàn thành sản xuất"
+        };
 
-    return translations[activityName] || activityName;
-}
+        return translations[activityName] || activityName;
+      }
 
-    function updateAuthenticationInfo(batchInfo) {
-        const xacthucContent = document.getElementById('xacthuc');
+      function updateAuthenticationInfo(batchInfo) {
+        const xacthucContent = document.getElementById("xacthuc");
         xacthucContent.innerHTML = `
             <h2>Thông tin xác thực</h2>
             <p><strong>Trạng thái:</strong> ${batchInfo.status}</p>
             <p><strong>Chứng nhận:</strong> <a href="${batchInfo.certificateImageUrl}" target="_blank">Xem chứng nhận</a></p>
         `;
-    }
-    
-    function updateBatchDetails(batchInfo) {
-    const lohangContent = document.getElementById('lohang');
-    lohangContent.innerHTML = `
-        <div class="batch-info">
-            <h2>Thông tin lô hàng</h2>
-            <table>
-                <tr>
-                    <th>Tên lô hàng</th>
-                    <td>${batchInfo.name}</td>
-                </tr>
-                <tr>
-                    <th>Số lượng (tấn)</th>
-                    <td>${batchInfo.quantity}</td>
-                </tr>
-                <tr>
-                    <th>Ngày tạo lô hàng</th>
-                    <td>${new Date(batchInfo.productionDate).toLocaleDateString('vi-VN')}</td>
-                </tr>
-                <tr>
-                    <th>Trạng thái vận chuyển</th>
-                    <td>${batchInfo.transportStatus}</td>
-                </tr>
-                <tr>
-                    <th>Người sản xuất</th>
-                    <td>${batchInfo.producer.name}</td>
-                </tr>
-                <tr>
-                    <th>Hình ảnh lô hàng</th>
-                    <td>
-                        <button class="btn-view-image" onclick="showProductImages('${batchInfo.batchImageUrls}')">
-                            <i class="fas fa-images mr-2"></i> Xem ảnh lô hàng
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Địa chỉ</th>
-                    <td>
-                        <a href="#" onclick="openGoogleMaps('${batchInfo.producer.address}')" class="address-link">
-                            ${batchInfo.producer.address || 'Không có thông tin'}
-                        </a>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Số điện thoại</th>
-                    <td>${batchInfo.producer.phone || 'Không có thông tin'}</td>
-                </tr>
-            </table>
+      }
+
+      function updateBatchDetails(batchInfo) {
+        const lohangContent = document.getElementById("lohang");
+
+        // LOG để debug
+        console.log("=== updateBatchDetails ===");
+        console.log("Full batchInfo:", batchInfo);
+        console.log("productImageUrls:", batchInfo.productImageUrls);
+
+        lohangContent.innerHTML = `
+    <div class="batch-info">
+        <h2>Thông tin lô hàng</h2>
+        <table>
+            <tr>
+                <th>Tên lô hàng</th>
+                <td>${batchInfo.name}</td>
+            </tr>
+            <tr>
+                <th>Số lượng (tấn)</th>
+                <td>${batchInfo.quantity}</td>
+            </tr>
+            <tr>
+                <th>Ngày tạo lô hàng</th>
+                <td>${new Date(batchInfo.productionDate).toLocaleDateString(
+                  "vi-VN"
+                )}</td>
+            </tr>
+            <tr>
+                <th>Trạng thái vận chuyển</th>
+                <td>${batchInfo.transportStatus}</td>
+            </tr>
+            <tr>
+                <th>Người sản xuất</th>
+                <td>${batchInfo.producer.name}</td>
+            </tr>
+            <tr>
+                <th>Hình ảnh lô hàng</th>
+                <td>
+                    <button class="btn-view-image" onclick="showProductImages(${JSON.stringify(
+                      batchInfo.productImageUrls
+                    ).replace(/"/g, "&quot;")})">
+                        <i class="fas fa-images mr-2"></i> Xem ảnh lô hàng
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <th>Địa chỉ</th>
+                <td>
+                    <a href="#" onclick="openGoogleMaps('${
+                      batchInfo.producer.address
+                    }')" class="address-link">
+                        ${batchInfo.producer.address || "Không có thông tin"}
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <th>Số điện thoại</th>
+                <td>${batchInfo.producer.phone || "Không có thông tin"}</td>
+            </tr>
+        </table>
+    </div>
+`;
+      }
+
+      // Hàm để hiển thị ảnh sản phẩm
+      // Hàm đơn giản nhất - chỉ hiển thị ảnh
+      function showProductImages(imageUrls) {
+        console.log("Showing images:", imageUrls);
+
+        // Lấy URL đầu tiên
+        let imageUrl;
+        if (Array.isArray(imageUrls)) {
+          imageUrl = imageUrls[0];
+        } else if (typeof imageUrls === "string") {
+          imageUrl = imageUrls.split(",")[0].trim();
+        }
+
+        if (!imageUrl) {
+          console.error("No image URL found");
+          return;
+        }
+
+        // Hiển thị overlay
+        const overlay = document.getElementById("overlay");
+        const overlayImg = document.getElementById("overlay-img");
+
+        overlayImg.src = imageUrl; // SỬ DỤNG TRỰC TIẾP, KHÔNG XỬ LÝ GÌ
+        overlay.style.display = "flex";
+
+        console.log("Image source set to:", imageUrl);
+      }
+
+      // Đảm bảo rằng bạn đã có hàm hideImage() để đóng overlay
+      function hideImage() {
+        const overlay = document.getElementById("overlay");
+        const overlayImg = document.getElementById("overlay-img");
+        overlay.style.display = "none";
+        overlayImg.src = ""; // Clear the image source
+      }
+      document.querySelectorAll(".tab-button").forEach((tab) => {
+        tab.addEventListener("click", function () {
+          document
+            .querySelectorAll(".tab-button")
+            .forEach((t) => t.classList.remove("active"));
+          this.classList.add("active");
+          const target = this.getAttribute("data-target");
+          document.querySelectorAll(".tab-content").forEach((content) => {
+            content.style.display = "none";
+          });
+          document.getElementById(target).style.display = "block";
+        });
+      });
+
+      // Kích hoạt tab đầu tiên khi trang được tải
+      document.querySelector(".tab-button").click();
+
+      function getActivityClass(activityName) {
+        // Thêm class CSS dựa trên loại hoạt động
+        switch (activityName.toLowerCase()) {
+          case "transport status updated":
+            return "activity-transport";
+          case "warehouse confirmation":
+            return "activity-confirm";
+          default:
+            return "activity-default";
+        }
+      }
+
+      function getActivityIcon(activityName) {
+        // Chuyển đổi activityName sang chữ thường để so sánh
+        const activity = activityName.toLowerCase();
+
+        // Nhà sản xuất
+        if (
+          activity.includes("create batch") ||
+          activity.includes("batch created")
+        ) {
+          return '<i class="fas fa-seedling text-success"></i>'; // Icon cây mầm
+        }
+        if (activity.includes("update product info")) {
+          return '<i class="fas fa-file-pen text-success"></i>'; // Icon file chỉnh sửa
+        }
+
+        // Nhà kiểm duyệt
+        if (
+          activity.includes("batch approved") ||
+          activity.includes("approve batch")
+        ) {
+          return '<i class="fas fa-clipboard-check text-primary"></i>'; // Icon clipboard check
+        }
+        if (activity.includes("reject batch")) {
+          return '<i class="fas fa-clipboard-xmark text-danger"></i>'; // Icon clipboard X
+        }
+        if (activity.includes("review batch")) {
+          return '<i class="fas fa-magnifying-glass text-primary"></i>'; // Icon kính lúp
+        }
+        if (activity.includes("verify documents")) {
+          return '<i class="fas fa-file-contract text-primary"></i>'; // Icon hợp đồng
+        }
+        if (activity.includes("quality check")) {
+          return '<i class="fas fa-vial text-primary"></i>'; // Icon ống nghiệm
+        }
+
+        // Nhà kho
+        if (
+          activity.includes("warehouse confirmation") ||
+          activity.includes("confirm receipt")
+        ) {
+          return '<i class="fas fa-warehouse text-warning"></i>'; // Icon nhà kho
+        }
+        if (activity.includes("update inventory")) {
+          return '<i class="fas fa-box-archive text-warning"></i>'; // Icon hộp lưu trữ
+        }
+
+        // Vận chuyển
+        if (
+          activity.includes("transport status") ||
+          activity.includes("start transport")
+        ) {
+          return '<i class="fas fa-truck-fast text-purple"></i>'; // Icon xe tải nhanh
+        }
+        if (activity.includes("finish transport")) {
+          return '<i class="fas fa-truck-ramp-box text-purple"></i>'; // Icon xe tải dỡ hàng
+        }
+        if (activity.includes("stop transport")) {
+          return '<i class="fas fa-truck-medical text-danger"></i>'; // Icon xe tải cứu hộ
+        }
+
+        // Mặc định nếu không khớp với bất kỳ điều kiện nào
+        return '<i class="fas fa-circle-info text-secondary"></i>'; // Icon thông tin
+      }
+
+      // Thêm hàm mới để mở Google Maps
+      function openGoogleMaps(address) {
+        if (address && address !== "Không có thông tin") {
+          const encodedAddress = encodeURIComponent(address);
+          window.open(
+            `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
+            "_blank"
+          );
+        } else {
+          alert("Không có thông tin địa chỉ để hiển thị trên bản đồ.");
+        }
+      }
+
+      let currentBatchData = null;
+
+      // Cập nhật hàm updateAuthenticationInfo
+      function updateAuthenticationInfo(batchInfo) {
+        currentBatchData = batchInfo; // Lưu dữ liệu batch
+
+        const xacthucContent = document.getElementById("xacthuc");
+        document.getElementById("batchStatus").textContent = batchInfo.status;
+        document.getElementById("certificateLink").href =
+          batchInfo.certificateImageUrl;
+
+        // Thêm event listener cho nút verify
+        const btnVerify = document.getElementById("btnVerifyBlockchain");
+        if (btnVerify) {
+          btnVerify.addEventListener("click", verifyBlockchainData);
+        }
+      }
+
+      // Hàm xác thực blockchain
+      async function verifyBlockchainData() {
+        const btnVerify = document.getElementById("btnVerifyBlockchain");
+        const resultDiv = document.getElementById("verificationResult");
+
+        if (!currentBatchData) {
+          alert("Không có dữ liệu lô hàng để xác thực");
+          return;
+        }
+
+        // Disable button và hiển thị loading
+        btnVerify.disabled = true;
+        btnVerify.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Đang xác thực...';
+
+        try {
+          console.log(
+            "Sending verification request for SSCC:",
+            currentBatchData.sscc
+          );
+
+          const response = await fetch("/api/verify-batch", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              sscc: currentBatchData.sscc
+            })
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", response.headers);
+
+          // Kiểm tra content-type
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            const text = await response.text();
+            console.error("Response is not JSON:", text);
+            throw new Error(
+              "Server trả về định dạng không hợp lệ. Vui lòng kiểm tra console để biết chi tiết."
+            );
+          }
+
+          const result = await response.json();
+          console.log("Verification result:", result);
+
+          if (result.success) {
+            displayVerificationResult(result.verificationData);
+          } else {
+            throw new Error(result.error || "Xác thực thất bại");
+          }
+        } catch (error) {
+          console.error("Lỗi xác thực:", error);
+          displayVerificationError(error.message);
+        } finally {
+          // Reset button
+          btnVerify.disabled = false;
+          btnVerify.innerHTML =
+            '<i class="fas fa-check-circle"></i> Xác thực lại';
+        }
+      }
+
+      // Hiển thị kết quả xác thực
+      function displayVerificationResult(data) {
+        const resultDiv = document.getElementById("verificationResult");
+
+        // QUAN TRỌNG: KHÔNG tính toán lại
+        const isValid = data.blockchainStatus === "VERIFIED";
+
+        const statusClass = isValid ? "success" : "failed";
+        const statusIcon = isValid ? "fa-check-circle" : "fa-times-circle";
+        const statusText = isValid
+          ? "Xác thực thành công!"
+          : "Cảnh báo: Dữ liệu có thể đã bị thay đổi!";
+        const statusColor = isValid ? "#10b981" : "#ef4444";
+
+        console.log("=== FRONTEND DISPLAY ===");
+        console.log("data.isValid từ backend:", data.isValid);
+        console.log("isValid sử dụng:", isValid);
+        console.log("blockchainStatus:", data.blockchainStatus);
+
+        resultDiv.innerHTML = `
+        <div class="verify-${isValid ? "success" : "failed"}">
+            <div class="verify-result-header ${statusClass}">
+                <i class="fas ${statusIcon}"></i>
+                <span>${statusText}</span>
+            </div>
+            <div class="verify-details">
+                <p><strong>Trạng thái:</strong> 
+                    <span style="color: ${statusColor}; font-weight: bold;">
+                        ${data.blockchainStatus}
+                    </span>
+                </p>
+                <p><strong>SSCC:</strong> ${data.sscc}</p>
+                <p><strong>Batch ID:</strong> ${data.batchId}</p>
+                <p><strong>Tên lô hàng:</strong> ${
+                  data.batchDetails?.name || "N/A"
+                }</p>
+                <p><strong>Số lượng:</strong> ${
+                  data.batchDetails?.quantity || "N/A"
+                } tấn</p>
+                <p><strong>Thời gian tạo:</strong> ${
+                  data.batchDetails?.productionDate
+                    ? new Date(data.batchDetails.productionDate).toLocaleString(
+                        "vi-VN"
+                      )
+                    : "N/A"
+                }</p>
+                <p><strong>Thời gian xác thực:</strong> ${new Date(
+                  data.verifiedAt
+                ).toLocaleString("vi-VN")}</p>
+                
+                ${
+                  data.transactionInfo
+                    ? `
+                    <p><strong>Transaction Hash:</strong></p>
+                    <div class="hash-display" style="margin-top: 5px; cursor: pointer;" onclick="navigator.clipboard.writeText('${data.transactionInfo.transactionHash}')" title="Click để copy">
+                        ${data.transactionInfo.transactionHash}
+                    </div>
+                    <p style="margin-top: 10px;"><strong>Block Number:</strong> ${data.transactionInfo.blockNumber}</p>
+                `
+                    : ""
+                }
+                
+                ${
+                  isValid
+                    ? `
+                    <div style="margin-top: 15px; padding: 10px; background: #ecfdf5; border-radius: 6px; border-left: 3px solid #10b981;">
+                        <p style="margin: 0; color: #065f46;">
+                            <i class="fas fa-shield-check"></i>
+                            <strong>Dữ liệu được xác thực:</strong><br>
+                            Thông tin lô hàng này khớp hoàn toàn với dữ liệu đã được lưu trên blockchain.<br>
+                            Điều này đảm bảo tính minh bạch và không thể giả mạo.
+                        </p>
+                    </div>
+                `
+                    : `
+                    <div style="margin-top: 15px; padding: 10px; background: #fef2f2; border-radius: 6px; border-left: 3px solid #ef4444;">
+                        <p style="margin: 0; color: #991b1b;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Cảnh báo:</strong><br>
+                            Hash của dữ liệu hiện tại không khớp với hash đã lưu trên blockchain.<br>
+                            Dữ liệu có thể đã bị thay đổi sau khi tạo lô hàng.
+                        </p>
+                    </div>
+                `
+                }
+                
+                <details style="margin-top: 15px;">
+                    <summary style="cursor: pointer; font-weight: 600; color: #667eea;">
+                        <i class="fas fa-code"></i> Xem chi tiết kỹ thuật
+                    </summary>
+                    <div style="margin-top: 10px;">
+                        <p><strong>Hash đã lưu:</strong></p>
+                        <div class="hash-display" onclick="navigator.clipboard.writeText('${
+                          data.storedHash
+                        }')" title="Click để copy" style="cursor: pointer;">
+                            ${data.storedHash}
+                        </div>
+                        
+                        <p style="margin-top: 10px;"><strong>Hash tính toán:</strong></p>
+                        <div class="hash-display" onclick="navigator.clipboard.writeText('${
+                          data.calculatedHash
+                        }')" title="Click để copy" style="cursor: pointer;">
+                            ${data.calculatedHash}
+                        </div>
+                        
+                        <p style="margin-top: 10px;"><strong>So sánh:</strong> 
+                            <span style="color: ${
+                              isValid ? "#10b981" : "#ef4444"
+                            }; font-weight: bold;">
+                                ${isValid ? "✓ Khớp" : "✗ Không khớp"}
+                            </span>
+                        </p>
+                    </div>
+                </details>
+            </div>
         </div>
     `;
-}
-// Hàm để hiển thị ảnh sản phẩm
-function showProductImages(imageUrls) {
-    console.log('Original imageUrls:', imageUrls); // Debug
 
-    if (!imageUrls) {
-        console.error('No image URLs provided');
-        return;
-    }
+        resultDiv.style.display = "block";
+        resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
 
-    const urls = imageUrls.split(',').map(url => {
-        // Xử lý đường dẫn
-        let cleanUrl = url.trim();
-        
-        // Nếu đường dẫn chứa uploads, lấy phần sau uploads
-        if (cleanUrl.includes('uploads')) {
-            cleanUrl = cleanUrl.split('uploads').pop();
-        }
-        
-        // Lấy chỉ tên file
-        const fileName = '1740356326331-787018934.jpg';
-        
-        // Tạo đường dẫn mới
-        cleanUrl = `/uploads/batches/2025/2/${fileName}`;
-        
-        console.log('Cleaned URL:', cleanUrl); // Debug
-        return cleanUrl;
-    });
+      // Hiển thị lỗi xác thực
+      function displayVerificationError(errorMessage) {
+        const resultDiv = document.getElementById("verificationResult");
 
-    if (urls.length > 0) {
-        const overlay = document.getElementById('overlay');
-        const overlayImg = document.getElementById('overlay-img');
-        
-        overlayImg.onerror = function() {
-            console.error('Failed to load image:', overlayImg.src);
-            // alert('Không thể tải ảnh');
-        };
-        
-        overlayImg.onload = function() {
-            console.log('Image loaded successfully:', overlayImg.src);
-        };
+        resultDiv.innerHTML = `
+        <div class="verify-failed">
+            <div class="verify-result-header failed">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Lỗi xác thực</span>
+            </div>
+            <div class="verify-details">
+                <p style="color: #991b1b;">${errorMessage}</p>
+                <p style="margin-top: 10px;">Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ.</p>
+            </div>
+        </div>
+    `;
 
-        // Sử dụng URL đã được làm sạch
-        let imageUrl = urls[0];
-        
-        // Thêm origin cho môi trường development
-        if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-            const port = window.location.port;
-            imageUrl = `http://127.0.0.1:${port}${imageUrl}`;
-        }
-
-        console.log('Final image URL:', imageUrl); // Debug
-        
-        overlayImg.src = imageUrl;
-        overlay.style.display = 'flex';
-    } else {
-        console.error('No valid URLs found in array');
-    }
-}
-
-// Đảm bảo rằng bạn đã có hàm hideImage() để đóng overlay
-function hideImage() {
-    const overlay = document.getElementById('overlay');
-    const overlayImg = document.getElementById('overlay-img');
-    overlay.style.display = 'none';
-    overlayImg.src = ''; // Clear the image source
-}
-document.querySelectorAll('.tab-button').forEach(tab => {
-    tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        const target = this.getAttribute('data-target');
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.style.display = 'none';
-        });
-        document.getElementById(target).style.display = 'block';
-    });
-});
-
-// Kích hoạt tab đầu tiên khi trang được tải
-document.querySelector('.tab-button').click();
-
-function getActivityClass(activityName) {
-    // Thêm class CSS dựa trên loại hoạt động
-    switch(activityName.toLowerCase()) {
-        case 'transport status updated': return 'activity-transport';
-        case 'warehouse confirmation': return 'activity-confirm';
-        default: return 'activity-default';
-    }
-}
-
-function getActivityIcon(activityName) {
-    // Chuyển đổi activityName sang chữ thường để so sánh
-    const activity = activityName.toLowerCase();
-    
-    // Nhà sản xuất
-    if (activity.includes('create batch') || activity.includes('batch created')) {
-        return '<i class="fas fa-seedling text-success"></i>'; // Icon cây mầm
-    }
-    if (activity.includes('update product info')) {
-        return '<i class="fas fa-file-pen text-success"></i>'; // Icon file chỉnh sửa
-    }
-    
-    // Nhà kiểm duyệt
-    if (activity.includes('batch approved') || activity.includes('approve batch')) {
-        return '<i class="fas fa-clipboard-check text-primary"></i>'; // Icon clipboard check
-    }
-    if (activity.includes('reject batch')) {
-        return '<i class="fas fa-clipboard-xmark text-danger"></i>'; // Icon clipboard X
-    }
-    if (activity.includes('review batch')) {
-        return '<i class="fas fa-magnifying-glass text-primary"></i>'; // Icon kính lúp
-    }
-    if (activity.includes('verify documents')) {
-        return '<i class="fas fa-file-contract text-primary"></i>'; // Icon hợp đồng
-    }
-    if (activity.includes('quality check')) {
-        return '<i class="fas fa-vial text-primary"></i>'; // Icon ống nghiệm
-    }
-    
-    // Nhà kho
-    if (activity.includes('warehouse confirmation') || activity.includes('confirm receipt')) {
-        return '<i class="fas fa-warehouse text-warning"></i>'; // Icon nhà kho
-    }
-    if (activity.includes('update inventory')) {
-        return '<i class="fas fa-box-archive text-warning"></i>'; // Icon hộp lưu trữ
-    }
-    
-    // Vận chuyển
-    if (activity.includes('transport status') || activity.includes('start transport')) {
-        return '<i class="fas fa-truck-fast text-purple"></i>'; // Icon xe tải nhanh
-    }
-    if (activity.includes('finish transport')) {
-        return '<i class="fas fa-truck-ramp-box text-purple"></i>'; // Icon xe tải dỡ hàng
-    }
-    if (activity.includes('stop transport')) {
-        return '<i class="fas fa-truck-medical text-danger"></i>'; // Icon xe tải cứu hộ
-    }
-    
-    // Mặc định nếu không khớp với bất kỳ điều kiện nào
-    return '<i class="fas fa-circle-info text-secondary"></i>'; // Icon thông tin
-}
-
-// Thêm hàm mới để mở Google Maps
-function openGoogleMaps(address) {
-    if (address && address !== 'Không có thông tin') {
-        const encodedAddress = encodeURIComponent(address);
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
-    } else {
-        alert('Không có thông tin địa chỉ để hiển thị trên bản đồ.');
-    }
-}
+        resultDiv.style.display = "block";
+      }
     </script>
 
-<script>
-
-    const BASE_URL = window.location.origin; // Lấy base URL của ứng dụng
-</script>
-</body>
+    <script>
+      const BASE_URL = window.location.origin; // Lấy base URL của ứng dụng
+    </script>
+  </body>
 </html>
