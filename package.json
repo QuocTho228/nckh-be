@@ -4,9 +4,14 @@
   "main": "blockchain/src/app.js",
   "scripts": {
     "start": "node blockchain/src/app.js",
+    "dev": "nodemon blockchain/src/app.js",
+    "db:setup": "node blockchain/src/scripts/setupDatabase.js",
+    "logger:test": "node blockchain/src/scripts/testLogger.js",
+    "logger:stats": "node blockchain/src/scripts/showStats.js",
+    "logger:verify": "node blockchain/src/scripts/verifyChain.js",
+    "logger:reset": "node blockchain/src/scripts/resetLogger.js",
     "heroku-postbuild": "echo 'Skipping webpack build'",
     "build": "echo 'Skipping webpack build'",
-    "dev": "nodemon blockchain/src/app.js",
     "test": "mocha --require @babel/register src/test/*.test.js"
   },
   "engines": {

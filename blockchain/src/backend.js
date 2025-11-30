@@ -11,6 +11,7 @@ const { Web3 } = require("web3");
 const path = require("path");
 const mysql = require("mysql");
 require("dotenv").config();
+const { logger: blockchainLogger } = require("./blockchainLogger");
 const axios = require("axios");
 const FormData = require("form-data");
 const sharp = require("sharp");
@@ -142,8 +143,42 @@ web3.eth
 
 web3.eth.net
   .isListening()
-  .then(() => console.log("Đã kết nối với Ganache"))
+  .then(async () => {
+    console.log("Đã kết nối với Ganache");
+    await initializeBlockchainLogger();
+  })
   .catch((e) => console.error("Lỗi kết nối với Ganache:", e));
+
+async function initializeBlockchainLogger() {
+  try {
+    console.log("\n========================================");
+    console.log("🚀 BLOCKCHAIN LOGGER");
+    console.log("========================================\n");
+
+    const initialized = await blockchainLogger.initialize();
+    if (!initialized) {
+      console.warn("⚠️ Logger không khả dụng");
+      return;
+    }
+
+    console.log("📥 Đồng bộ lịch sử...");
+    await blockchainLogger.syncHistoricalEvents();
+
+    console.log("👂 Bắt đầu listening...");
+    blockchainLogger.startListening();
+
+    const stats = await blockchainLogger.getStats();
+    console.log("\n📊 STATS:");
+    console.log(`   Blocks: ${stats.total_blocks}`);
+    console.log(`   Events: ${stats.total_events}`);
+
+    console.log("\n========================================");
+    console.log("✓ LOGGER READY");
+    console.log("========================================\n");
+  } catch (error) {
+    console.error("\n✗ Logger Error:", error.message);
+  }
+}
 
 // ABI và địa chỉ hợp đồng (cần cập nhật sau khi triển khai trên Ganache)
 const traceabilityContractABI =
@@ -2980,7 +3015,125 @@ function setupRoutes(app, db) {
       });
     }
   });
+
+  // ==========================================
+  // BLOCKCHAIN LOGGER APIs
+  // ==========================================
+
+  app.get("/api/blockchain/stats", async (req, res) => {
+    try {
+      const stats = await blockchainLogger.getStats();
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/blockchain/block/:blockNumber", async (req, res) => {
+    try {
+      const blockNumber = parseInt(req.params.blockNumber);
+      if (isNaN(blockNumber)) {
+        return res.status(400).json({ error: "Invalid block number" });
+      }
+      const blockInfo = await blockchainLogger.getBlockInfo(blockNumber);
+      if (!blockInfo) {
+        return res.status(404).json({ error: "Block not found" });
+      }
+      res.json({ success: true, data: blockInfo });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/blockchain/batch/:batchId/events", async (req, res) => {
+    try {
+      const batchId = req.params.batchId;
+      const events = await blockchainLogger.getEventsByBatch(batchId);
+      res.json({ success: true, count: events.length, data: events });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/blockchain/events/recent", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit) || 50;
+      const events = await blockchainLogger.getRecentEvents(limit);
+      res.json({ success: true, count: events.length, data: events });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/blockchain/batch/:batchId/timeline", async (req, res) => {
+    try {
+      const batchId = req.params.batchId;
+      const events = await blockchainLogger.getEventsByBatch(batchId);
+
+      const timeline = events.map((e) => ({
+        timestamp: e.timestamp_iso,
+        event_type: e.event_name,
+        title: getEventTitle(e.event_name),
+        block_number: e.block_number,
+        transaction_hash: e.transaction_hash,
+        data: e.event_data
+      }));
+
+      res.json({ success: true, batch_id: batchId, timeline });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  function getEventTitle(eventName) {
+    const titles = {
+      BatchCreated: "Lô hàng được tạo",
+      BatchApproved: "Lô hàng được phê duyệt",
+      BatchRejected: "Lô hàng bị từ chối",
+      TransportStatusUpdated: "Cập nhật vận chuyển",
+      WarehouseConfirmed: "Kho xác nhận",
+      ActivityLogAdded: "Thêm nhật ký"
+    };
+    return titles[eventName] || eventName;
+  }
 }
+
+// Graceful Shutdown
+process.on("SIGINT", async () => {
+  console.log("\n🛑 Shutting down...");
+
+  if (blockchainLogger) {
+    await blockchainLogger.stop();
+  }
+
+  if (db) {
+    db.end((err) => {
+      if (err) console.error("DB close error:", err);
+      console.log("✓ DB closed");
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+});
+
+process.on("SIGTERM", async () => {
+  console.log("\n🛑 Shutting down...");
+
+  if (blockchainLogger) {
+    await blockchainLogger.stop();
+  }
+
+  if (db) {
+    db.end((err) => {
+      if (err) console.error("DB close error:", err);
+      console.log("✓ DB closed");
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+});
 
 module.exports = {
   web3,
