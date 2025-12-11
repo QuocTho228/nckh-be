@@ -9,7 +9,7 @@ const express = require("express");
 const app = express();
 const { Web3 } = require("web3");
 const path = require("path");
-const mysql = require("mysql");
+const mysql = require("mysql2");
 require("dotenv").config();
 const { logger: blockchainLogger } = require("./blockchainLogger");
 const axios = require("axios");
