@@ -26,6 +26,90 @@ function translateParticipantType(type) {
   return types[type] || type;
 }
 
+// Hàm định dạng timestamp
+function formatTimestamp(timestamp) {
+  try {
+    // Nếu timestamp đã là chuỗi định dạng "HH:mm:ss dd/MM/yyyy"
+    if (typeof timestamp === 'string' && timestamp.includes('/')) {
+      // Kiểm tra định dạng "15:23:58 22/12/2025"
+      const match = timestamp.match(/(\d{2}):(\d{2}):(\d{2}) (\d{2})\/(\d{2})\/(\d{4})/);
+      if (match) {
+        const [, hours, minutes, seconds, day, month, year] = match;
+        // Tạo Date object từ các phần đã parse
+        const date = new Date(year, month - 1, day, hours, minutes, seconds);
+        
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleString("vi-VN", {
+            hour12: false,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          });
+        }
+      }
+      // Nếu đã đúng định dạng rồi thì trả về luôn
+      return timestamp;
+    }
+    
+    // Nếu là object có thuộc tính _seconds (Firestore Timestamp)
+    if (timestamp && timestamp._seconds) {
+      const date = new Date(timestamp._seconds * 1000);
+      return date.toLocaleString("vi-VN", {
+        hour12: false,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+    
+    // Nếu là số (Unix timestamp)
+    if (typeof timestamp === 'number') {
+      const date = timestamp < 10000000000 
+        ? new Date(timestamp * 1000) 
+        : new Date(timestamp);
+      
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleString("vi-VN", {
+          hour12: false,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+    }
+    
+    // Thử parse như Date string thông thường
+    const date = new Date(timestamp);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleString("vi-VN", {
+        hour12: false,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+    
+    console.error("Invalid timestamp:", timestamp);
+    return "Không có thông tin";
+  } catch (error) {
+    console.error("Error formatting timestamp:", error, timestamp);
+    return "Không có thông tin";
+  }
+}
+
+// Hàm hiển thị lịch sử vận chuyển
 async function displayTransportHistory(sscc) {
   try {
     const response = await fetch(`/api/batch-transport-history/${sscc}`);
@@ -61,17 +145,7 @@ async function displayTransportHistory(sscc) {
             <div class="timeline-dot"></div>
             <div class="timeline-details">
               <h4>${translateAction(event.action)}</h4>
-              <p><strong>Thời gian:</strong> ${new Date(
-                event.timestamp
-              ).toLocaleString("vi-VN", {
-                hour12: false,
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit"
-              })}</p>
+              <p><strong>Thời gian:</strong> ${formatTimestamp(event.timestamp)}</p>
               <p><strong>Loại người tham gia:</strong> ${translateParticipantType(
                 event.participantType
               )}</p>

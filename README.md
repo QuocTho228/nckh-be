@@ -132,30 +132,185 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
 ## Cấu Trúc Dự Án
 
 ```
-nckh-be/
-├── blockchain/
-│   ├── contracts/
-│   │   └── TraceabilityContract.sol
-│   ├── migrations/
-│   └── truffle-config.js
-├── src/
-│   ├── public/
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── images/
-│   ├── components/
-│   │   └── user/
-│   │       ├── dangky.js
-│   │       └── dangnhap.js
-│   ├── config/
-│   │   └── db.js
-│   ├── routes/
-│   ├── middleware/
-│   ├── utils/
-│   └── server.js
-├── .env
+nckh-be
+├── .babelrc
+├── .gitignore
+├── brcypt.js
+├── docker-compose.yml
+├── Dockerfile
+├── nginx.conf
+├── package-lock.json
 ├── package.json
-└── README.md
+├── Procfile
+├── README.md
+├── SECURITY.md
+├── truffle-config.js
+├── webpack.config.js
+├── .vscode/
+├── blockchain/
+│   ├── truffle-config.js
+│   ├── build/
+│   │   └── contracts/
+│   │       ├── ActivityLog.json
+│   │       └── TraceabilityContract.json
+│   ├── contracts/
+│   │   ├── .gitkeep
+│   │   ├── ActivityLog.sol
+│   │   └── supplychain.sol
+│   ├── migrations/
+│   │   ├── .gitkeep
+│   │   └── 2_deploy_contracts.js
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── backend.js
+│   │   ├── blockchainLogger.js
+│   │   ├── firebase.js
+│   │   ├── manage.js
+│   │   ├── notification.js
+│   │   ├── util.js
+│   │   ├── websocket.js
+│   │   ├── components/
+│   │   │   ├── tieu-dung/
+│   │   │   │   └── trang-chu.js
+│   │   │   └── user/
+│   │   │       ├── dangky.js
+│   │   │       ├── dangnhap.js
+│   │   │       ├── data.json
+│   │   │       ├── sendmail.js
+│   │   │       └── batch/
+│   │   │           └── createBatch.js
+│   │   ├── config/
+│   │   │   ├── db.js
+│   │   │   └── redis.js
+│   │   ├── database/
+│   │   │   └── blockchain_schema.sql
+│   │   ├── public/
+│   │   │   ├── trangcanhan_caidat.html
+│   │   │   ├── account/
+│   │   │   │   ├── dangky.html
+│   │   │   │   ├── dangnhap.html
+│   │   │   │   ├── quenmatkhau.html
+│   │   │   │   └── xacthuc.html
+│   │   │   ├── admin/
+│   │   │   │   ├── addadmin.html
+│   │   │   │   ├── addproduct.html
+│   │   │   │   ├── addregion.html
+│   │   │   │   ├── admintest.html
+│   │   │   │   ├── caidat.html
+│   │   │   │   ├── editproduct.html
+│   │   │   │   ├── product.html
+│   │   │   │   ├── region.html
+│   │   │   │   ├── reply.html
+│   │   │   │   ├── stats.html
+│   │   │   │   ├── user.html
+│   │   │   │   ├── css/
+│   │   │   │   │   ├── animation.css
+│   │   │   │   │   ├── header.css
+│   │   │   │   │   ├── main.css
+│   │   │   │   │   ├── reply.css
+│   │   │   │   │   ├── responsive.css
+│   │   │   │   │   ├── stat.css
+│   │   │   │   │   └── style.css
+│   │   │   │   │   └── theme.css
+│   │   │   │   └── js/
+│   │   │   │       ├── addregion.js
+│   │   │   │       ├── admin-auth.js
+│   │   │   │       ├── admin.js
+│   │   │   │       ├── editproduct.js
+│   │   │   │       ├── feature.js
+│   │   │   │       ├── product.js
+│   │   │   │       ├── region.js
+│   │   │   │       ├── reply.js
+│   │   │   │       ├── settings.js
+│   │   │   │       ├── stats.js
+│   │   │   │       ├── unread-count.js
+│   │   │   │       └── user.js
+│   │   │   ├── chatbox/
+│   │   │   │   └── chatbox.js
+│   │   │   ├── css/
+│   │   │   │   ├── card.css
+│   │   │   │   ├── chatbox.css
+│   │   │   │   ├── footer.css
+│   │   │   │   ├── lo-hang.css
+│   │   │   │   ├── nav-bar.css
+│   │   │   │   ├── nav-bar2.css
+│   │   │   │   ├── nha-kho.css
+│   │   │   │   ├── nhakiemduyet.css
+│   │   │   │   ├── nhatky-hoatdong.css
+│   │   │   │   ├── profile.css
+│   │   │   │   ├── san-xuat.css
+│   │   │   │   ├── sanpham.css
+│   │   │   │   ├── style.css
+│   │   │   │   ├── them-lo-hang.css
+│   │   │   │   ├── thongbao.css
+│   │   │   │   ├── trangcanhan.css
+│   │   │   │   ├── trangchu.css
+│   │   │   │   └── van-chuyen.css
+│   │   │   ├── hinhanh/
+│   │   │   │   ├── background-saurieng.jpg
+│   │   │   │   ├── banner-1.jpg
+│   │   │   │   ├── banner.jpg
+│   │   │   │   ├── Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png
+│   │   │   │   ├── cert-globalgap.png
+│   │   │   │   ├── cert-gmp.png
+│   │   │   │   ├── cert-iso.png
+│   │   │   │   ├── cert-organic.png
+│   │   │   │   ├── cert-vietgap.png
+│   │   │   │   ├── favicon.png
+│   │   │   │   ├── icon-chatluong.png
+│   │   │   │   ├── icon-tunhien.png
+│   │   │   │   ├── icon-tuoinon.png
+│   │   │   │   ├── icon-uytin.png
+│   │   │   │   ├── logo.jpg
+│   │   │   │   ├── noimage.png
+│   │   │   │   ├── qrcode_trangcanhan.png
+│   │   │   │   ├── truy-xuat-nguon-goc-1.png
+│   │   │   │   └── ve-chung-toi-saurieng.png
+│   │   │   ├── js_giaodien/
+│   │   │   │   ├── loaditem.js
+│   │   │   │   ├── nav-bar.js
+│   │   │   │   ├── profile.js
+│   │   │   │   ├── san-xuat.js
+│   │   │   │   ├── sanpham.js
+│   │   │   │   ├── thongbaoNKD.js
+│   │   │   │   └── thongbaoNSX.js
+│   │   │   ├── kiem-duyet/
+│   │   │   │   ├── nhakiemduyet.html
+│   │   │   │   └── thongbaoNKD.html
+│   │   │   ├── nha-kho/
+│   │   │   │   ├── nha-kho.html
+│   │   │   │   └── nha-kho.js
+│   │   │   ├── san-xuat/
+│   │   │   │   ├── nhatky-hoatdong.html
+│   │   │   │   ├── sanxuat.html
+│   │   │   │   ├── them-lo-hang.html
+│   │   │   │   ├── thongbao-pheduyet.html
+│   │   │   │   └── thongbao-tuchoi.html
+│   │   │   ├── tieu-dung/
+│   │   │   │   ├── allnhakiemduyet.html
+│   │   │   │   ├── allnongdan.html
+│   │   │   │   ├── allsanpham.html
+│   │   │   │   ├── batch-direct.html
+│   │   │   │   ├── lo-hang.html
+│   │   │   │   ├── sanpham.html
+│   │   │   │   ├── trangcanhan.html
+│   │   │   │   └── trangchu.html
+│   │   │   └── van-chuyen/
+│   │   │       ├── van-chuyen.html
+│   │   │       └── van-chuyen.js
+│   │   ├── scripts/
+│   │   │   ├── resetLogger.js
+│   │   │   ├── setupDatabase.js
+│   │   │   ├── showStats.js
+│   │   │   ├── testLogger.js
+│   │   │   └── verifyChain.js
+│   │   └── templates/
+│   │       ├── password-changed-confirmation.html
+│   │       └── reset-password.html
+│   └── test/
+│       └── .gitkeep
+└── nginx/
+    └── nginx.conf
 ```
 
 ## API Endpoints

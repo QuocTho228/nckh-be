@@ -48,8 +48,11 @@ function createNotificationItem(notification) {
     const notificationItem = document.createElement('div');
     notificationItem.className = 'notification-item';
     
-    // Xác định trạng thái và icon tương ứng
-    let statusIcon, statusText, statusClass;
+    // Xác định trạng thái và icon tương ứng - KHỞI TẠO GIÁ TRỊ MẶC ĐỊNH
+    let statusIcon = 'fa-clock';
+    let statusText = 'đang xử lý';
+    let statusClass = 'text-warning';
+    
     if (notification.status === 1) {
         statusIcon = 'fa-check-circle';
         statusClass = 'text-success';
@@ -63,10 +66,10 @@ function createNotificationItem(notification) {
     notificationItem.innerHTML = `
         <div class="notification-content d-flex align-items-center p-3">
             <div>
-                <div class="font-weight-bold mb-1">${notification.inspector_name}</div>
+                <div class="font-weight-bold mb-1">${notification.inspector_name || 'Hệ thống'}</div>
                 <div class="notification-text mb-1">
                     <i class="fas ${statusIcon} ${statusClass}"></i>
-                    ${statusText} lô hàng: ${notification.batch_name}
+                    ${statusText} lô hàng: ${notification.batch_name || 'Không xác định'}
                 </div>
                 <div class="notification-time text-muted">
                     ${new Date(notification.approved_on).toLocaleString()}
