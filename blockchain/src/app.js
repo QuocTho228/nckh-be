@@ -13,7 +13,7 @@ const {
   getDownloadURL,
   deleteObject,
   admin,
-  adminBucket
+  adminBucket,
 } = require("./firebase.js");
 const { storage } = require("./firebase.js");
 
@@ -24,67 +24,31 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
-// Thêm phần này để tích hợp Socket.io
+// Tích hợp Socket.io
 const http = require("http");
 const socketIo = require("socket.io");
-
 const cors = require("cors");
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: [
-      //"https://blockchain-truyxuat-54cfaa613f9c.herokuapp.com/", // Tên miền Heroku của bạn
-      "http://localhost:3000",
-      "http://127.0.0.1:3000"
-      //"https://truyxuatbuoi.xyz"
-    ],
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
     methods: ["GET", "POST"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
+// ============================================
+// 1. BODY PARSER & CORS - PHẢI Ở ĐẦU TIÊN
+// ============================================
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "100mb" }));
+app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
 
-const redisClient = require("./config/redis"); // Sử dụng Redis client đã cấu hình
-const session = require("express-session"); // Import express-session
-
-// Tạo RedisStore từ connect-redis và express-session
-const RedisStore = require("connect-redis").default;
-
-// Thiết lập session middleware
-app.use(
-  session({
-    store: new RedisStore({ client: redisClient }),
-    secret: process.env.SESSION_SECRET || "blockchain_secret_key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Sử dụng secure cookie trong production
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 giờ
-    }
-  })
-);
-
-// Middleware để log session cho debug
-app.use((req, res, next) => {
-  console.log("Session ID:", req.sessionID);
-  console.log("Session Data:", req.session);
-  next();
-});
-
-// Middleware để debug
-app.use((req, res, next) => {
-  console.log("===== DEBUG SESSION =====");
-  console.log("Session ID:", req.sessionID);
-  console.log("isLoggedIn:", req.session.isLoggedIn);
-  console.log("roleId:", req.session.roleId);
-  console.log("Headers Cookie:", req.headers.cookie);
-  next();
-});
-
+// ============================================
+// 2. DATABASE CONNECTION
+// ============================================
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -97,9 +61,50 @@ const db = mysql.createPool({
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  multipleStatements: true
+  multipleStatements: true,
 });
 
+// ============================================
+// 3. SESSION MIDDLEWARE
+// ============================================
+const redisClient = require("./config/redis");
+const session = require("express-session");
+const RedisStore = require("connect-redis").default;
+
+app.use(
+  session({
+    store: new RedisStore({ client: redisClient }),
+    secret: process.env.SESSION_SECRET || "blockchain_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 giờ
+    },
+  })
+);
+
+// ============================================
+// 4. DEBUG MIDDLEWARE
+// ============================================
+app.use((req, res, next) => {
+  console.log("===== DEBUG SESSION =====");
+  console.log("Session ID:", req.sessionID);
+  console.log("isLoggedIn:", req.session.isLoggedIn);
+  console.log("roleId:", req.session.roleId);
+  console.log("Headers Cookie:", req.headers.cookie);
+  next();
+});
+
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
+// ============================================
+// 5. MULTER UPLOAD CONFIG
+// ============================================
 const uploadDir = path.join(__dirname, "public", "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -122,18 +127,35 @@ const diskStorage = multer.diskStorage({
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({
   storage: diskStorage,
-  limits: { fileSize: 100 * 1024 * 1024 }
+  limits: { fileSize: 100 * 1024 * 1024 },
 });
 
+// ============================================
+// 6. SESSION TOUCH MIDDLEWARE
+// ============================================
+app.use((req, res, next) => {
+  if (req.session.userId) {
+    req.session.touch(); // Cập nhật thời gian hoạt động của session
+  }
+  next();
+});
+
+// ============================================
+// 7. AUTHENTICATION ROUTES (đăng ký, đăng nhập)
+// ============================================
 const dangkyRoutes = require("./components/user/dangky.js")(db, upload);
 const dangnhapRoutes = require("./components/user/dangnhap.js")(db);
 app.use("/api", dangkyRoutes);
 app.use("/api", dangnhapRoutes);
+
+// ============================================
+// 8. SETUP ROUTES TỪ BACKEND.JS (SAU BODY PARSER)
+// ============================================
 const {
   web3,
   contract,
@@ -144,70 +166,46 @@ const {
   checkProductExists,
   getProducerById,
   replacer,
-  cleanKeys
+  cleanKeys,
 } = require("./backend.js");
 
-app.use((req, res, next) => {
-  if (req.session.userId) {
-    req.session.touch(); // Cập nhật thời gian hoạt động ca session
+setupRoutes(app, db); // Gọi sau khi body parser đã được setup
+
+// app.js
+const backendModule = require("./backend.js");
+backendModule.setupRoutes(app, db); // Truyền app vào
+// ============================================
+// 9. MANAGE ROUTES
+// ============================================
+const manageRoutes = require("./manage.js");
+app.use("/", manageRoutes);
+
+// ============================================
+// 10. NOTIFICATION HELPERS
+// ============================================
+const { sendNotification } = require("./notification.js");
+
+// ============================================
+// 11. AUTHENTICATION MIDDLEWARE
+// ============================================
+function requireAuth(req, res, next) {
+  if (req.session.userId && req.session.isLoggedIn) {
+    next();
+  } else {
+    res.redirect("/account/dangnhap.html");
   }
-  next();
-});
+}
+
+// ============================================
+// 12. API ROUTES
+// ============================================
 app.get("/api/check-login", (req, res) => {
   console.log("Kiểm tra đăng nhập - Session:", req.session);
   res.json({
     isLoggedIn: req.session.isLoggedIn === true,
-    roleId: req.session.roleId
+    roleId: req.session.roleId,
   });
 });
-
-setupRoutes(app, db);
-
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
-
-app.use(express.static(path.join(__dirname, "public")));
-
-//route chuyển hướng lô hàng
-app.get("/batch/:sscc", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "public", "tieu-dung", "batch-redirect.html")
-  );
-});
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "trangchu.html"));
-});
-app.get("/trangcanhan.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "trangcanhan.html"));
-});
-app.get("/tieu-dung/trangcanhan.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "trangcanhan.html"));
-});
-
-app.get("/lo-hang.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "lo-hang.html"));
-});
-app.get("/sanpham.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "sanpham.html"));
-});
-app.get("/allsanpham.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "allsanpham.html"));
-});
-app.get("/allnongdan.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "tieu-dung", "allnongdan.html"));
-});
-app.get("/allnhakiemduyet.html", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "public", "tieu-dung", "allnhakiemduyet.html")
-  );
-});
-
-//app.post('/api/register', upload.single('avatar'), (req, res) => {
-// Xử lý logic đăng ký ở đây
-//});
 
 app.get("/api/products", async (req, res) => {
   try {
@@ -245,159 +243,9 @@ app.get("/api/nhakiemduyet", async (req, res) => {
   }
 });
 
-app.get("/nha-kho/nha-kho.html", requireAuth, (req, res) => {
-  if (req.session.roleId === 8) {
-    res.sendFile(path.join(__dirname, "public", "nha-kho", "nha-kho.html"));
-  } else {
-    res.status(403).send("Forbidden");
-  }
-});
-app.get("/van-chuyen/van-chuyen.html", requireAuth, (req, res) => {
-  if (req.session.roleId === 6) {
-    res.sendFile(
-      path.join(__dirname, "public", "van-chuyen", "van-chuyen.html")
-    );
-  } else {
-    res.status(403).send("Forbidden");
-  }
-});
-
-// xac thuc dang nhap
-function requireAuth(req, res, next) {
-  if (req.session.userId) {
-    next();
-  } else {
-    res.redirect("/account/dangnhap.html");
-  }
-}
-
-app.get("/san-xuat/sanxuat.html", requireAuth, (req, res) => {
-  if (req.session.roleId === 1) {
-    res.sendFile(path.join(__dirname, "public", "san-xuat", "sanxuat.html"));
-  } else {
-    res.status(403).send("Forbidden");
-  }
-});
-
-app.get("/nhakiemduyet.html", requireAuth, (req, res) => {
-  if (req.session.roleId === 2) {
-    res.sendFile(
-      path.join(__dirname, "public", "kiem-duyet", "nhakiemduyet.html")
-    );
-  } else {
-    res.status(403).send("Forbidden");
-  }
-});
-
-// app.get('/', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'trangchu.html'));
-// });
-
-// app.post('/api/dangnhap', async (req, res) => {
-//   const { email, password } = req.body;
-//   // ... xác thực người dùng ...
-//   if (user && await bcrypt.compare(password, user.password)) {
-//     req.session.userId = user.uid;
-//   }
-//   // ...
-// });
-// app.get('/api/products', async (req, res) => {
-//   try {
-//       const [products] = await db.query('SELECT product_id, product_name FROM products');
-//       res.json(products);
-//   } catch (error) {
-//       console.error('Lỗi khi lấy danh sách sản phẩm:', error);
-//       res.status(500).json({ error: 'Lỗi server khi lấy danh sách sản phẩm' });
-//   }
-// });
-
-// app.get('/api/nhasanxuat', async (req, res) => {
-//   try {
-//     const [rows] = await db.query('SELECT * FROM users WHERE role_id = 1');
-//     res.json(rows);
-//   } catch (err) {
-//     console.error('Lỗi khi lấy danh sách nhà sản xuất:', err.message);
-//     res.status(500).json({ error: 'Lỗi khi lấy danh sách nhà sản xuất' });
-//   }
-// });
-
-// app.get('/api/nhakiemduyet', async (req, res) => {
-//   try {
-//     const [rows] = await db.query('SELECT * FROM users WHERE role_id = 2');
-//     res.json(rows);
-//   } catch (err) {
-//     console.error('Lỗi khi lấy danh sách nhà kiểm duyệt:', err.message);
-//     res.status(500).json({ error: 'Lỗi khi lấy danh sách nhà kiểm duyệt' });
-//   }
-// });
-
-// xac thuc dang nhap
-function requireAuth(req, res, next) {
-  if (req.session.userId && req.session.isLoggedIn) {
-    next();
-  } else {
-    res.redirect("/account/dangnhap.html");
-  }
-}
-
-// Sử dụng middleware cho các route cần xác thực
-// app.get('/san-xuat/sanxuat.html', requireAuth, (req, res) => {
-//   if (req.session.roleId === 1) {
-//     res.sendFile(path.join(__dirname, 'public', 'san-xuat', 'sanxuat.html'));
-//   } else {
-//     res.status(403).send('Forbidden');
-//   }
-// });
-
-// app.get('/kiem-duyet/nhakiemduyet.html', requireAuth, (req, res) => {
-//   if (req.session.roleId === 2) {
-//     res.sendFile(path.join(__dirname, 'public', 'kiem-duyet', 'nhakiemduyet.html'));
-//   } else {
-//     res.status(403).send('Forbidden');
-//   }
-// });
-
-// app.get('/user-info', (req, res) => {
-//   console.log('Session trong /api/user-info:', req.session);
-//   if (req.session && req.session.isLoggedIn) {
-//     if (req.session.adminId) {
-//       // Trả về thông tin admin nếu có adminId trong session
-//       res.json({
-//         userId: req.session.adminId,
-//         name: req.session.adminName,
-//         email: req.session.adminEmail,
-//         roleId: req.session.roleId,
-//         isAdmin: true,
-//         province_id: req.session.province_id
-//       });
-//     } else if (req.session.userId) {
-//       // Trả về thông tin user nếu có userId trong session
-//       res.json({
-//         userId: req.session.userId,
-//         name: req.session.name,
-//         email: req.session.email,
-//         roleId: req.session.roleId,
-//         isAdmin: false,
-//         province_id: req.session.province_id,
-//         region_id: req.session.region_id,
-//         region: req.session.region
-//       });
-//     } else {
-//       res.status(400).json({ error: 'Trạng thái đăng nhập không hợp lệ' });
-//     }
-//   } else {
-//     // Trả về thông tin người dùng ẩn danh nếu không đăng nhập
-//     res.json({
-//       name: "Người dùng ẩn danh",
-//       roleId: 0,
-//       isAdmin: false
-//     });
-//   }
-// });
-
 app.get("/api/address-data", async (req, res) => {
   try {
-    const data = await fs.readFile(
+    const data = await fs.promises.readFile(
       path.join(__dirname, "components/user/data.json"),
       "utf8"
     );
@@ -410,8 +258,13 @@ app.get("/api/address-data", async (req, res) => {
 });
 
 app.get("/api/region", async (req, res) => {
-  const [regions] = await db.query("SELECT * FROM regions");
-  res.json(regions);
+  try {
+    const [regions] = await db.query("SELECT * FROM regions");
+    res.json(regions);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách region:", error);
+    res.status(500).json({ error: "Lỗi server" });
+  }
 });
 
 app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
@@ -464,7 +317,7 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
           fs.mkdirSync(avatarDir, { recursive: true });
         }
 
-        // Lưu file mới - sử dụng req.file.buffer nếu có, nếu không thì dùng fs.copyFileSync
+        // Lưu file mới
         const newFilePath = path.join(avatarDir, newFileName);
         if (req.file.buffer) {
           fs.writeFileSync(newFilePath, req.file.buffer);
@@ -543,12 +396,12 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
       res.json({
         updated: true,
         message: "Thông tin đã được cập nhật thành công",
-        avatarUrl: tempAvatarUrl
+        avatarUrl: tempAvatarUrl,
       });
     } else {
       res.json({
         updated: false,
-        message: "Không có thông tin nào được cập nhật"
+        message: "Không có thông tin nào được cập nhật",
       });
     }
   } catch (error) {
@@ -557,7 +410,7 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
     }
     console.error("Lỗi chi tiết khi cập nhật thông tin người dùng:", error);
     res.status(500).json({
-      error: error.message || "Lỗi khi cập nhật thông tin người dùng"
+      error: error.message || "Lỗi khi cập nhật thông tin người dùng",
     });
   } finally {
     if (connection) {
@@ -571,18 +424,49 @@ app.post("/api/dangxuat", (req, res) => {
     if (err) {
       return res.status(500).json({ message: "Không thể đăng xuất" });
     }
-    res.clearCookie("connect.sid"); // Xóa cookie session
+    res.clearCookie("connect.sid");
     res.json({ message: "Đăng xuất thành công" });
   });
 });
-//console.log('Các route đã đăng ký:', app._router.stack.filter(r => r.route).map(r => r.route.path));
 
-const manageRoutes = require("./manage.js");
-app.use("/", manageRoutes);
+app.get("/user-info", (req, res) => {
+  console.log("Session trong /api/user-info:", req.session);
+  if (req.session?.isLoggedIn) {
+    if (req.session.adminId) {
+      res.json({
+        userId: req.session.adminId,
+        name: req.session.adminName,
+        email: req.session.adminEmail,
+        roleId: req.session.roleId,
+        isAdmin: true,
+        province_id: req.session.province_id,
+      });
+    } else if (req.session.userId) {
+      res.json({
+        userId: req.session.userId,
+        name: req.session.name,
+        email: req.session.email,
+        roleId: req.session.roleId,
+        isAdmin: false,
+        province_id: req.session.province_id,
+        region_id: req.session.region_id,
+        region: req.session.region,
+      });
+    } else {
+      res.status(400).json({ error: "Trạng thái đăng nhập không hợp lệ" });
+    }
+  } else {
+    res.json({
+      name: "Người dùng ẩn danh",
+      roleId: 0,
+      isAdmin: false,
+    });
+  }
+});
 
-const { sendNotification } = require("./notification.js");
-
-// Thêm clientId vào thông báo
+// ============================================
+// 13. NOTIFICATION API ROUTES
+// ============================================
 app.post("/api/notifications/:id/read", async (req, res) => {
   try {
     const notificationId = req.params.id;
@@ -650,10 +534,8 @@ app.post("/api/notifications/mark-all-read", async (req, res) => {
   }
 });
 
-// const { registerNotification } = require("./notification.js");
-
 app.get("/api/notifications", async (req, res) => {
-  console.log("Session adminId:", req.session.adminId); // Log giá trị userId
+  console.log("Session adminId:", req.session.adminId);
   try {
     const [notifications] = await db.query(
       `
@@ -675,19 +557,40 @@ app.get("/api/notifications", async (req, res) => {
   }
 });
 
-// xac thuc dang nhap
-function requireAuth(req, res, next) {
-  if (req.session.userId) {
-    next();
+// ============================================
+// 14. PROTECTED HTML ROUTES
+// ============================================
+app.get("/nha-kho/nha-kho.html", requireAuth, (req, res) => {
+  if (req.session.roleId === 8) {
+    res.sendFile(path.join(__dirname, "public", "nha-kho", "nha-kho.html"));
   } else {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(403).send("Forbidden");
   }
-}
+});
 
-// Sử dụng middleware cho các route cần xác thực
+app.get("/van-chuyen/van-chuyen.html", requireAuth, (req, res) => {
+  if (req.session.roleId === 6) {
+    res.sendFile(
+      path.join(__dirname, "public", "van-chuyen", "van-chuyen.html")
+    );
+  } else {
+    res.status(403).send("Forbidden");
+  }
+});
+
 app.get("/san-xuat/sanxuat.html", requireAuth, (req, res) => {
   if (req.session.roleId === 1) {
     res.sendFile(path.join(__dirname, "public", "san-xuat", "sanxuat.html"));
+  } else {
+    res.status(403).send("Forbidden");
+  }
+});
+
+app.get("/nhakiemduyet.html", requireAuth, (req, res) => {
+  if (req.session.roleId === 2) {
+    res.sendFile(
+      path.join(__dirname, "public", "kiem-duyet", "nhakiemduyet.html")
+    );
   } else {
     res.status(403).send("Forbidden");
   }
@@ -703,45 +606,54 @@ app.get("/kiem-duyet/nhakiemduyet.html", requireAuth, (req, res) => {
   }
 });
 
-app.get("/user-info", (req, res) => {
-  console.log("Session trong /api/user-info:", req.session);
-  if (req.session?.isLoggedIn) {
-    if (req.session.adminId) {
-      // Trả về thông tin admin nếu có adminId trong session
-      res.json({
-        userId: req.session.adminId,
-        name: req.session.adminName,
-        email: req.session.adminEmail,
-        roleId: req.session.roleId,
-        isAdmin: true,
-        province_id: req.session.province_id
-      });
-    } else if (req.session.userId) {
-      // Trả về thông tin user nếu có userId trong session
-      res.json({
-        userId: req.session.userId,
-        name: req.session.name,
-        email: req.session.email,
-        roleId: req.session.roleId,
-        isAdmin: false,
-        province_id: req.session.province_id,
-        region_id: req.session.region_id,
-        region: req.session.region
-      });
-    } else {
-      res.status(400).json({ error: "Trạng thái đăng nhập không hợp lệ" });
-    }
-  } else {
-    // Trả về thông tin người dùng ẩn danh nếu không đăng nhập
-    res.json({
-      name: "Người dùng ẩn danh",
-      roleId: 0,
-      isAdmin: false
-    });
-  }
+// ============================================
+// 15. PUBLIC HTML ROUTES
+// ============================================
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/batch/:sscc", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "tieu-dung", "batch-redirect.html")
+  );
 });
 
-// Thiết lập Socket.io cho Chatbox
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "trangchu.html"));
+});
+
+app.get("/trangcanhan.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "trangcanhan.html"));
+});
+
+app.get("/tieu-dung/trangcanhan.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "trangcanhan.html"));
+});
+
+app.get("/lo-hang.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "lo-hang.html"));
+});
+
+app.get("/sanpham.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "sanpham.html"));
+});
+
+app.get("/allsanpham.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "allsanpham.html"));
+});
+
+app.get("/allnongdan.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "allnongdan.html"));
+});
+
+app.get("/allnhakiemduyet.html", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "tieu-dung", "allnhakiemduyet.html")
+  );
+});
+
+// ============================================
+// 16. SOCKET.IO CHAT SETUP
+// ============================================
 let users = [];
 
 io.on("connection", (socket) => {
@@ -769,7 +681,7 @@ io.on("connection", (socket) => {
         name: user.name,
         online: user.online,
         roleId: user.roleId,
-        unread: user.unread
+        unread: user.unread,
       }));
     socket.emit("updateUserList", clientUsers);
   });
@@ -789,14 +701,14 @@ io.on("connection", (socket) => {
     const existingUser = users.find((x) => x.name === user.name);
     if (existingUser) {
       existingUser.online = true;
-      existingUser.socketId = socket.id; // Cập nhật socketId mới khi người dùng chuyển trang
+      existingUser.socketId = socket.id;
     } else {
       users.push({
         ...user,
         online: true,
         socketId: socket.id,
         messages: [],
-        unread: false
+        unread: false,
       });
     }
 
@@ -824,7 +736,7 @@ io.on("connection", (socket) => {
         io.to(socket.id).emit("message", {
           from: "System",
           to: "Admin",
-          body: "User not found"
+          body: "User not found",
         });
       }
     } else {
@@ -838,7 +750,7 @@ io.on("connection", (socket) => {
             socketId: socket.id,
             messages: [],
             unread: true,
-            roleId: 0
+            roleId: 0,
           };
           users.push(user);
         }
@@ -858,7 +770,7 @@ io.on("connection", (socket) => {
         io.to(socket.id).emit("message", {
           from: "Hệ thống",
           to: message.from,
-          body: "Xin lỗi. Không có admin nào đang online"
+          body: "Xin lỗi. Không có admin nào đang online",
         });
       }
     }

@@ -1,34 +1,55 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+
 import "./ActivityLog.sol";
+
+/**
+ * Hợp đồng tối ưu: Chỉ lưu dữ liệu quan trọng trên blockchain
+ * Chi tiết mở rộng (ảnh, mô tả dài) được lưu off-chain (MySQL)
+ */
 contract TraceabilityContract {
     ActivityLog private activityLogContract;
 
     constructor(address _activityLogAddress) {
-        require(
-            _activityLogAddress != address(0),
-            "Invalid ActivityLog address"
-        );
+        require(_activityLogAddress != address(0), "Invalid ActivityLog address");
         activityLogContract = ActivityLog(_activityLogAddress);
     }
 
+    // ===================================
+    // COUNTERS
+    // ===================================
     uint256 private _batchIdCounter;
-    uint256 private _warehouseIdCounter;
+    uint256 private _productIdCounter;
+    uint256 private _purchaseIdCounter;
+    uint256 private _processingIdCounter;
+    uint256 private _qualityTestIdCounter;
+
+    // ===================================
+    // ENUMS
+    // ===================================
+    enum SupplyChainStage {
+        Created,
+        Purchased,
+        Transported1,
+        Processed,
+        QualityInspected,
+        Transported2,
+        Warehoused,
+        DeliveredToConsumer
+    }
 
     enum BatchStatus {
         PendingApproval,
         Approved,
         Rejected
     }
+
     enum TransportStatus {
         NotTransported,
         InTransit,
         Delivered
     }
-    enum ParticipantType {
-        Transporter,
-        Warehouse
-    }
+
     enum DetailedTransportStatus {
         NotStarted,
         InTransit,
@@ -36,225 +57,341 @@ contract TraceabilityContract {
         Delivered
     }
 
+    enum ProcessingMethod {
+        Washing,
+        Cutting,
+        Drying,
+        Freezing,
+        Packaging
+    }
+
+    // ===================================
+    // OPTIMIZED STRUCTS - Chỉ dữ liệu quan trọng
+    // ===================================
+
+    /**
+     * @dev Batch - CHỈ lưu thông tin cốt lõi
+     * Các trường đã loại bỏ để tiết kiệm gas:
+     * - productImageUrls[] -> Lưu MySQL
+     * - certificateImageUrl -> Lưu MySQL  
+     * - farmPlotNumber -> Lưu MySQL
+     * - productIds[] -> Tính toán từ events
+     * - warehouseIds[] -> Tính toán từ events
+     */
     struct Batch {
         uint256 batchId;
-        string name; // Thêm trường tên lô hàng
-        string sscc;
+        string sscc;                 // Mã lô (20 chars)
         uint256 producerId;
-        string quantity;
         uint256 productionDate;
         uint256 startDate;
         uint256 endDate;
         BatchStatus status;
-        string[] productImageUrls;
-        string certificateImageUrl;
-        string farmPlotNumber;
-        bytes32 dataHash;
-        uint256 productId;
+        bytes32 dataHash;            // Hash để verify off-chain data
+        uint256 productTypeId;
+        
+        // Stage tracking
+        SupplyChainStage currentStage;
         TransportStatus transportStatus;
         DetailedTransportStatus detailedTransportStatus;
+        
+        // Participant IDs
+        uint256 purchaserId;
+        uint256 processorId;
+        uint256 qualityInspectorId;
         uint256 lastTransporterId;
-        bool warehouseConfirmed; // Thêm trường này
+        
+        // Product count only (không lưu array)
+        uint256 totalProducts;
     }
 
-    struct BatchParams {
-        string name;
-        string sscc;
-        uint256 producerId;
-        string quantity;
-        string[] productImageUrls;
-        string certificateImageUrl;
-        string farmPlotNumber;
+    /**
+     * @dev Product - Tối thiểu hóa
+     * Loại bỏ: sourceTreeIds[], packageType, soldDate
+     * -> Lưu off-chain, link qua events
+     */
+    struct Product {
         uint256 productId;
-        uint256 startDate;
-        uint256 endDate;
+        uint256 batchId;
+        string productQRCode;        // ~30 chars
+        uint256 packagedDate;
+        uint256 weight;              // gram
+        bool isActive;
     }
 
-    struct Participation {
-        uint256 participantId;
-        string participantType;
-        uint256 timestamp;
-        string action;
+    /**
+     * @dev Purchase - Chỉ số liệu quan trọng
+     * Loại bỏ: imageUrls[], notes, qualityGrade
+     */
+    struct PurchaseRecord {
+        uint256 purchaseId;
+        uint256 batchId;
+        uint256 purchaserId;
+        uint256 farmerId;
+        uint256 purchaseDate;
+        uint256 totalQuantity;       // kg
+        uint256 pricePerUnit;        // VND
+        uint256 totalPrice;          // VND
+        bool isConfirmed;
     }
 
+    /**
+     * @dev Processing - Tối thiểu
+     * Loại bỏ: methodDescription, additives[], imageUrls[], notes
+     */
+    struct ProcessingRecord {
+        uint256 processingId;
+        uint256 batchId;
+        uint256 processorId;
+        uint256 processingDate;
+        ProcessingMethod method;
+        uint256 inputWeight;         // kg
+        uint256 outputWeight;        // kg
+    }
+
+    /**
+     * @dev Quality Test - Chỉ kết quả
+     */
+    struct QualityTest {
+        uint256 testId;
+        uint256 batchId;
+        uint256 inspectorId;
+        uint256 testDate;
+        bool passed;                 // CHỈ lưu đạt/không đạt
+        bytes32 resultHash;          // Hash chi tiết off-chain
+    }
+
+    /**
+     * @dev Transport Event
+     */
     struct TransportEvent {
         uint256 participantId;
         uint256 timestamp;
-        string action;
-        string participantType;
+        uint8 actionCode;            // 0=Start, 1=Pause, 2=Resume, 3=Complete
+        int8 temperature;
+        uint8 humidity;
     }
 
-    mapping(uint256 => TransportEvent[]) private _batchTransportEvents;
-
+    // ===================================
+    // MAPPINGS
+    // ===================================
+    
     mapping(uint256 => Batch) private _batches;
     mapping(string => uint256) private _ssccToBatchId;
-
     mapping(uint256 => bool) private _approvedBatches;
-    mapping(uint256 => Participation[]) private _batchParticipations;
+
+    mapping(uint256 => Product) private _products;
+    mapping(string => uint256) private _productQRCodeToId;
+
+    mapping(uint256 => PurchaseRecord) private _purchaseRecords;
+    mapping(uint256 => ProcessingRecord) private _processingRecords;
+    mapping(uint256 => QualityTest[]) private _batchQualityTests;
+    mapping(uint256 => TransportEvent[]) private _batchTransportEvents;
+    mapping(uint256 => mapping(uint256 => bool)) private _warehouseConfirmations;
+
+    // ===================================
+    // EVENTS - Emit để backend sync vào MySQL
+    // ===================================
+    
+    event BatchCreated(
+        uint256 indexed batchId,
+        string sscc,
+        uint256 indexed producerId,
+        uint256 productTypeId,
+        uint256 productionDate,
+        bytes32 dataHash
+    );
+
+    event BatchDetailsStored(
+        uint256 indexed batchId,
+        string name,
+        string quantity,
+        uint256 startDate,
+        uint256 endDate,
+        string farmPlotNumber
+    );
+
+    event ProductCreated(
+        uint256 indexed productId,
+        string productQRCode,
+        uint256 indexed batchId,
+        uint256 weight,
+        string packageType
+    );
+
+    event ProductTreeLinked(
+        uint256 indexed productId,
+        uint256 indexed treeId
+    );
 
     event BatchApproved(
         uint256 indexed batchId,
         uint256 indexed producerId,
         string sscc
     );
-    event BatchApprovedForQR(
+
+    event BatchRejected(
         uint256 indexed batchId,
         uint256 indexed producerId,
-        string sscc
-    );
-    event ParticipationRecorded(
-        uint256 indexed batchId,
-        uint256 participantId,
-        string participantType,
-        string action
-    );
-    event BatchCreated(
-        uint256 indexed batchId,
         string sscc,
-        uint256 producerId
+        string reason
     );
-    event ActivityLogAdded(
-        uint256 indexed uid,
-        string activityName,
-        string description,
-        bool isSystemGenerated,
-        string[] imageUrls,
-        uint256[] relatedProductIds
+
+    event StageUpdated(
+        uint256 indexed batchId,
+        SupplyChainStage newStage,
+        uint256 participantId
     );
+
+    event PurchaseRecorded(
+        uint256 indexed purchaseId,
+        uint256 indexed batchId,
+        uint256 purchaserId,
+        uint256 totalQuantity,
+        uint256 totalPrice
+    );
+
+    event PurchaseDetailsStored(
+        uint256 indexed purchaseId,
+        string qualityGrade,
+        string notes
+    );
+
+    event ProcessingRecorded(
+        uint256 indexed processingId,
+        uint256 indexed batchId,
+        uint256 processorId,
+        ProcessingMethod method
+    );
+
+    event ProcessingDetailsStored(
+        uint256 indexed processingId,
+        string methodDescription,
+        string notes
+    );
+
+    event QualityTestRecorded(
+        uint256 indexed testId,
+        uint256 indexed batchId,
+        uint256 inspectorId,
+        bool passed,
+        bytes32 resultHash
+    );
+
+    event QualityTestDetailsStored(
+        uint256 indexed testId,
+        string testType,
+        string testMethod,
+        string result,
+        string standard
+    );
+
     event TransportStatusUpdated(
         uint256 indexed batchId,
         DetailedTransportStatus newStatus,
-        string action,
         uint256 participantId,
+        uint8 actionCode
+    );
+
+    event TransportDetailsStored(
+        uint256 indexed batchId,
+        uint256 participantId,
+        string action,
+        string location,
         string participantType
     );
 
+    event WarehouseConfirmed(
+        uint256 indexed batchId,
+        uint256 indexed warehouseId
+    );
+
+    // ===================================
+    // MODIFIERS
+    // ===================================
+    modifier onlyInStage(uint256 _batchId, SupplyChainStage _requiredStage) {
+        require(
+            _batches[_batchId].currentStage == _requiredStage,
+            "Invalid stage"
+        );
+        _;
+    }
+
+    modifier batchExists(uint256 _batchId) {
+        require(_batches[_batchId].batchId != 0, "Batch not exists");
+        _;
+    }
+
+    modifier batchApproved(uint256 _batchId) {
+        require(_batches[_batchId].status == BatchStatus.Approved, "Not approved");
+        _;
+    }
+
+    // ===================================
+    // INTERNAL HELPERS
+    // ===================================
     function addSystemActivityLog(
         uint256 _batchId,
         uint256 _participantId,
         string memory _activityName,
-        string memory _description,
-        uint256[] memory _relatedProductIds
+        string memory _description
     ) internal {
         activityLogContract.addActivityLog(
             _batchId,
             _participantId,
             _activityName,
             _description,
-            true,
-            new string[](0),
-            _relatedProductIds
+            true
         );
     }
-    function createBatch(
-        string memory _name,
-        uint256 _producerId,
-        string memory _quantity,
-        string[] memory _productImageUrls,
-        string memory _certificateImageUrl,
-        string memory _farmPlotNumber,
-        uint256 _productId,
-        uint256 _startDate,
-        uint256 _endDate
-    ) public returns (uint256) {
-        string memory sscc = generateSSCC(_producerId);
-        uint256 newBatchId = _createBatch(
-            BatchParams({
-                name: _name,
-                sscc: sscc,
-                producerId: _producerId,
-                quantity: _quantity,
-                productImageUrls: _productImageUrls,
-                certificateImageUrl: _certificateImageUrl,
-                farmPlotNumber: _farmPlotNumber,
-                productId: _productId,
-                startDate: _startDate,
-                endDate: _endDate
-            })
-        );
 
-        // Ghi lại thông tin lô hàng vào nhật ký hoạt động
-        _addBatchCreationLog(newBatchId, _producerId, _productId);
-
-        return newBatchId;
-    }
-
-    function _addBatchCreationLog(
-        uint256 _batchId,
-        uint256 _producerId,
-        uint256 _productId
-    ) private {
-        uint256[] memory relatedProductIds = new uint256[](1);
-        relatedProductIds[0] = _productId;
-        string memory description = string(
-            abi.encodePacked("A new batch has been created by producer ")
-        );
-        addSystemActivityLog(
-            _batchId,
-            _producerId,
-            "Batch Created",
-            description,
-            relatedProductIds
-        );
-    }
-    function generateSSCC(
-        uint256 _producerId
-    ) private view returns (string memory) {
+    // ===================================
+    // SSCC GENERATION
+    // ===================================
+    function generateSSCC(uint256 _producerId) private view returns (string memory) {
         string memory prefix = "00";
-        string memory companyPrefix = padLeft(uint2str(_producerId), 6); // Giảm xuống 6 chữ số
-        uint256 serialNumber = uint256(
-            keccak256(abi.encodePacked(block.timestamp, _producerId))
-        ) % 1000000000; // Giữ nguyên 9 chữ số
-        string memory serialReference = padLeft(uint2str(serialNumber), 9); // Giữ nguyên 9 chữ số
-
-        string memory ssccWithoutCheck = string(
-            abi.encodePacked(prefix, companyPrefix, serialReference)
-        );
+        string memory companyPrefix = padLeft(uint2str(_producerId), 6);
+        uint256 serialNumber = uint256(keccak256(abi.encodePacked(block.timestamp, _producerId))) % 1000000000;
+        string memory serialReference = padLeft(uint2str(serialNumber), 9);
+        string memory ssccWithoutCheck = string(abi.encodePacked(prefix, companyPrefix, serialReference));
         uint8 checkDigit = calculateCheckDigit(ssccWithoutCheck);
-
-        return
-            string(
-                abi.encodePacked(
-                    ssccWithoutCheck,
-                    uint2str(uint256(checkDigit))
-                )
-            );
+        return string(abi.encodePacked(ssccWithoutCheck, uint2str(uint256(checkDigit))));
     }
 
-    function padLeft(
-        string memory str,
-        uint256 length
-    ) private pure returns (string memory) {
+    function generateProductQR(uint256 _batchId, uint256 _productSequence) private view returns (string memory) {
+        return string(abi.encodePacked(
+            "P-",
+            _batches[_batchId].sscc,
+            "-",
+            padLeft(uint2str(_productSequence), 4)
+        ));
+    }
+
+    function padLeft(string memory str, uint256 length) private pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         if (strBytes.length >= length) return str;
-
         bytes memory result = new bytes(length);
         uint256 paddingLength = length - strBytes.length;
         for (uint256 i = 0; i < paddingLength; i++) {
-            result[i] = "0";
+            result[i] = bytes1("0");
         }
         for (uint256 i = 0; i < strBytes.length; i++) {
             result[i + paddingLength] = strBytes[i];
         }
         return string(result);
     }
-    function calculateCheckDigit(
-        string memory _code
-    ) private pure returns (uint8) {
+
+    function calculateCheckDigit(string memory _code) private pure returns (uint8) {
         bytes memory codeBytes = bytes(_code);
         uint256 sum = 0;
         for (uint256 i = 0; i < codeBytes.length; i++) {
             uint8 digit = uint8(codeBytes[i]) - 48;
             sum += (i % 2 == 0) ? digit * 3 : digit;
         }
-        uint8 checkDigit = uint8((10 - (sum % 10)) % 10);
-        return checkDigit;
+        return uint8((10 - (sum % 10)) % 10);
     }
 
-    function uint2str(uint256 _i) private pure returns (string memory) {
-        if (_i == 0) {
-            return "0";
-        }
+    function uint2str(uint256 _i) internal pure returns (string memory) {
+        if (_i == 0) return "0";
         uint256 j = _i;
         uint256 length;
         while (j != 0) {
@@ -265,120 +402,596 @@ contract TraceabilityContract {
         uint256 k = length;
         while (_i != 0) {
             k = k - 1;
-            uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
-            bytes1 b1 = bytes1(temp);
-            bstr[k] = b1;
+            uint8 temp = 48 + uint8(_i - (_i / 10) * 10);
+            bstr[k] = bytes1(temp);
             _i /= 10;
         }
         return string(bstr);
     }
 
-    function _createBatch(BatchParams memory params) private returns (uint256) {
-        require(_ssccToBatchId[params.sscc] == 0, "SSCC already exists");
-        require(
-            bytes(params.quantity).length > 0,
-            "Quantity must not be empty"
-        );
-        require(
-            params.productImageUrls.length > 0,
-            "At least one product image URL is required"
-        );
-        require(
-            bytes(params.certificateImageUrl).length > 0,
-            "Certificate image URL is required"
-        );
-        require(
-            bytes(params.farmPlotNumber).length > 0,
-            "Farm plot number is required"
-        );
-        require(params.productId > 0, "Product ID must be valid");
-        require(params.startDate > 0, "Start date is required");
-        require(params.endDate > 0, "End date is required");
-        require(
-            params.startDate < params.endDate,
-            "Start date must be before end date"
-        );
-        require(bytes(params.name).length > 0, "Batch name must not be empty");
+    // ===================================
+    // BATCH CREATION - OPTIMIZED
+    // ===================================
+    
+    /**
+     * @dev Tạo batch - Tách thành 2 functions để tránh stack too deep
+     */
+    function createBatch(
+        string memory _name,
+        uint256 _producerId,
+        string memory _quantity,
+        uint256 _productTypeId,
+        uint256 _startDate,
+        uint256 _endDate
+    ) public returns (uint256) {
+        require(bytes(_name).length > 0, "Name required");
+        require(_producerId > 0, "Invalid producer");
+        require(_startDate > 0 && _endDate > 0 && _startDate < _endDate, "Invalid dates");
 
         _batchIdCounter++;
         uint256 newBatchId = _batchIdCounter;
-
+        string memory sscc = generateSSCC(_producerId);
         uint256 productionDate = block.timestamp;
-
-        bytes32 dataHash = _calculateDataHash(
-            params.sscc,
-            params.producerId,
-            params.quantity,
+        
+        // Calculate hash cho off-chain data
+        bytes32 dataHash = keccak256(abi.encodePacked(
+            sscc,
+            _producerId,
+            _quantity,
             productionDate,
-            params.farmPlotNumber,
-            params.productId,
-            params.name // Thêm tên lô hàng vào hàm băm
-        );
+            _productTypeId,
+            _name
+        ));
 
-        Batch memory newBatch = Batch({
-            batchId: newBatchId,
-            name: params.name, // Thêm tên lô hàng
-            sscc: params.sscc,
-            producerId: params.producerId,
-            quantity: params.quantity,
-            productionDate: productionDate,
-            startDate: params.startDate,
-            endDate: params.endDate,
-            status: BatchStatus.PendingApproval,
-            productImageUrls: params.productImageUrls,
-            certificateImageUrl: params.certificateImageUrl,
-            farmPlotNumber: params.farmPlotNumber,
-            dataHash: dataHash,
-            productId: params.productId,
-            transportStatus: TransportStatus.NotTransported,
-            detailedTransportStatus: DetailedTransportStatus.NotStarted,
-            lastTransporterId: 0,
-            warehouseConfirmed: false // Thêm trường mới này
-        });
+        // Lưu on-chain (minimal)
+        Batch storage batch = _batches[newBatchId];
+        batch.batchId = newBatchId;
+        batch.sscc = sscc;
+        batch.producerId = _producerId;
+        batch.productionDate = productionDate;
+        batch.startDate = _startDate;
+        batch.endDate = _endDate;
+        batch.status = BatchStatus.PendingApproval;
+        batch.dataHash = dataHash;
+        batch.productTypeId = _productTypeId;
+        batch.transportStatus = TransportStatus.NotTransported;
+        batch.detailedTransportStatus = DetailedTransportStatus.NotStarted;
+        batch.currentStage = SupplyChainStage.Created;
+        batch.totalProducts = 0;
 
-        _batches[newBatchId] = newBatch;
-        _ssccToBatchId[params.sscc] = newBatchId;
+        _ssccToBatchId[sscc] = newBatchId;
 
-        emit BatchCreated(newBatchId, params.sscc, params.producerId);
+        // Emit event on-chain
+        emit BatchCreated(newBatchId, sscc, _producerId, _productTypeId, productionDate, dataHash);
+        
+        // Emit event off-chain
+        emit BatchDetailsStored(newBatchId, _name, _quantity, _startDate, _endDate, "");
+
+        addSystemActivityLog(newBatchId, _producerId, "Batch Created", "New batch created");
+
+        emit StageUpdated(newBatchId, SupplyChainStage.Created, _producerId);
+
         return newBatchId;
     }
 
-    // Hàm để lấy nhật ký hoạt động của một nhà sản xuất
+    // ===================================
+    // PRODUCT CREATION - OPTIMIZED
+    // ===================================
+    
+    /**
+     * @dev Tạo sản phẩm đơn lẻ
+     * Emit events để backend lưu chi tiết vào MySQL
+     */
+    function createProductsInBatch(
+        uint256 _batchId,
+        uint256[] memory _sourceTreeIds,
+        uint256[] memory _weights,
+        string memory _packageType
+    ) public batchExists(_batchId) returns (uint256[] memory) {
+        require(_sourceTreeIds.length == _weights.length, "Length mismatch");
+        require(_batches[_batchId].currentStage >= SupplyChainStage.Processed, "Must be processed");
 
-    function _calculateDataHash(
-        string memory _sscc,
-        uint256 _producerId,
-        string memory _quantity,
-        uint256 _productionDate,
-        string memory _farmPlotNumber,
-        uint256 _productId,
-        string memory _name // Thêm tên lô hàng
-    ) private pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    _sscc,
-                    _producerId,
-                    _quantity,
-                    _productionDate,
-                    _farmPlotNumber,
-                    _productId,
-                    _name
-                )
+        uint256[] memory newProductIds = new uint256[](_weights.length);
+
+        for (uint256 i = 0; i < _weights.length; i++) {
+            newProductIds[i] = _createSingleProduct(
+                _batchId,
+                _sourceTreeIds[i],
+                _weights[i],
+                _packageType,
+                i + 1
             );
-    }
-    // hàm kiểm tra sscc đã tồn tại hay chưa
-    function ssccExists(string memory sscc) public view returns (bool) {
-        return _ssccToBatchId[sscc] != 0;
+        }
+
+        return newProductIds;
     }
 
-    // Hàm mới để lấy danh sách các lô hàng dựa trên producerId
-    function getBatchesByProducer(
-        uint256 producerId
-    ) public view returns (Batch[] memory) {
+    function _createSingleProduct(
+        uint256 _batchId,
+        uint256 _sourceTreeId,
+        uint256 _weight,
+        string memory _packageType,
+        uint256 _sequence
+    ) private returns (uint256) {
+        _productIdCounter++;
+        uint256 newProductId = _productIdCounter;
+        string memory productQR = generateProductQR(_batchId, _sequence);
+
+        // Lưu on-chain (minimal)
+        Product storage newProduct = _products[newProductId];
+        newProduct.productId = newProductId;
+        newProduct.batchId = _batchId;
+        newProduct.productQRCode = productQR;
+        newProduct.packagedDate = block.timestamp;
+        newProduct.weight = _weight;
+        newProduct.isActive = true;
+
+        _productQRCodeToId[productQR] = newProductId;
+        _batches[_batchId].totalProducts++;
+
+        // Emit events
+        emit ProductCreated(newProductId, productQR, _batchId, _weight, _packageType);
+        emit ProductTreeLinked(newProductId, _sourceTreeId);
+
+        // Link tree to batch
+        activityLogContract.linkTreeToBatch(
+            _sourceTreeId,
+            _batchId,
+            _batches[_batchId].producerId,
+            string(abi.encodePacked("Harvested to product ", productQR))
+        );
+
+        return newProductId;
+    }
+
+    // ===================================
+    // STAGE 1: APPROVE/REJECT
+    // ===================================
+    
+    function approveBatch(uint256 _batchId, uint256 _approverId) 
+        public 
+        batchExists(_batchId) 
+    {
+        require(_batches[_batchId].status == BatchStatus.PendingApproval, "Not pending");
+
+        _batches[_batchId].status = BatchStatus.Approved;
+        _approvedBatches[_batchId] = true;
+
+        addSystemActivityLog(_batchId, _approverId, "Batch Approved", "Approved");
+
+        emit BatchApproved(_batchId, _batches[_batchId].producerId, _batches[_batchId].sscc);
+    }
+
+    function rejectBatch(uint256 _batchId, uint256 _approverId, string memory _reason) 
+        public 
+        batchExists(_batchId) 
+    {
+        require(_batches[_batchId].status == BatchStatus.PendingApproval, "Not pending");
+
+        _batches[_batchId].status = BatchStatus.Rejected;
+
+        addSystemActivityLog(_batchId, _approverId, "Batch Rejected", _reason);
+
+        emit BatchRejected(_batchId, _batches[_batchId].producerId, _batches[_batchId].sscc, _reason);
+    }
+
+    // ===================================
+    // STAGE 2: PURCHASE - OPTIMIZED
+    // ===================================
+    
+    /**
+     * @dev Record purchase - Tách thành 2 functions
+     */
+    function recordPurchase(
+        uint256 _batchId,
+        uint256 _purchaserId,
+        uint256 _totalQuantity,
+        uint256 _pricePerUnit
+    ) public 
+        batchExists(_batchId)
+        batchApproved(_batchId)
+        onlyInStage(_batchId, SupplyChainStage.Created)
+        returns (uint256) 
+    {
+        _purchaseIdCounter++;
+        uint256 newPurchaseId = _purchaseIdCounter;
+
+        // Lưu on-chain (minimal)
+        PurchaseRecord storage purchase = _purchaseRecords[_batchId];
+        purchase.purchaseId = newPurchaseId;
+        purchase.batchId = _batchId;
+        purchase.purchaserId = _purchaserId;
+        purchase.farmerId = _batches[_batchId].producerId;
+        purchase.purchaseDate = block.timestamp;
+        purchase.totalQuantity = _totalQuantity;
+        purchase.pricePerUnit = _pricePerUnit;
+        purchase.totalPrice = _totalQuantity * _pricePerUnit;
+        purchase.isConfirmed = true;
+
+        _batches[_batchId].currentStage = SupplyChainStage.Purchased;
+        _batches[_batchId].purchaserId = _purchaserId;
+
+        // Emit events
+        emit PurchaseRecorded(newPurchaseId, _batchId, _purchaserId, _totalQuantity, purchase.totalPrice);
+
+        addSystemActivityLog(_batchId, _purchaserId, "Purchase Recorded", "Purchased");
+
+        emit StageUpdated(_batchId, SupplyChainStage.Purchased, _purchaserId);
+
+        return newPurchaseId;
+    }
+
+    /**
+     * @dev Add purchase details
+     */
+    function addPurchaseDetails(
+        uint256 _purchaseId,
+        string memory _qualityGrade,
+        string memory _notes
+    ) public {
+        emit PurchaseDetailsStored(_purchaseId, _qualityGrade, _notes);
+    }
+
+    // ===================================
+    // STAGE 3: TRANSPORT
+    // ===================================
+    
+    /**
+     * @dev Update transport status - Tách thành 2 functions
+     */
+    function updateTransportStatus(
+        uint256 _batchId,
+        uint256 _participantId,
+        uint8 _actionCode,
+        int8 _temperature,
+        uint8 _humidity
+    ) public batchExists(_batchId) batchApproved(_batchId) {
+        Batch storage batch = _batches[_batchId];
+
+        // Lưu on-chain (minimal)
+        _batchTransportEvents[_batchId].push(TransportEvent({
+            participantId: _participantId,
+            timestamp: block.timestamp,
+            actionCode: _actionCode,
+            temperature: _temperature,
+            humidity: _humidity
+        }));
+
+        // Action: 0=Start, 1=Pause, 2=Resume, 3=Complete
+        if (_actionCode == 0) {
+            batch.detailedTransportStatus = DetailedTransportStatus.InTransit;
+            batch.transportStatus = TransportStatus.InTransit;
+            batch.lastTransporterId = _participantId;
+        } else if (_actionCode == 1) {
+            batch.detailedTransportStatus = DetailedTransportStatus.Paused;
+        } else if (_actionCode == 2) {
+            batch.detailedTransportStatus = DetailedTransportStatus.InTransit;
+        } else if (_actionCode == 3) {
+            batch.detailedTransportStatus = DetailedTransportStatus.Delivered;
+            batch.transportStatus = TransportStatus.Delivered;
+
+            if (batch.currentStage == SupplyChainStage.Purchased) {
+                batch.currentStage = SupplyChainStage.Transported1;
+                emit StageUpdated(_batchId, SupplyChainStage.Transported1, _participantId);
+            } else if (batch.currentStage == SupplyChainStage.QualityInspected) {
+                batch.currentStage = SupplyChainStage.Transported2;
+                emit StageUpdated(_batchId, SupplyChainStage.Transported2, _participantId);
+            }
+        }
+
+        // Emit event
+        emit TransportStatusUpdated(_batchId, batch.detailedTransportStatus, _participantId, _actionCode);
+
+        addSystemActivityLog(_batchId, _participantId, "Transport Updated", "Updated");
+    }
+
+    /**
+     * @dev Add transport details
+     */
+    function addTransportDetails(
+        uint256 _batchId,
+        uint256 _participantId,
+        string memory _action,
+        string memory _location,
+        string memory _participantType
+    ) public {
+        emit TransportDetailsStored(_batchId, _participantId, _action, _location, _participantType);
+    }
+
+    // ===================================
+    // STAGE 4: PROCESSING
+    // ===================================
+    
+    /**
+     * @dev Record processing - Tách thành 2 functions
+     */
+    function recordProcessing(
+        uint256 _batchId,
+        uint256 _processorId,
+        ProcessingMethod _method,
+        uint256 _inputWeight,
+        uint256 _outputWeight
+    ) public 
+        batchExists(_batchId)
+        returns (uint256) 
+    {
+        require(
+            _batches[_batchId].currentStage == SupplyChainStage.Purchased || 
+            _batches[_batchId].currentStage == SupplyChainStage.Transported1,
+            "Invalid stage"
+        );
+
+        _processingIdCounter++;
+        uint256 newProcessingId = _processingIdCounter;
+
+        // Lưu on-chain (minimal)
+        ProcessingRecord storage processing = _processingRecords[_batchId];
+        processing.processingId = newProcessingId;
+        processing.batchId = _batchId;
+        processing.processorId = _processorId;
+        processing.processingDate = block.timestamp;
+        processing.method = _method;
+        processing.inputWeight = _inputWeight;
+        processing.outputWeight = _outputWeight;
+
+        _batches[_batchId].currentStage = SupplyChainStage.Processed;
+        _batches[_batchId].processorId = _processorId;
+
+        // Emit events
+        emit ProcessingRecorded(newProcessingId, _batchId, _processorId, _method);
+
+        addSystemActivityLog(_batchId, _processorId, "Processing Completed", "Completed");
+
+        emit StageUpdated(_batchId, SupplyChainStage.Processed, _processorId);
+
+        return newProcessingId;
+    }
+
+    /**
+     * @dev Add processing details
+     */
+    function addProcessingDetails(
+        uint256 _processingId,
+        string memory _methodDescription,
+        string memory _notes
+    ) public {
+        emit ProcessingDetailsStored(_processingId, _methodDescription, _notes);
+    }
+
+    // ===================================
+    // STAGE 5: QUALITY INSPECTION - OPTIMIZED
+    // ===================================
+    
+    /**
+     * @dev Record quality test - Tách thành 2 functions
+     */
+    function recordQualityTest(
+        uint256 _batchId,
+        uint256 _inspectorId,
+        bool _passed
+    ) public 
+        batchExists(_batchId)
+        onlyInStage(_batchId, SupplyChainStage.Processed)
+        returns (uint256) 
+    {
+        _qualityTestIdCounter++;
+        uint256 newTestId = _qualityTestIdCounter;
+
+        // Lưu on-chain (minimal)
+        QualityTest memory test = QualityTest({
+            testId: newTestId,
+            batchId: _batchId,
+            inspectorId: _inspectorId,
+            testDate: block.timestamp,
+            passed: _passed,
+            resultHash: bytes32(0) // Sẽ update sau
+        });
+
+        _batchQualityTests[_batchId].push(test);
+
+        if (_passed) {
+            _batches[_batchId].currentStage = SupplyChainStage.QualityInspected;
+            _batches[_batchId].qualityInspectorId = _inspectorId;
+
+            addSystemActivityLog(_batchId, _inspectorId, "Quality Test Passed", "Passed");
+
+            emit StageUpdated(_batchId, SupplyChainStage.QualityInspected, _inspectorId);
+        } else {
+            addSystemActivityLog(_batchId, _inspectorId, "Quality Test Failed", "Failed");
+        }
+
+        emit QualityTestRecorded(newTestId, _batchId, _inspectorId, _passed, bytes32(0));
+
+        return newTestId;
+    }
+
+    /**
+     * @dev Add quality test details
+     */
+    function addQualityTestDetails(
+        uint256 _testId,
+        uint256 _batchId,
+        string memory _testType,
+        string memory _testMethod,
+        string memory _result,
+        string memory _standard
+    ) public {
+        // Hash chi tiết kết quả
+        bytes32 resultHash = keccak256(abi.encodePacked(
+            _testType,
+            _testMethod,
+            _result,
+            _standard
+        ));
+
+        // Update resultHash
+        QualityTest[] storage tests = _batchQualityTests[_batchId];
+        for (uint256 i = 0; i < tests.length; i++) {
+            if (tests[i].testId == _testId) {
+                tests[i].resultHash = resultHash;
+                break;
+            }
+        }
+
+        // Emit event
+        emit QualityTestDetailsStored(_testId, _testType, _testMethod, _result, _standard);
+    }
+
+    // ===================================
+    // STAGE 6: WAREHOUSE CONFIRMATION
+    // ===================================
+    
+    function warehouseConfirmation(uint256 _batchId, uint256 _warehouseId) 
+        public 
+        batchExists(_batchId) 
+    {
+        require(_batches[_batchId].transportStatus == TransportStatus.Delivered, "Not delivered");
+        require(!_warehouseConfirmations[_batchId][_warehouseId], "Already confirmed");
+
+        _warehouseConfirmations[_batchId][_warehouseId] = true;
+        _batches[_batchId].currentStage = SupplyChainStage.Warehoused;
+
+        addSystemActivityLog(_batchId, _warehouseId, "Warehouse Confirmed", "Received");
+
+        emit WarehouseConfirmed(_batchId, _warehouseId);
+        emit StageUpdated(_batchId, SupplyChainStage.Warehoused, _warehouseId);
+    }
+
+    // ===================================
+    // GETTERS - BATCH
+    // ===================================
+    
+    function getBatchDetails(uint256 _batchId) public view batchExists(_batchId) returns (Batch memory) {
+        return _batches[_batchId];
+    }
+
+    function getBatchBySSCC(string memory _sscc) public view returns (Batch memory) {
+        uint256 batchId = _ssccToBatchId[_sscc];
+        require(batchId != 0, "Batch not found");
+        return _batches[batchId];
+    }
+
+    function getBatchIdBySSCC(string memory _sscc) public view returns (uint256) {
+        return _ssccToBatchId[_sscc];
+    }
+
+    function isBatchApproved(uint256 _batchId) public view returns (bool) {
+        return _approvedBatches[_batchId];
+    }
+
+    function getCurrentStage(uint256 _batchId) public view batchExists(_batchId) returns (SupplyChainStage) {
+        return _batches[_batchId].currentStage;
+    }
+
+    function getBatchTransportStatus(uint256 _batchId) public view batchExists(_batchId) returns (TransportStatus) {
+        return _batches[_batchId].transportStatus;
+    }
+
+    function getDetailedTransportStatus(uint256 _batchId) public view batchExists(_batchId) returns (DetailedTransportStatus) {
+        return _batches[_batchId].detailedTransportStatus;
+    }
+
+    function getTotalBatches() public view returns (uint256) {
+        return _batchIdCounter;
+    }
+
+    // ===================================
+    // GETTERS - PRODUCT
+    // ===================================
+    
+    function getProductByQR(string memory _productQR) public view returns (Product memory) {
+        uint256 productId = _productQRCodeToId[_productQR];
+        require(productId != 0, "Product not found");
+        return _products[productId];
+    }
+
+    function getProductDetails(uint256 _productId) public view returns (Product memory) {
+        require(_products[_productId].productId != 0, "Product not exists");
+        return _products[_productId];
+    }
+
+    function getTotalProducts() public view returns (uint256) {
+        return _productIdCounter;
+    }
+
+    function getBatchProductCount(uint256 _batchId) public view batchExists(_batchId) returns (uint256) {
+        return _batches[_batchId].totalProducts;
+    }
+
+    // ===================================
+    // GETTERS - PURCHASE
+    // ===================================
+    
+    function getPurchaseRecord(uint256 _batchId) public view batchExists(_batchId) returns (PurchaseRecord memory) {
+        require(_purchaseRecords[_batchId].purchaseId != 0, "No purchase record");
+        return _purchaseRecords[_batchId];
+    }
+
+    // ===================================
+    // GETTERS - PROCESSING
+    // ===================================
+    
+    function getProcessingRecord(uint256 _batchId) public view batchExists(_batchId) returns (ProcessingRecord memory) {
+        require(_processingRecords[_batchId].processingId != 0, "No processing record");
+        return _processingRecords[_batchId];
+    }
+
+    // ===================================
+    // GETTERS - QUALITY TEST
+    // ===================================
+    
+    function getBatchQualityTests(uint256 _batchId) public view batchExists(_batchId) returns (QualityTest[] memory) {
+        return _batchQualityTests[_batchId];
+    }
+
+    function getLatestQualityTest(uint256 _batchId) public view batchExists(_batchId) returns (QualityTest memory) {
+        QualityTest[] memory tests = _batchQualityTests[_batchId];
+        require(tests.length > 0, "No quality tests");
+        return tests[tests.length - 1];
+    }
+
+    // ===================================
+    // GETTERS - TRANSPORT
+    // ===================================
+    
+    function getTransportEvents(uint256 _batchId) public view batchExists(_batchId) returns (TransportEvent[] memory) {
+        return _batchTransportEvents[_batchId];
+    }
+
+    function getTransportHistoryBySSCC(string memory _sscc) public view returns (TransportEvent[] memory) {
+        uint256 batchId = _ssccToBatchId[_sscc];
+        require(batchId != 0, "Batch not found");
+        return _batchTransportEvents[batchId];
+    }
+
+    // ===================================
+    // GETTERS - WAREHOUSE
+    // ===================================
+    
+    function isWarehouseConfirmed(uint256 _batchId, uint256 _warehouseId) public view returns (bool) {
+        return _warehouseConfirmations[_batchId][_warehouseId];
+    }
+
+    // ===================================
+    // GETTERS - ACTIVITY LOGS
+    // ===================================
+    
+    function getActivityLogs(uint256 _batchId) public view returns (ActivityLog.ActivityLogEntry[] memory) {
+        return activityLogContract.getActivityLogs(_batchId);
+    }
+
+    function getSystemActivityLogs(uint256 _batchId) public view returns (ActivityLog.ActivityLogEntry[] memory) {
+        return activityLogContract.getSystemActivityLogs(_batchId);
+    }
+
+    // ===================================
+    // BATCH QUERIES
+    // ===================================
+    
+    function getBatchesByProducer(uint256 _producerId) public view returns (Batch[] memory) {
         uint256 count = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (_batches[i].producerId == producerId) {
+            if (_batches[i].producerId == _producerId) {
                 count++;
             }
         }
@@ -386,471 +999,111 @@ contract TraceabilityContract {
         Batch[] memory batches = new Batch[](count);
         uint256 index = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (_batches[i].producerId == producerId) {
+            if (_batches[i].producerId == _producerId) {
                 batches[index] = _batches[i];
                 index++;
             }
         }
-
         return batches;
     }
 
-    // hàm cập nhật trạng thái lô hàng
-
-    function getPendingBatchesByProducer(
-        uint256 _producerId
-    ) public view returns (Batch[] memory) {
-        uint256 pendingCount = 0;
+    function getBatchesByStage(SupplyChainStage _stage) public view returns (Batch[] memory) {
+        uint256 count = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (
-                _batches[i].producerId == _producerId &&
-                _batches[i].status == BatchStatus.PendingApproval
-            ) {
-                pendingCount++;
+            if (_batches[i].currentStage == _stage) {
+                count++;
             }
         }
-        Batch[] memory pendingBatches = new Batch[](pendingCount);
+
+        Batch[] memory batches = new Batch[](count);
         uint256 index = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (
-                _batches[i].producerId == _producerId &&
-                _batches[i].status == BatchStatus.PendingApproval
-            ) {
-                pendingBatches[index] = _batches[i];
+            if (_batches[i].currentStage == _stage) {
+                batches[index] = _batches[i];
                 index++;
             }
         }
-
-        return pendingBatches;
+        return batches;
     }
 
-    function getRejectedBatchesByProducer(
-        uint256 _producerId
-    ) public view returns (Batch[] memory) {
-        uint256 rejectedCount = 0;
-        for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (
-                _batches[i].producerId == _producerId &&
-                _batches[i].status == BatchStatus.Rejected
-            ) {
-                rejectedCount++;
-            }
-        }
-
-        Batch[] memory rejectedBatches = new Batch[](rejectedCount);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (
-                _batches[i].producerId == _producerId &&
-                _batches[i].status == BatchStatus.Rejected
-            ) {
-                rejectedBatches[index] = _batches[i];
-                index++;
-            }
-        }
-
-        return rejectedBatches;
-    }
     function getAllPendingBatches() public view returns (Batch[] memory) {
-        uint256 pendingCount = 0;
+        uint256 count = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
             if (_batches[i].status == BatchStatus.PendingApproval) {
-                pendingCount++;
+                count++;
             }
         }
 
-        Batch[] memory pendingBatches = new Batch[](pendingCount);
+        Batch[] memory batches = new Batch[](count);
         uint256 index = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
             if (_batches[i].status == BatchStatus.PendingApproval) {
-                pendingBatches[index] = _batches[i];
+                batches[index] = _batches[i];
                 index++;
             }
         }
-
-        return pendingBatches;
+        return batches;
     }
 
-    event BatchStatusUpdated(uint256 indexed batchId, BatchStatus newStatus);
-
-    // hàm lấy thông tin lô hàng
-    function getBatchDetails(
-        uint256 _batchId
-    ) public view returns (Batch memory) {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        return _batches[_batchId];
-    }
-
-    function getTotalBatches() public view returns (uint256) {
-        return _batchIdCounter;
-    }
-
-    function isProducerOfBatch(
-        uint256 _batchId,
-        uint256 _producerId
-    ) public view returns (bool) {
-        return _batches[_batchId].producerId == _producerId;
-    }
-
-    // Thêm hàm này vào smart contract
-
-    function approveBatch(uint256 _batchId, uint256 _approverId) public {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        require(
-            _batches[_batchId].status == BatchStatus.PendingApproval,
-            "Batch is not pending approval"
-        );
-
-        _batches[_batchId].status = BatchStatus.Approved;
-        _approvedBatches[_batchId] = true;
-
-        emit BatchApproved(
-            _batchId,
-            _batches[_batchId].producerId,
-            _batches[_batchId].sscc
-        );
-        emit BatchApprovedForQR(
-            _batchId,
-            _batches[_batchId].producerId,
-            _batches[_batchId].sscc
-        );
-
-        // Add system activity log
-        uint256[] memory relatedProductIds = new uint256[](1);
-        relatedProductIds[0] = _batches[_batchId].productId;
-        addSystemActivityLog(
-            _batchId,
-            _approverId,
-            "Batch Approved",
-            string(abi.encodePacked("Batch has been approved by approver ")),
-            relatedProductIds
-        );
-    }
-    function rejectBatch(uint256 _batchId, uint256 _approverId) public {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        require(
-            _batches[_batchId].status == BatchStatus.PendingApproval,
-            "Batch is not pending approval"
-        );
-
-        _batches[_batchId].status = BatchStatus.Rejected;
-
-        emit BatchRejected(
-            _batchId,
-            _batches[_batchId].producerId,
-            _batches[_batchId].sscc
-        );
-
-        // Add system activity log
-        uint256[] memory relatedProductIds = new uint256[](1);
-        relatedProductIds[0] = _batches[_batchId].productId;
-        addSystemActivityLog(
-            _batchId,
-            _approverId,
-            "Batch Rejected",
-            string(abi.encodePacked("Batch has been rejected by approver ")),
-            relatedProductIds
-        );
-    }
-
-    function getActivityLogs(
-        uint256 _batchId
-    ) public view returns (ActivityLog.ActivityLogEntry[] memory) {
-        return activityLogContract.getActivityLogs(_batchId);
-    }
-
-    event BatchRejected(
-        uint256 indexed batchId,
-        uint256 producerId,
-        string sscc
-    );
-
-    function getApprovedBatchesByProducer(
-        uint256 _producerId
-    ) public view returns (Batch[] memory) {
-        uint256 approvedCount = 0;
+    function getApprovedBatchesByProducer(uint256 _producerId) public view returns (Batch[] memory) {
+        uint256 count = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (
-                _batches[i].producerId == _producerId &&
-                _batches[i].status == BatchStatus.Approved
-            ) {
-                approvedCount++;
+            if (_batches[i].producerId == _producerId && _batches[i].status == BatchStatus.Approved) {
+                count++;
             }
         }
 
-        Batch[] memory approvedBatches = new Batch[](approvedCount);
+        Batch[] memory batches = new Batch[](count);
         uint256 index = 0;
         for (uint256 i = 1; i <= _batchIdCounter; i++) {
-            if (
-                _batches[i].producerId == _producerId &&
-                _batches[i].status == BatchStatus.Approved
-            ) {
-                approvedBatches[index] = _batches[i];
+            if (_batches[i].producerId == _producerId && _batches[i].status == BatchStatus.Approved) {
+                batches[index] = _batches[i];
                 index++;
             }
         }
-
-        return approvedBatches;
+        return batches;
     }
 
-    function getBatchBySSCC(
-        string memory _sscc
-    ) public view returns (Batch memory) {
-        uint256 batchId = _ssccToBatchId[_sscc];
-        require(batchId != 0, "Batch does not exist with this SSCC");
-        return _batches[batchId];
-    }
-
-    function isValidSSCC(string memory _sscc) public view returns (bool) {
+    // ===================================
+    // UTILITY FUNCTIONS
+    // ===================================
+    
+    function ssccExists(string memory _sscc) public view returns (bool) {
         return _ssccToBatchId[_sscc] != 0;
     }
 
-    function isBatchApproved(uint256 _batchId) public view returns (bool) {
-        return _approvedBatches[_batchId];
+    function productQRExists(string memory _productQR) public view returns (bool) {
+        return _productQRCodeToId[_productQR] != 0;
     }
 
-    function recordParticipation(
-        uint256 _batchId,
-        uint256 _participantId,
-        string memory _participantType,
-        string memory _action
-    ) public {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        _batchParticipations[_batchId].push(
-            Participation(
-                _participantId,
-                _participantType,
-                block.timestamp,
-                _action
-            )
-        );
-
-        emit ParticipationRecorded(
-            _batchId,
-            _participantId,
-            _participantType,
-            _action
-        );
-    }
-    event LogParticipantType(uint256 indexed batchId, string participantType);
-    function updateTransportStatus(
-        uint256 _batchId,
-        uint256 _participantId,
-        string memory _action,
-        string memory _participantType
-    ) public {
-        require(
-            keccak256(abi.encodePacked(_participantType)) ==
-                keccak256(abi.encodePacked("Transporter")) ||
-                keccak256(abi.encodePacked(_participantType)) ==
-                keccak256(abi.encodePacked("Warehouse")),
-            "Invalid participant type"
-        );
-
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        require(
-            _batches[_batchId].status == BatchStatus.Approved,
-            "Batch must be approved"
-        );
-
-        TransportEvent memory newEvent = TransportEvent({
-            participantId: _participantId,
-            timestamp: block.timestamp,
-            action: _action,
-            participantType: _participantType
-        });
-
-        _batchTransportEvents[_batchId].push(newEvent);
-
-        if (
-            keccak256(abi.encodePacked(_action)) ==
-            keccak256(abi.encodePacked("Bat dau van chuyen"))
-        ) {
-            _batches[_batchId].detailedTransportStatus = DetailedTransportStatus
-                .InTransit;
-            _batches[_batchId].transportStatus = TransportStatus.InTransit;
-            _batches[_batchId].lastTransporterId = _participantId;
-        } else if (
-            keccak256(abi.encodePacked(_action)) ==
-            keccak256(abi.encodePacked("Tam dung van chuyen"))
-        ) {
-            _batches[_batchId].detailedTransportStatus = DetailedTransportStatus
-                .Paused;
-        } else if (
-            keccak256(abi.encodePacked(_action)) ==
-            keccak256(abi.encodePacked("Tiep tuc van chuyen"))
-        ) {
-            _batches[_batchId].detailedTransportStatus = DetailedTransportStatus
-                .InTransit;
-        } else if (
-            keccak256(abi.encodePacked(_action)) ==
-            keccak256(abi.encodePacked("Hoan thanh van chuyen"))
-        ) {
-            _batches[_batchId].detailedTransportStatus = DetailedTransportStatus
-                .Delivered;
-            _batches[_batchId].transportStatus = TransportStatus.Delivered;
-        }
-
-        emit TransportStatusUpdated(
-            _batchId,
-            _batches[_batchId].detailedTransportStatus,
-            _action,
-            _participantId,
-            _participantType
-        );
-
-        uint256[] memory relatedProductIds = new uint256[](1);
-        relatedProductIds[0] = _batches[_batchId].productId;
-        addSystemActivityLog(
-            _batchId,
-            _participantId,
-            "Transport Status Updated",
-            string(abi.encodePacked("Transport status updated to '", _action)),
-            relatedProductIds
-        );
+    function isProducerOfBatch(uint256 _batchId, uint256 _producerId) public view returns (bool) {
+        return _batches[_batchId].producerId == _producerId;
     }
 
-    // Đổi tên sự kiện
-    // Thêm mapping để theo dõi xác nhận của các nhà kho
-
-    mapping(uint256 => mapping(uint256 => bool))
-        private _warehouseConfirmations;
-
-    // Thêm sự kiện để theo dõi xác nhận của các nhà kho
-    event WarehouseConfirmed(
-        uint256 indexed batchId,
-        uint256 indexed warehouseId
-    );
-    function warehouseConfirmation(
+    /**
+     * @dev Verify off-chain data hash
+     * Frontend/Backend có thể verify data integrity
+     */
+    function verifyBatchDataHash(
         uint256 _batchId,
-        uint256 _warehouseId
-    ) public {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        require(
-            _batches[_batchId].transportStatus == TransportStatus.Delivered,
-            "Batch must be delivered before warehouse confirmation"
-        );
-        require(
-            _batches[_batchId].detailedTransportStatus ==
-                DetailedTransportStatus.Delivered,
-            "Batch must be in Delivered status"
-        );
-        require(
-            !_warehouseConfirmations[_batchId][_warehouseId],
-            "This warehouse has already confirmed this batch"
-        );
-
-        // Đánh dấu nhà kho này đã xác nhận
-        _warehouseConfirmations[_batchId][_warehouseId] = true;
-
-        // Ghi nhận sự tham gia của nhà kho
-        Participation memory newParticipation = Participation({
-            participantId: _warehouseId,
-            participantType: "Warehouse",
-            timestamp: block.timestamp,
-            action: "Confirmed receipt at warehouse"
-        });
-        _batchParticipations[_batchId].push(newParticipation);
-
-        // Phát ra sự kiện
-        emit WarehouseConfirmed(_batchId, _warehouseId);
-
-        // Thêm log hoạt động
-        uint256[] memory relatedProductIds = new uint256[](1);
-        relatedProductIds[0] = _batches[_batchId].productId;
-        addSystemActivityLog(
-            _batchId,
-            _warehouseId,
-            "Warehouse Confirmation",
-            string(
-                abi.encodePacked("Warehouse has confirmed receipt of batch")
-            ),
-            relatedProductIds
-        );
-    }
-
-    // Hàm để kiểm tra xem một nhà kho cụ thể đã xác nhận lô hàng chưa
-    function isWarehouseConfirmed(
-        uint256 _batchId,
-        uint256 _warehouseId
+        string memory _sscc,
+        uint256 _producerId,
+        string memory _quantity,
+        uint256 _productionDate,
+        string memory _farmPlotNumber,
+        uint256 _productTypeId,
+        string memory _name
     ) public view returns (bool) {
-        return _warehouseConfirmations[_batchId][_warehouseId];
-    }
-
-    // Hàm để lấy danh sách các nhà kho đã xác nhận một lô hàng
-    function getConfirmedWarehouses(
-        uint256 _batchId
-    ) public view returns (uint256[] memory) {
-        uint256 confirmedCount = 0;
-        for (uint256 i = 1; i <= _warehouseIdCounter; i++) {
-            if (_warehouseConfirmations[_batchId][i]) {
-                confirmedCount++;
-            }
-        }
-
-        uint256[] memory confirmedWarehouses = new uint256[](confirmedCount);
-        uint256 index = 0;
-        for (uint256 i = 1; i <= _warehouseIdCounter; i++) {
-            if (_warehouseConfirmations[_batchId][i]) {
-                confirmedWarehouses[index] = i;
-                index++;
-            }
-        }
-
-        return confirmedWarehouses;
-    }
-
-    function getDetailedTransportStatus(
-        uint256 _batchId
-    ) public view returns (DetailedTransportStatus) {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        return _batches[_batchId].detailedTransportStatus;
-    }
-    // hàm kiểm tra trạng thái vận chuyển
-    function canStartTransport(
-        uint256 _batchId,
-        uint256 _transporterId
-    ) public view returns (bool) {
-        return
-            _batches[_batchId].detailedTransportStatus ==
-            DetailedTransportStatus.NotStarted ||
-            (_batches[_batchId].detailedTransportStatus ==
-                DetailedTransportStatus.Delivered &&
-                _batches[_batchId].lastTransporterId != _transporterId);
-    }
-    function getTransportHistoryBySSCC(
-        string memory _sscc
-    ) public view returns (TransportEvent[] memory) {
-        uint256 batchId = _ssccToBatchId[_sscc];
-        require(batchId != 0, "Batch does not exist with this SSCC");
-        return _batchTransportEvents[batchId];
-    }
-    // Thêm hàm để kiểm tra trạng thái vận chuyển
-    function getBatchTransportStatus(
-        uint256 _batchId
-    ) public view returns (TransportStatus) {
-        require(_batches[_batchId].batchId != 0, "Batch does not exist");
-        return _batches[_batchId].transportStatus;
-    }
-
-    // function getBatchActivityLogs(uint256 _batchId) public view returns (ActivityLog.ActivityLogEntry[] memory) {
-    //     return activityLogContract.getActivityLogs(_batchId);
-    // }
-
-    function getSystemActivityLogsBySSCC(
-        string memory _sscc
-    ) public view returns (ActivityLog.ActivityLogEntry[] memory) {
-        uint256 batchId = uint256(keccak256(abi.encodePacked(_sscc)));
-        return activityLogContract.getSystemActivityLogs(batchId);
-    }
-    function getBatchIdBySSCC(
-        string memory _sscc
-    ) public view returns (uint256) {
-        return _ssccToBatchId[_sscc];
-    }
-    function getProducerActivityLogsByProducerId(
-        uint256 _producerId
-    ) public view returns (ActivityLog.ActivityLogEntry[] memory) {
-        return activityLogContract.getProducerActivityLogs(_producerId);
+        bytes32 calculatedHash = keccak256(abi.encodePacked(
+            _sscc,
+            _producerId,
+            _quantity,
+            _productionDate,
+            _farmPlotNumber,
+            _productTypeId,
+            _name
+        ));
+        
+        return _batches[_batchId].dataHash == calculatedHash;
     }
 }

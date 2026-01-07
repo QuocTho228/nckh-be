@@ -355,7 +355,7 @@ Quy trình sản xuất...</textarea
             const baseUrl =
               window.location.hostname === "localhost"
                 ? "http://localhost:3000"
-                : "https://truyxuatbuoi.xyz";
+                : "https://truyxuatsaurieng.xyz";
 
             // Thêm các trường original vào formData
             formData.append(
@@ -397,7 +397,7 @@ Quy trình sản xuất...</textarea
 
             fetch(`${baseUrl}/api/products/update`, {
               method: "POST",
-              body: formData
+              body: formData,
             })
               .then((response) => {
                 if (!response.ok) {

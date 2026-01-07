@@ -16,7 +16,7 @@ const {
   getDownloadURL,
   authenticateAnonymously,
   admin,
-  adminBucket
+  adminBucket,
 } = require("../../firebase");
 const { registerNotification } = require("../../notification");
 const sharp = require("sharp");
@@ -40,7 +40,7 @@ function validateInput(data) {
     "province_id",
     "district_id",
     "ward_id",
-    "specific_address"
+    "specific_address",
   ];
   // Chỉ yêu cầu region_id cho vai trò người sản xuất và kiểm định
   if (data.role_id === "1" || data.role_id === "2") {
@@ -54,7 +54,7 @@ function getRoleName(roleId) {
     1: "Nhà Sản Xuất",
     2: "Kiểm Duyệt",
     6: "Vận Chuyển",
-    8: "Nhà Kho"
+    8: "Nhà Kho",
   };
   return roles[roleId] || "Không xác định";
 }
@@ -101,7 +101,7 @@ async function validateLocationIds(provinceId, districtId, wardId) {
         [districtId, `Huyện ${districtId}`, provinceId]
       );
       districts = [
-        { district_id: districtId, district_name: `Huyện ${districtId}` }
+        { district_id: districtId, district_name: `Huyện ${districtId}` },
       ];
     }
     console.log("Found/Added district:", districts[0].district_name);
@@ -124,7 +124,7 @@ async function validateLocationIds(provinceId, districtId, wardId) {
     console.log("Validation successful:", {
       province: provinces[0].province_name,
       district: districts[0].district_name,
-      ward: wards[0].ward_name
+      ward: wards[0].ward_name,
     });
 
     return { provinceId, districtId, wardId };
@@ -167,7 +167,7 @@ module.exports = (db) => {
   async function emailExists(email) {
     try {
       const [userRows] = await db.query("SELECT * FROM users WHERE email = ?", [
-        email
+        email,
       ]);
       const [adminRows] = await db.query(
         "SELECT * FROM admin WHERE admin_email = ?",
@@ -183,7 +183,7 @@ module.exports = (db) => {
     try {
       const provinces = jsonData.data.map((province) => ({
         id: province.id,
-        name: province.name
+        name: province.name,
       }));
       res.json(provinces);
     } catch (error) {
@@ -296,7 +296,7 @@ module.exports = (db) => {
         region_id,
         province_id,
         district_id,
-        ward_id
+        ward_id,
       } = req.body;
 
       // Kiểm tra dữ liệu đầu vào
@@ -311,7 +311,7 @@ module.exports = (db) => {
         !role_id
       ) {
         return res.status(400).json({
-          message: "Vui lòng điền đầy đủ thông tin bắt buộc"
+          message: "Vui lòng điền đầy đủ thông tin bắt buộc",
         });
       }
 
@@ -319,7 +319,7 @@ module.exports = (db) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({
-          message: "Email không hợp lệ"
+          message: "Email không hợp lệ",
         });
       }
 
@@ -327,7 +327,7 @@ module.exports = (db) => {
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(phone)) {
         return res.status(400).json({
-          message: "Số điện thoại không hợp lệ"
+          message: "Số điện thoại không hợp lệ",
         });
       }
 
@@ -352,7 +352,7 @@ module.exports = (db) => {
           await sharp(req.file.buffer)
             .resize(800, 800, {
               fit: "inside",
-              withoutEnlargement: true
+              withoutEnlargement: true,
             })
             .jpeg({ quality: 80 })
             .toFile(filePath);
@@ -370,7 +370,7 @@ module.exports = (db) => {
       // Kiểm tra email đã tồn tại
       if (await emailExists(email)) {
         return res.status(400).json({
-          message: "Email này đã được sử dụng. Vui lòng chọn email khác."
+          message: "Email này đã được sử dụng. Vui lòng chọn email khác.",
         });
       }
 
@@ -378,7 +378,7 @@ module.exports = (db) => {
       const phoneExistsQuery = "SELECT * FROM users WHERE phone = ?";
       if (await recordExists(phoneExistsQuery, [phone])) {
         return res.status(400).json({
-          message: "Số điện thoại này đã được sử dụng. Vui lòng chọn số khác."
+          message: "Số điện thoại này đã được sử dụng. Vui lòng chọn số khác.",
         });
       }
 
@@ -400,7 +400,7 @@ module.exports = (db) => {
       const {
         provinceId: validProvinceId,
         districtId: validDistrictId,
-        wardId: validWardId
+        wardId: validWardId,
       } = validatedIds;
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -422,7 +422,7 @@ module.exports = (db) => {
         validDistrictId,
         validWardId,
         tempImgUrl,
-        verificationToken
+        verificationToken,
       ];
 
       const [result] = await connection.query(sql, values);
@@ -431,8 +431,8 @@ module.exports = (db) => {
       // Sau khi insert user thành công
       const verifyUrl =
         process.env.NODE_ENV === "development"
-          ? "http://127.0.0.1:3000"
-          : "https://truyxuatbuoi.xyz";
+          ? "http://localhost:3000/"
+          : "https://truyxuatsaurieng.xyz";
       const verificationLink = `${verifyUrl}/api/verify/${verificationToken}`;
       await sendEmail(
         email,
@@ -452,7 +452,7 @@ module.exports = (db) => {
         message:
           "Đã đăng ký tài khoản người dùng thành công. Vui lòng kiểm tra email của bạn để xác thực tài khoản.",
         email: email,
-        avatarUrl: tempImgUrl
+        avatarUrl: tempImgUrl,
       });
     } catch (error) {
       if (connection) {
@@ -464,18 +464,19 @@ module.exports = (db) => {
       if (error.code === "ER_DUP_ENTRY") {
         if (error.message.includes("email")) {
           return res.status(400).json({
-            message: "Email này đã được sử dụng. Vui lòng chọn email khác."
+            message: "Email này đã được sử dụng. Vui lòng chọn email khác.",
           });
         }
         if (error.message.includes("phone")) {
           return res.status(400).json({
-            message: "Số điện thoại này đã được sử dụng. Vui lòng chọn số khác."
+            message:
+              "Số điện thoại này đã được sử dụng. Vui lòng chọn số khác.",
           });
         }
       }
 
       res.status(500).json({
-        message: "Lỗi khi xử lý yêu cầu đăng ký. Vui lòng thử lại sau."
+        message: "Lỗi khi xử lý yêu cầu đăng ký. Vui lòng thử lại sau.",
       });
     } finally {
       if (connection) {
@@ -509,4 +510,188 @@ module.exports = (db) => {
   //  console.log('Các route đã đăng ký trong dangky.js:', router.stack.map(layer => layer.route?.path).filter(Boolean));
 
   return router;
+
+  // ==========================================
+  // BỔ SUNG VÀO FILE dangky.js
+  // Thêm vào cuối module.exports
+  // ==========================================
+
+  /**
+   * GET /api/roles
+   * Lấy danh sách roles để hiển thị trong form đăng ký
+   */
+  router.get("/roles", async (req, res) => {
+    try {
+      const [roles] = await db.query(`
+      SELECT role_id, role_name, description 
+      FROM roles 
+      WHERE role_id IN (1, 3, 4, 5, 6, 7, 8)
+      ORDER BY role_id ASC
+    `);
+
+      // Format roles cho dropdown
+      const formattedRoles = roles.map((role) => ({
+        id: role.role_id,
+        name: role.role_name,
+        displayName: getRoleDisplayName(role.role_id),
+        description: role.description,
+      }));
+
+      res.json({
+        success: true,
+        data: formattedRoles,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách roles:", error);
+      res.status(500).json({
+        error: "Không thể lấy danh sách vai trò",
+      });
+    }
+  });
+
+  /**
+   * Helper function: Lấy tên hiển thị tiếng Việt
+   */
+  function getRoleDisplayName(roleId) {
+    const displayNames = {
+      1: "Nông dân",
+      3: "Người thu mua",
+      4: "Cơ sở sơ chế",
+      5: "Kiểm nghiệm viên",
+      6: "Người vận chuyển",
+      7: "Nhà phân phối",
+      8: "Nhà kho",
+    };
+    return displayNames[roleId] || "Không xác định";
+  }
+
+  // ==========================================
+  // UPDATE VALIDATION trong hàm POST /register
+  // Thay thế phần validation role cũ
+  // ==========================================
+
+  // Trong router.post('/register', ...)
+  // Tìm đoạn validation và thay thế:
+
+  // BEFORE:
+  // if (!role_id || ![1, 2, 6, 8].includes(parseInt(role_id))) {
+  //   return res.status(400).json({
+  //     message: 'Vai trò không hợp lệ'
+  //   });
+  // }
+
+  // AFTER:
+  const allowedRoles = [1, 3, 4, 5, 6, 7, 8]; // Bỏ role 2 (Inspector) vì chỉ admin tạo
+  if (!role_id || !allowedRoles.includes(parseInt(role_id))) {
+    return res.status(400).json({
+      message: "Vai trò không hợp lệ. Vui lòng chọn vai trò từ danh sách.",
+    });
+  }
+
+  // ==========================================
+  // UPDATE region_id VALIDATION
+  // Chỉ yêu cầu region_id cho Farmer (1) và Inspector (2)
+  // ==========================================
+
+  // Trong router.post('/register', ...)
+  // Tìm đoạn kiểm tra region_id và thay thế:
+
+  // BEFORE:
+  // if (role_id === "1" || role_id === "2") {
+  //   requiredFields.push("region_id");
+  // }
+
+  // AFTER:
+  const rolesRequiringRegion = [1, 2]; // Farmer và Inspector
+  if (rolesRequiringRegion.includes(parseInt(role_id))) {
+    if (!region_id) {
+      return res.status(400).json({
+        message: "Vai trò này yêu cầu chọn vùng sản xuất",
+      });
+    }
+  }
+
+  // ==========================================
+  // THÊM VÀO CUỐI FILE dangky.js
+  // ==========================================
+
+  /**
+   * GET /api/role-requirements/:roleId
+   * Lấy yêu cầu đặc biệt cho từng role
+   */
+  router.get("/role-requirements/:roleId", async (req, res) => {
+    try {
+      const roleId = parseInt(req.params.roleId);
+
+      const requirements = {
+        1: {
+          // Farmer
+          requiresRegion: true,
+          documents: ["Giấy chứng nhận VietGAP (nếu có)"],
+          description: "Người sản xuất nông sản trực tiếp",
+        },
+        3: {
+          // Purchaser
+          requiresRegion: false,
+          documents: ["Giấy phép kinh doanh thu mua"],
+          description: "Thu mua nông sản từ nông dân",
+        },
+        4: {
+          // Processor
+          requiresRegion: false,
+          documents: [
+            "Giấy chứng nhận HACCP/ISO",
+            "Giấy phép vệ sinh an toàn thực phẩm",
+          ],
+          description: "Sơ chế và chế biến nông sản",
+        },
+        5: {
+          // Quality Inspector
+          requiresRegion: false,
+          documents: [
+            "Chứng chỉ kiểm nghiệm viên",
+            "Giấy phép hoạt động phòng lab",
+          ],
+          description: "Kiểm tra chất lượng sản phẩm",
+        },
+        6: {
+          // Transporter
+          requiresRegion: false,
+          documents: [
+            "Giấy phép kinh doanh vận tải",
+            "Đăng ký xe lạnh (nếu có)",
+          ],
+          description: "Vận chuyển nông sản",
+        },
+        7: {
+          // Distributor
+          requiresRegion: false,
+          documents: ["Giấy phép kinh doanh", "Hợp đồng phân phối (nếu có)"],
+          description: "Phân phối sản phẩm đến người tiêu dùng",
+        },
+        8: {
+          // Warehouse
+          requiresRegion: false,
+          documents: ["Giấy phép kho lạnh", "Chứng nhận VSATTP"],
+          description: "Bảo quản và lưu trữ nông sản",
+        },
+      };
+
+      if (!requirements[roleId]) {
+        return res.status(404).json({
+          error: "Không tìm thấy thông tin vai trò",
+        });
+      }
+
+      res.json({
+        success: true,
+        data: requirements[roleId],
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy yêu cầu role:", error);
+      res.status(500).json({
+        error: "Không thể lấy thông tin yêu cầu",
+      });
+    }
+  });
 };

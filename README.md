@@ -159,7 +159,8 @@ nckh-be
 │   │   └── supplychain.sol
 │   ├── migrations/
 │   │   ├── .gitkeep
-│   │   └── 2_deploy_contracts.js
+│   │   ├── 2_deploy_contracts.js
+│   │   └── 3_deploy_contracts.js
 │   ├── src/
 │   │   ├── app.js
 │   │   ├── backend.js
@@ -247,25 +248,6 @@ nckh-be
 │   │   │   │   ├── trangchu.css
 │   │   │   │   └── van-chuyen.css
 │   │   │   ├── hinhanh/
-│   │   │   │   ├── background-saurieng.jpg
-│   │   │   │   ├── banner-1.jpg
-│   │   │   │   ├── banner.jpg
-│   │   │   │   ├── Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png
-│   │   │   │   ├── cert-globalgap.png
-│   │   │   │   ├── cert-gmp.png
-│   │   │   │   ├── cert-iso.png
-│   │   │   │   ├── cert-organic.png
-│   │   │   │   ├── cert-vietgap.png
-│   │   │   │   ├── favicon.png
-│   │   │   │   ├── icon-chatluong.png
-│   │   │   │   ├── icon-tunhien.png
-│   │   │   │   ├── icon-tuoinon.png
-│   │   │   │   ├── icon-uytin.png
-│   │   │   │   ├── logo.jpg
-│   │   │   │   ├── noimage.png
-│   │   │   │   ├── qrcode_trangcanhan.png
-│   │   │   │   ├── truy-xuat-nguon-goc-1.png
-│   │   │   │   └── ve-chung-toi-saurieng.png
 │   │   │   ├── js_giaodien/
 │   │   │   │   ├── loaditem.js
 │   │   │   │   ├── nav-bar.js

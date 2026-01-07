@@ -1,7 +1,7 @@
 const baseUrl =
   window.location.hostname === "localhost"
     ? "http://localhost:3000/api"
-    : "https://truyxuatbuoi.xyz/api";
+    : "https://truyxuatsaurieng.xyz/api";
 
 // Tạo một đối tượng toàn cục để chứa các hàm và biến
 window.ProductManager = {
@@ -138,7 +138,7 @@ window.ProductManager = {
       description,
       uses,
       process,
-      img
+      img,
     };
 
     // Nén dữ liệu sản phẩm trước khi lưu vào localStorage
@@ -176,8 +176,8 @@ window.ProductManager = {
       method: "POST",
       body: JSON.stringify(productData),
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -195,7 +195,7 @@ window.ProductManager = {
         console.error("Lỗi khi cập nhật sản phẩm:", error);
         alert("Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.");
       });
-  }
+  },
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -377,7 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     fetch(`${baseUrl}/products`, {
       method: "POST",
-      body: formData
+      body: formData,
     })
       .then((response) => {
         if (!response.ok) {
@@ -481,7 +481,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Scroll to preview panel on mobile
       if (window.innerWidth < 768) {
         document.querySelector(".preview-panel").scrollIntoView({
-          behavior: "smooth"
+          behavior: "smooth",
         });
       }
     });
