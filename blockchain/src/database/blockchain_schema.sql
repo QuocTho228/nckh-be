@@ -2,11 +2,13 @@
 -- BLOCKCHAIN DATABASE SCHEMA
 -- =====================================================
 
--- CREATE DATABASE IF NOT EXISTS TRACEABILITY
--- CHARACTER SET utf8mb4
--- COLLATE utf8mb4_unicode_ci;
+-- DROP DATABASE IF EXISTS TRACEABILITY;
 
--- USE TRACEABILITY;
+CREATE DATABASE IF NOT EXISTS TRACEABILITY
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE TRACEABILITY;
 
 -- =====================================================
 -- EXISTING TABLES (Giữ nguyên)
@@ -620,17 +622,6 @@ CREATE TABLE product_sales (
 COMMENT='Lịch sử bán hàng - off-chain tracking';
 
 -- =====================================================
--- DATABASE CLEANUP SCRIPT
--- =====================================================
-
--- XÓA các bảng KHÔNG DÙNG
-DROP TABLE IF EXISTS batch_activity_images;
-DROP TABLE IF EXISTS batch_activity_products;
-DROP TABLE IF EXISTS processing_additives;
-DROP TABLE IF EXISTS register;
-DROP TABLE IF EXISTS batch;
-
--- =====================================================
 -- BLOCKCHAIN LOGGER TABLES (Giữ nguyên)
 -- =====================================================
 
@@ -881,6 +872,18 @@ COMMENT 'Số lượng - sẽ được update bởi BatchDetailsStored event';
 ALTER TABLE transport_events 
 MODIFY COLUMN action VARCHAR(200) NOT NULL DEFAULT ''
 COMMENT 'Mô tả hành động vận chuyển - sẽ được update bởi TransportDetailsStored event nếu có';
+
+-- =====================================================
+-- DATABASE CLEANUP SCRIPT
+-- =====================================================
+
+-- XÓA các bảng KHÔNG DÙNG
+DROP TABLE IF EXISTS batch_activity_images;
+DROP TABLE IF EXISTS batch_activity_products;
+DROP TABLE IF EXISTS processing_additives;
+DROP TABLE IF EXISTS register;
+DROP TABLE IF EXISTS batch;
+
 -- =====================================================
 -- SUMMARY COMMENTS
 -- =====================================================

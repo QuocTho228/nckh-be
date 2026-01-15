@@ -21,48 +21,57 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
 ## Chức Năng Chính
 
 ### 1. Quản lý Người Dùng
+
 - Đăng ký tài khoản (nông dân, nhà kiểm duyệt)
 - Đăng nhập/Đăng xuất
 - Xác minh email
 - Quản lý thông tin cá nhân
 
 ### 2. Quản lý Lô Sầu Riêng (Nông Dân)
+
 - Tạo lô sầu riêng mới
 - Cập nhật thông tin lô sầu riêng
 - Xem danh sách lô sầu riêng
 - Gửi yêu cầu kiểm định
 
 ### 3. Kiểm Định và Chứng Nhận (Nhà Kiểm Duyệt)
+
 - Xem danh sách yêu cầu kiểm định
 - Xác minh thông tin và kiểm định chất lượng
 - Phê duyệt hoặc từ chối lô sầu riêng
 - Cấp chứng nhận chất lượng
 
 ### 4. Truy Xuất Nguồn Gốc (Người Tiêu Dùng)
+
 - Quét mã QR để xem thông tin sản phẩm
 - Xem chi tiết về nguồn gốc và chất lượng sản phẩm
 - Gửi đánh giá và phản hồi
 
 ### 5. Quản lý Hoạt Động
+
 - Ghi nhận các hoạt động liên quan đến lô hàng
 - Xem nhật ký hoạt động
 
 ## Cài Đặt và Chạy Dự Án
 
 1. Clone dự án:
+
    ```sh
    git clone
    cd nckh-be
    ```
 
 2. Cài đặt dependencies:
+
    ```sh
    nvm use 18.20.8
    npm install
    ```
 
 3. Cấu hình môi trường:
+
    - Tạo file `.env` trong thư mục gốc và cấu hình các biến môi trường:
+
    ```sh
    DB_HOST=
    DB_USER=
@@ -102,27 +111,32 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
    ```
 
 4. Khởi tạo cơ sở dữ liệu:
+
    - Tạo database MySQL
    - Import schema từ file `database.sql` (nếu có)
 
 5. Terminal
+
    - Khởi chạy ganache không lưu dữ liệu:
-   `ganache --gasLimit 1000000000 --defaultBalanceEther 1000`
+     `ganache --gasLimit 1000000000 --defaultBalanceEther 1000`
 
    - Khởi chạy ganache có lưu dữ liệu trên blockchain:
-   `ganache --gasLimit 1000000000 --defaultBalanceEther 1000 --deterministic --db ./ganache-data`
+     `ganache --gasLimit 1000000000 --defaultBalanceEther 1000 --deterministic --db ./ganache-data`
 
 6. Triển khai smart contract:
+
    - Cài đặt Truffle: `npm install -g truffle`
    - Di chuyển vào thư mục blockchain: `cd blockchain`
    - Triển khai contract: `truffle migrate --network <your_network>`
 
-7. Lấy 2 giá trị: 
+7. Lấy 2 giá trị:
+
    - contract address: Deploying 'ActivityLogContract'
    - contract address: Deploying 'TraceabilityContract'
    - Dán vào `.env`
 
 8. Mở terminal
+
    - khởi chạy server redis: `redis-server`
 
 9. Chạy dự án:
@@ -185,6 +199,8 @@ nckh-be
 │   │   │   └── redis.js
 │   │   ├── database/
 │   │   │   └── blockchain_schema.sql
+│   │   ├── middleware/
+│   │   │   └── roleAuth.js
 │   │   ├── public/
 │   │   │   ├── trangcanhan_caidat.html
 │   │   │   ├── account/
@@ -262,12 +278,18 @@ nckh-be
 │   │   │   ├── nha-kho/
 │   │   │   │   ├── nha-kho.html
 │   │   │   │   └── nha-kho.js
-│   │   │   ├── san-xuat/
-│   │   │   │   ├── nhatky-hoatdong.html
-│   │   │   │   ├── sanxuat.html
-│   │   │   │   ├── them-lo-hang.html
-│   │   │   │   ├── thongbao-pheduyet.html
-│   │   │   │   └── thongbao-tuchoi.html
+│   │   │   ├── farmer/
+│   │   │   │   ├── css/farmer.css
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── batch-creator.js
+│   │   │   │   │   ├── batch-detail.js
+│   │   │   │   │   ├── dashboard.js
+│   │   │   │   │   ├── tree-form.js
+│   │   │   │   │   └── tree-manager.js
+│   │   │   │   ├── chi-tiet-lo.html
+│   │   │   │   ├── index.html
+│   │   │   │   ├── quan-ly-cay.html
+│   │   │   │   └── tao-lo-hang.html
 │   │   │   ├── tieu-dung/
 │   │   │   │   ├── allnhakiemduyet.html
 │   │   │   │   ├── allnongdan.html

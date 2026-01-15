@@ -119,6 +119,18 @@ class BlockchainLogger {
     console.log("✅ Đã khởi tạo Contracts");
   }
 
+  safeParseEventData(data) {
+    if (typeof data === "string") {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        console.error("JSON parse error:", e);
+        return data;
+      }
+    }
+    return data;
+  }
+
   async createTablesIfNotExists() {
     const connection = await this.dbPool.getConnection();
     try {
@@ -911,8 +923,7 @@ class BlockchainLogger {
       start_date = ?,
       start_date_iso = FROM_UNIXTIME(?),
       end_date = ?,
-      end_date_iso = FROM_UNIXTIME(?),
-      farm_plot_number = ?
+      end_date_iso = FROM_UNIXTIME(?)
       WHERE batch_id = ?
     `,
           [
@@ -922,7 +933,7 @@ class BlockchainLogger {
             data.startDate,
             data.endDate,
             data.endDate,
-            data.farmPlotNumber,
+            // data.farmPlotNumber, // Bỏ vì nó sẽ cập nhật rỗng từ smart contract (đã lưu từ Farmer)
             data.batchId,
           ]
         );
@@ -1245,7 +1256,7 @@ class BlockchainLogger {
 
       // === Warehouse ===
       case "WarehouseConfirmed":
-        // ✅ CHỈ INSERT nếu chưa tồn tại
+        // CHỈ INSERT nếu chưa tồn tại
         await connection.query(
           `INSERT IGNORE INTO warehouse_confirmations
     (batch_id, warehouse_id, confirmed_at, blockchain_tx_hash)
@@ -1524,7 +1535,7 @@ class BlockchainLogger {
 
       return rows.map((row) => ({
         ...row,
-        event_data: JSON.parse(row.event_data),
+        event_data: this.safeParseEventData(row.event_data), // ✅ Dùng helper
       }));
     } finally {
       connection.release();
@@ -1545,7 +1556,8 @@ class BlockchainLogger {
 
       return rows.map((row) => ({
         ...row,
-        event_data: JSON.parse(row.event_data),
+        // event_data: JSON.parse(row.event_data),
+        event_data: this.safeParseEventData(row.event_data),
       }));
     } finally {
       connection.release();

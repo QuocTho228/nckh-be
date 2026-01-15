@@ -529,10 +529,10 @@
             const response = await fetch("/api/dangnhap", {
               method: "POST",
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
               },
               credentials: "include",
-              body: JSON.stringify({ email, password, isAdmin })
+              body: JSON.stringify({ email, password, isAdmin }),
             });
 
             const data = await response.json();
@@ -545,7 +545,7 @@
                 gravity: "top",
                 position: "right",
                 className: "toast-success",
-                close: true
+                close: true,
               }).showToast();
 
               setTimeout(() => {
@@ -554,7 +554,8 @@
                 } else if (data.user) {
                   switch (data.user.roleId) {
                     case 1:
-                      window.location.href = "../san-xuat/sanxuat.html";
+                      // window.location.href = "../san-xuat/sanxuat.html";
+                      window.location.href = "../farmer/index.html";
                       break;
                     case 2:
                       window.location.href = "../kiem-duyet/nhakiemduyet.html";
@@ -572,7 +573,7 @@
                         gravity: "top",
                         position: "right",
                         className: "toast-error",
-                        close: true
+                        close: true,
                       }).showToast();
                   }
                 }
@@ -584,7 +585,7 @@
                 gravity: "top",
                 position: "right",
                 className: "toast-error",
-                close: true
+                close: true,
               }).showToast();
             }
           } catch (error) {
@@ -595,7 +596,7 @@
               gravity: "top",
               position: "right",
               className: "toast-error",
-              close: true
+              close: true,
             }).showToast();
           }
         });
