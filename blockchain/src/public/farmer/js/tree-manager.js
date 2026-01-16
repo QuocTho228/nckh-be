@@ -1,6 +1,7 @@
 /**
  * ========================================
  * TREE-MANAGER.JS - Logic Quản Lý Cây
+ * With Auto QR Code Generation & Display
  * ========================================
  */
 
@@ -300,6 +301,80 @@ function treeManager() {
     },
 
     /**
+     * ✅ View QR Code in modal
+     */
+    viewQRCode(tree) {
+      if (!tree.qr_image_url) {
+        Utils.toast.warning("Cây này chưa có mã QR");
+        return;
+      }
+
+      Swal.fire({
+        title: tree.tree_qr_code,
+        html: `
+          <div class="space-y-4">
+            <img 
+              src="${tree.qr_image_url}" 
+              alt="QR Code" 
+              class="w-64 h-64 mx-auto border-2 border-green-200 rounded-lg"
+            />
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <code class="text-sm font-mono">${tree.tree_qr_code}</code>
+            </div>
+            <div class="flex gap-2">
+              <a 
+                href="${tree.qr_image_url}" 
+                download="QR-${tree.tree_qr_code}.png"
+                class="btn-secondary text-sm py-2 flex-1"
+              >
+                <i class="fas fa-download mr-1"></i> Tải xuống
+              </a>
+              <button 
+                onclick="Utils.copyToClipboard('${tree.tree_qr_code}')"
+                class="btn-secondary text-sm py-2 flex-1"
+              >
+                <i class="fas fa-copy mr-1"></i> Sao chép mã
+              </button>
+            </div>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        width: 500,
+      });
+    },
+
+    /**
+     * ✅ Download QR Code
+     */
+    async downloadQRCode(tree) {
+      try {
+        const response = await fetch(tree.qr_image_url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `QR-${tree.tree_qr_code}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        Utils.toast.success("Đã tải xuống mã QR");
+      } catch (error) {
+        console.error("Download error:", error);
+        Utils.toast.error("Lỗi khi tải xuống");
+      }
+    },
+
+    /**
+     * ✅ Copy QR Code text
+     */
+    copyQRCode(tree) {
+      Utils.copyToClipboard(tree.tree_qr_code);
+    },
+
+    /**
      * View tree details
      */
     async viewTreeDetails(tree) {
@@ -307,7 +382,6 @@ function treeManager() {
       this.currentTree = tree;
       this.showTreeDetailModal = true;
 
-      // Sử dụng $nextTick để đợi Alpine render xong
       this.$nextTick(() => {
         setTimeout(async () => {
           const container = document.getElementById("treeDetailContainer");
@@ -319,70 +393,216 @@ function treeManager() {
           }
 
           container.innerHTML = `
-          <div class="space-y-6">
-            <!-- Tree Info -->
-            <div class="bg-gradient-primary rounded-xl p-6 text-white">
-              <div class="flex items-center justify-between mb-4">
-                <div>
-                  <h3 class="text-2xl font-bold mb-2">${tree.tree_qr_code}</h3>
-                  <p class="opacity-90">${tree.tree_type} - ${tree.variety}</p>
-                </div>
-                <span class="${
-                  tree.is_active
-                    ? "bg-white text-green-600"
-                    : "bg-gray-200 text-gray-600"
-                } px-4 py-2 rounded-full font-semibold">
-                  ${tree.is_active ? "Đang hoạt động" : "Đã thu hoạch"}
-                </span>
-              </div>
-              
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <p class="opacity-75 mb-1">Ngày trồng</p>
-                  <p class="font-semibold">${Utils.formatDate(
-                    tree.planted_date_iso
-                  )}</p>
-                </div>
-                <div>
-                  <p class="opacity-75 mb-1">Tuổi cây</p>
-                  <p class="font-semibold">${this.getTreeAge(
-                    tree.planted_date_iso
-                  )}</p>
-                </div>
-                <div>
-                  <p class="opacity-75 mb-1">Vị trí</p>
-                  <p class="font-semibold truncate" title="${
-                    tree.coordinates || "N/A"
-                  }">${tree.coordinates || "N/A"}</p>
-                </div>
-                <div>
-                  <p class="opacity-75 mb-1">QR Code</p>
-                  <button 
-                    onclick="Utils.copyToClipboard('${tree.tree_qr_code}')" 
-                    class="font-semibold hover:underline"
-                    type="button"
-                  >
-                    <i class="fas fa-copy mr-1"></i> Sao chép
-                  </button>
-                </div>
+  <div class="space-y-6">
+    <!-- Tree Info Header -->
+    <div class="bg-gradient-primary rounded-xl p-6 text-white">
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex-1">
+          <h3 class="text-2xl font-bold mb-2">${tree.tree_qr_code}</h3>
+          <p class="opacity-90">${tree.tree_type} - ${tree.variety}</p>
+        </div>
+        <span class="${
+          tree.is_active
+            ? "bg-white text-green-600"
+            : "bg-gray-200 text-gray-600"
+        } px-4 py-2 rounded-full font-semibold">
+          ${tree.is_active ? "Đang hoạt động" : "Đã thu hoạch"}
+        </span>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div>
+          <p class="opacity-75 mb-1">Ngày trồng</p>
+          <p class="font-semibold">${Utils.formatDate(
+            tree.planted_date_iso
+          )}</p>
+        </div>
+        <div>
+          <p class="opacity-75 mb-1">Tuổi cây</p>
+          <p class="font-semibold">${this.getTreeAge(tree.planted_date_iso)}</p>
+        </div>
+        <div>
+          <p class="opacity-75 mb-1">Vị trí</p>
+          <p class="font-semibold truncate" title="${
+            tree.coordinates || "N/A"
+          }">${tree.coordinates || "N/A"}</p>
+        </div>
+        <div>
+          <p class="opacity-75 mb-1">QR Code</p>
+          <button 
+            onclick="Utils.copyToClipboard('${tree.tree_qr_code}')" 
+            class="font-semibold hover:underline"
+            type="button"
+          >
+            <i class="fas fa-copy mr-1"></i> Sao chép
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h4 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <i class="fas fa-info-circle text-green-600"></i>
+        Thông tin cây & Mã QR
+      </h4>
+      
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- Left: Tree Info -->
+        <div class="flex-1 space-y-3">
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-qrcode mr-2"></i>Mã QR Code:
+              </p>
+              <div class="flex items-center gap-2">
+                <code class="font-mono font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
+                  ${tree.tree_qr_code}
+                </code>
+                <button 
+                  onclick="Utils.copyToClipboard('${tree.tree_qr_code}')"
+                  class="text-blue-600 hover:text-blue-800"
+                  type="button"
+                  title="Sao chép"
+                >
+                  <i class="fas fa-copy"></i>
+                </button>
               </div>
             </div>
             
-            <!-- Activities -->
             <div>
-              <h4 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <i class="fas fa-history text-green-600"></i>
-                Lịch sử chăm sóc
-              </h4>
-              
-              <div id="treeActivities" class="space-y-4">
-                <div class="flex justify-center py-8">
-                  <div class="spinner"></div>
-                </div>
-              </div>
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-hashtag mr-2"></i>ID Cây:
+              </p>
+              <p class="font-semibold">${tree.tree_id}</p>
+            </div>
+            
+            <div>
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-tree mr-2"></i>Loại cây:
+              </p>
+              <p class="font-semibold">${tree.tree_type}</p>
+            </div>
+            
+            <div>
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-dna mr-2"></i>Giống:
+              </p>
+              <p class="font-semibold">${tree.variety}</p>
+            </div>
+            
+            <div>
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-calendar mr-2"></i>Ngày trồng:
+              </p>
+              <p class="font-semibold">${Utils.formatDate(
+                tree.planted_date_iso
+              )}</p>
+            </div>
+            
+            <div>
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-clock mr-2"></i>Tuổi cây:
+              </p>
+              <p class="font-semibold">${this.getTreeAge(
+                tree.planted_date_iso
+              )}</p>
+            </div>
+            
+            <div class="col-span-2">
+              <p class="text-gray-600 mb-1">
+                <i class="fas fa-map-marker-alt mr-2"></i>Vị trí:
+              </p>
+              <p class="font-semibold text-sm">${tree.coordinates || "N/A"}</p>
             </div>
           </div>
-        `;
+
+          <!-- Action Buttons -->
+          <div class="flex gap-2 pt-4 border-t border-gray-200">
+            <a 
+              href="${tree.qr_image_url || "#"}" 
+              download="QR-${tree.tree_qr_code}.png"
+              class="btn-secondary text-sm py-2 flex-1 text-center ${
+                !tree.qr_image_url ? "opacity-50 pointer-events-none" : ""
+              }"
+            >
+              <i class="fas fa-download mr-1"></i> Tải QR
+            </a>
+            <button 
+              onclick="window.print()"
+              class="btn-secondary text-sm py-2 flex-1"
+              type="button"
+            >
+              <i class="fas fa-print mr-1"></i> In mã QR
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: QR Code Image -->
+        ${
+          tree.qr_image_url
+            ? `
+        <div class="flex-shrink-0 flex flex-col items-center">
+          <div class="bg-white p-4 rounded-lg border-2 border-green-200 shadow-md hover:shadow-lg transition">
+            <img 
+              src="${tree.qr_image_url}" 
+              alt="QR Code ${tree.tree_qr_code}"
+              class="w-48 h-48 cursor-pointer"
+              onclick="Swal.fire({
+                imageUrl: '${tree.qr_image_url}',
+                imageAlt: 'QR Code',
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: 500
+              })"
+              onerror="this.parentElement.innerHTML='<div class=w-48 h-48 flex items-center justify-center text-red-500><i class=fas fa-exclamation-circle text-4xl></i></div>'"
+            />
+          </div>
+          <p class="text-xs text-center text-gray-600 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>
+            Nhấn vào để phóng to
+          </p>
+        </div>
+        `
+            : `
+        <div class="flex-shrink-0 flex items-center justify-center w-48 h-48 bg-gray-100 rounded-lg border-2 border-gray-300">
+          <div class="text-center text-gray-500">
+            <i class="fas fa-qrcode text-4xl mb-2"></i>
+            <p class="text-sm">Chưa có mã QR</p>
+          </div>
+        </div>
+        `
+        }
+      </div>
+
+      ${
+        tree.qr_image_url
+          ? `
+      <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <p class="text-sm text-blue-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          Bạn có thể in mã QR này và dán lên cây để dễ dàng quản lý và truy xuất nguồn gốc.
+        </p>
+      </div>
+      `
+          : ""
+      }
+    </div>
+    
+    <!-- Activities Section -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h4 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <i class="fas fa-history text-green-600"></i>
+        Lịch sử chăm sóc
+      </h4>
+      
+      <div id="treeActivities" class="space-y-4">
+        <div class="flex justify-center py-8">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
 
           // Load activities
           await this.loadTreeActivities(tree.tree_id);
@@ -568,6 +788,55 @@ function treeManager() {
     },
   };
 }
+
+/**
+ * ========================================
+ * PRINT STYLES - Add to <head> once
+ * ========================================
+ */
+(function initPrintStyles() {
+  if (document.getElementById("treeQRPrintStyles")) return;
+
+  const styleEl = document.createElement("style");
+  styleEl.id = "treeQRPrintStyles";
+  styleEl.textContent = `
+    @media print {
+      @page {
+        size: auto;
+        margin: 20mm;
+      }
+      
+      body * {
+        visibility: hidden;
+      }
+      
+      .bg-white.rounded-xl.shadow-md:has(img[alt*="QR Code"]),
+      .bg-white.rounded-xl.shadow-md:has(img[alt*="QR Code"]) * {
+        visibility: visible;
+      }
+      
+      .bg-white.rounded-xl.shadow-md:has(img[alt*="QR Code"]) {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+      }
+
+      button, .btn-secondary, .btn-primary {
+        display: none !important;
+      }
+
+      img[alt*="QR Code"] {
+        display: block;
+        margin: 0 auto;
+        width: 300px !important;
+        height: 300px !important;
+      }
+    }
+  `;
+  document.head.appendChild(styleEl);
+})();
 
 /**
  * Initialize auth khi page load

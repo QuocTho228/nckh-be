@@ -1,12 +1,12 @@
 /**
  * ========================================
- * TREE-FORM.JS - Form Đăng Ký & Chăm Sóc Cây
+ * TREE-FORM.JS - Updated với Auto QR Generation
  * ========================================
  */
 
 const TreeForm = {
   /**
-   * Render form đăng ký cây mới
+   * Render form đăng ký cây mới (KHÔNG CẦN NHẬP QR CODE)
    */
   async renderAddTreeForm(containerId, options = {}) {
     const container = document.getElementById(containerId);
@@ -19,24 +19,8 @@ const TreeForm = {
     container.innerHTML = `
       <form id="addTreeForm" class="space-y-6">
         
-        <!-- QR Code -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Mã QR Code Cây <span class="text-red-500">*</span>
-          </label>
-          <input 
-            type="text" 
-            id="treeQRCode"
-            required
-            maxlength="255"
-            placeholder="Ví dụ: TREE-001-2026"
-            class="input-gradient"
-          >
-          <p class="text-xs text-gray-500 mt-1">
-            <i class="fas fa-info-circle mr-1"></i> 
-            Mã QR duy nhất để định danh cây
-          </p>
-        </div>
+        <!-- ❌ REMOVED: QR Code input field -->
+        <!-- QR Code sẽ được tạo tự động -->
         
         <!-- Region -->
         <div>
@@ -99,6 +83,22 @@ const TreeForm = {
             Địa chỉ hoặc tọa độ GPS (lat, lng)
           </p>
         </div>
+
+        <!-- ✅ INFO BOX: QR Code sẽ tự động tạo -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <i class="fas fa-info-circle text-blue-600 text-xl"></i>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-blue-900 mb-1">
+                Mã QR Code sẽ được tạo tự động
+              </p>
+              <p class="text-xs text-blue-700">
+                Sau khi đăng ký thành công, hệ thống sẽ tự động sinh mã QR Code 
+                theo định dạng <strong>DURIAN-{ID}-{Ngày}</strong> cho cây của bạn.
+              </p>
+            </div>
+          </div>
+        </div>
         
         <!-- Actions -->
         <div class="flex gap-3 pt-4 border-t border-gray-200">
@@ -121,7 +121,6 @@ const TreeForm = {
       e.preventDefault();
 
       const formData = {
-        treeQRCode: document.getElementById("treeQRCode").value.trim(),
         regionId: document.getElementById("regionId").value,
         treeType: document.getElementById("treeType").value.trim(),
         variety: document.getElementById("variety").value.trim(),
@@ -130,7 +129,6 @@ const TreeForm = {
 
       // Validate
       if (
-        !formData.treeQRCode ||
         !formData.regionId ||
         !formData.treeType ||
         !formData.variety ||
@@ -149,9 +147,88 @@ const TreeForm = {
         Utils.loading.hide();
 
         if (result.success) {
-          Utils.toast.success("Đăng ký cây thành công!");
+          // ✅ FIX: Check the actual response structure
+          console.log("API Response:", result);
+
+          // Backend returns: { success: true, message: "...", data: { treeId, treeQRCode, qrImageUrl, ... } }
+          const responseData = result.data?.data || result.data;
+
+          // ✅ Extract data with fallbacks
+          const treeQRCode = responseData?.treeQRCode || "N/A";
+          const treeId = responseData?.treeId || "N/A";
+          const qrImageUrl = responseData?.qrImageUrl || "";
+
+          console.log("Extracted data:", { treeQRCode, treeId, qrImageUrl });
+
+          // Show success dialog
+          await Swal.fire({
+            icon: "success",
+            title: "Đăng ký cây thành công!",
+            html: `
+          <div class="text-left space-y-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p class="text-sm text-green-800 mb-2">
+                <i class="fas fa-check-circle mr-2"></i>
+                Cây của bạn đã được đăng ký thành công
+              </p>
+              <div class="space-y-2 text-sm">
+                <div>
+                  <span class="text-gray-600">Mã QR:</span>
+                  <strong class="ml-2 text-green-900">${treeQRCode}</strong>
+                  <button 
+                    onclick="navigator.clipboard.writeText('${treeQRCode}'); Swal.showValidationMessage('Đã sao chép!');"
+                    class="ml-2 text-xs text-blue-600 hover:text-blue-800"
+                    type="button"
+                  >
+                    <i class="fas fa-copy"></i> Sao chép
+                  </button>
+                </div>
+                <div>
+                  <span class="text-gray-600">ID Cây:</span>
+                  <strong class="ml-2 text-green-900">${treeId}</strong>
+                </div>
+              </div>
+            </div>
+
+            ${
+              qrImageUrl
+                ? `
+              <!-- ✅ QR Code Image -->
+              <div class="flex justify-center">
+                <div class="bg-white p-4 rounded-lg border-2 border-green-200">
+                  <img 
+                    src="${qrImageUrl}" 
+                    alt="QR Code" 
+                    class="w-48 h-48"
+                    onerror="this.parentElement.innerHTML='<p class=text-red-500>Không thể tải ảnh QR</p>'"
+                  />
+                  <p class="text-xs text-center text-gray-600 mt-2">
+                    Mã QR của cây
+                  </p>
+                </div>
+              </div>
+
+              <div class="text-xs text-gray-500 text-center">
+                <i class="fas fa-info-circle mr-1"></i>
+                Bạn có thể tải ảnh QR Code này về để in dán
+              </div>
+            `
+                : `
+              <div class="text-center text-gray-500">
+                <i class="fas fa-exclamation-circle mr-1"></i>
+                Chưa có ảnh QR Code
+              </div>
+            `
+            }
+          </div>
+        `,
+            confirmButtonColor: "#028040",
+            confirmButtonText: "Đóng",
+            width: 600,
+          });
+
           if (options.onSuccess) {
-            options.onSuccess(result.data);
+            options.onSuccess(responseData);
           }
         } else {
           Utils.toast.error(result.error || "Lỗi khi đăng ký cây");
@@ -159,7 +236,7 @@ const TreeForm = {
       } catch (error) {
         Utils.loading.hide();
         console.error("Register tree error:", error);
-        Utils.toast.error("Lỗi khi đăng ký cây");
+        Utils.toast.error("Lỗi khi đăng ký cây: " + error.message);
       }
     });
 

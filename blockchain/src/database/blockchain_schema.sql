@@ -941,6 +941,17 @@ LEFT JOIN processing_records proc ON b.batch_id = proc.batch_id
 ORDER BY b.batch_id DESC;
 
 -- =====================================================
+-- ALTER TABLE: Thêm cột lưu QR Image URL
+-- =====================================================
+
+ALTER TABLE trees 
+ADD COLUMN qr_image_url VARCHAR(500) COMMENT 'URL của QR code image' 
+AFTER coordinates;
+
+-- Tạo index cho việc tìm kiếm
+CREATE INDEX idx_tree_qr_code ON trees(tree_qr_code);
+
+-- =====================================================
 -- DATABASE CLEANUP SCRIPT
 -- =====================================================
 

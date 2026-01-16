@@ -15,6 +15,7 @@ const { logger: blockchainLogger } = require("./blockchainLogger");
 const axios = require("axios");
 const FormData = require("form-data");
 const sharp = require("sharp");
+const QRCode = require("qrcode");
 const QrCode = require("qrcode-reader");
 const util = require("util");
 const bodyParser = require("body-parser");
@@ -507,6 +508,96 @@ function cleanupUploadedFiles(files) {
   }
 }
 
+/**
+ * Tạo mã QR Code cho cây
+ * @param {number} treeId - ID của cây từ blockchain
+ * @returns {string} - QR Code string theo format DURIAN-{tree_id}-{YYYYMMDD}
+ */
+function generateTreeQRCode(treeId) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  const dateString = `${year}${month}${day}`;
+  const qrCode = `DURIAN-${treeId}-${dateString}`;
+
+  return qrCode;
+}
+
+/**
+ * Tạo file QR Code image
+ * @param {string} qrCodeText - Text để tạo QR
+ * @param {number} treeId - ID của cây (để đặt tên file)
+ * @returns {Promise<string>} - Path của file QR image
+ */
+async function generateQRCodeImage(qrCodeText, treeId) {
+  try {
+    // Tạo thư mục lưu QR codes nếu chưa có
+    const qrDir = path.join(__dirname, "public", "uploads", "qrcodes", "trees");
+    if (!fs.existsSync(qrDir)) {
+      fs.mkdirSync(qrDir, { recursive: true });
+    }
+
+    // Tạo tên file
+    const fileName = `tree-${treeId}-${Date.now()}.png`;
+    const filePath = path.join(qrDir, fileName);
+
+    // Generate QR code image
+    await QRCode.toFile(filePath, qrCodeText, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
+    });
+
+    // Return relative URL
+    const relativeUrl = `/uploads/qrcodes/trees/${fileName}`;
+    return relativeUrl;
+  } catch (error) {
+    console.error("Error generating QR code image:", error);
+    throw error;
+  }
+}
+
+/**
+ * Upload QR Code image to S3 (nếu dùng S3)
+ */
+async function uploadQRCodeToS3(localFilePath, treeId) {
+  const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+  const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+
+  const fileName = `qrcodes/trees/tree-${treeId}-${Date.now()}.png`;
+
+  const params = {
+    Bucket: process.env.BUCKET_NAME,
+    Key: fileName,
+    Body: fs.createReadStream(localFilePath),
+    ContentType: "image/png",
+  };
+
+  const command = new PutObjectCommand(params);
+  await s3Client.send(command);
+
+  // Xóa file local sau khi upload
+  if (fs.existsSync(localFilePath)) {
+    fs.unlinkSync(localFilePath);
+  }
+
+  const publicUrl = `https://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+  return publicUrl;
+}
+
+// Export hàm setupRoutes để sử dụng trong file chính
 function setupRoutes(app, db) {
   app.use(async (req, res, next) => {
     try {
@@ -989,10 +1080,10 @@ function setupRoutes(app, db) {
       let connection;
       try {
         const farmerId = req.session.userId;
-        const { treeQRCode, regionId, treeType, variety, coordinates } =
-          req.body;
+        const { regionId, treeType, variety, coordinates } = req.body;
 
-        if (!treeQRCode || !regionId || !treeType || !variety || !coordinates) {
+        // Validate required fields
+        if (!regionId || !treeType || !variety || !coordinates) {
           return res.status(400).json({
             error: "Thiếu thông tin bắt buộc",
           });
@@ -1006,9 +1097,14 @@ function setupRoutes(app, db) {
           return res.status(404).json({ error: "Không tìm thấy nông dân" });
         }
 
+        // ✅ STEP 1: Register tree on blockchain (WITHOUT QR code)
+        const tempQRCode = `TEMP-${Date.now()}-${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+
         const result = await activityLogContract.methods
           .registerTree(
-            treeQRCode,
+            tempQRCode,
             BigInt(farmerId),
             BigInt(regionId),
             treeType,
@@ -1032,11 +1128,23 @@ function setupRoutes(app, db) {
             .json({ error: "Không thể lấy treeId từ blockchain" });
         }
 
+        // ✅ STEP 2: Generate QR Code
+        const treeQRCode = generateTreeQRCode(treeId);
+        console.log(`✅ Generated QR Code: ${treeQRCode}`);
+
+        // ✅ STEP 3: Generate QR Code Image
+        const qrImagePath = await generateQRCodeImage(treeQRCode, treeId);
+        console.log(`✅ QR Image saved at: ${qrImagePath}`);
+
+        // Use local storage URL
+        const qrImageUrl = qrImagePath;
+
+        // ✅ STEP 4: Insert into database with generated QR code
         await connection.query(
           `INSERT INTO trees 
        (tree_id, tree_qr_code, farmer_id, region_id, tree_type, variety, 
-        planted_date, planted_date_iso, coordinates, blockchain_tx_hash) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?, ?)`,
+        planted_date, planted_date_iso, coordinates, qr_image_url, blockchain_tx_hash) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), ?, ?, ?)`,
           [
             treeId,
             treeQRCode,
@@ -1047,28 +1155,38 @@ function setupRoutes(app, db) {
             plantedDate,
             plantedDate,
             coordinates,
+            qrImageUrl,
             result.transactionHash,
           ]
         );
 
         await connection.commit();
 
+        // ✅ STEP 5: Log the data we're sending
+        console.log("✅ Register tree success:", {
+          treeId,
+          treeQRCode,
+          qrImageUrl,
+        });
+
+        // ✅ STEP 6: Send clear response
         res.json({
           success: true,
           message: "Đăng ký cây trồng thành công",
           data: {
-            treeId,
-            treeQRCode,
+            treeId: treeId,
+            treeQRCode: treeQRCode,
+            qrImageUrl: qrImageUrl,
             plantedDate: new Date(Number(plantedDate) * 1000).toISOString(),
             transactionHash: result.transactionHash,
           },
         });
       } catch (error) {
         if (connection) await connection.rollback();
-        console.error("Lỗi khi đăng ký cây:", error);
-        res
-          .status(500)
-          .json({ error: "Không thể đăng ký cây: " + error.message });
+        console.error("❌ Lỗi khi đăng ký cây:", error);
+        res.status(500).json({
+          error: "Không thể đăng ký cây: " + error.message,
+        });
       } finally {
         if (connection) connection.release();
       }
@@ -5535,4 +5653,7 @@ module.exports = {
   cleanKeys,
   convertBigIntToString,
   BUCKET_NAME,
+  generateTreeQRCode,
+  generateQRCodeImage,
+  uploadQRCodeToS3,
 };
