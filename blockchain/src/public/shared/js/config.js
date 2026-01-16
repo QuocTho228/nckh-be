@@ -29,6 +29,14 @@ const CONFIG = {
     // Farmer - Batches
     FARMER_BATCHES: "/api/farmer/my-batches",
     CREATE_BATCH: "/api/farmer/create-batch",
+
+    // Inspector
+    INSPECTOR_STATS: "/api/inspector/stats",
+    INSPECTOR_PENDING_BATCHES: "/api/inspector/pending-batches",
+    INSPECTOR_BATCH_FULL_INFO: "/api/inspector/batch/:id/full-info",
+    INSPECTOR_MY_APPROVALS: "/api/inspector/my-approvals",
+    INSPECTOR_APPROVE_BATCH: "/api/inspector/approve-batch/:id",
+    INSPECTOR_REJECT_BATCH: "/api/inspector/reject-batch/:id",
   },
 
   // Roles

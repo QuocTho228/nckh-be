@@ -51,6 +51,13 @@ const Auth = {
   },
 
   /**
+   * Kiểm tra có phải inspector không
+   */
+  isInspector() {
+    return this.hasRole(CONFIG.ROLES.INSPECTOR);
+  },
+
+  /**
    * Đăng xuất
    */
   async logout() {
@@ -112,6 +119,23 @@ const Auth = {
       return false;
     }
 
+    return true;
+  },
+
+  /**
+   * Require inspector role
+   */
+  async requireInspector() {
+    const isLoggedIn = await this.requireAuth();
+    if (!isLoggedIn) return false;
+
+    if (!this.isInspector()) {
+      Utils.toast.error("Bạn không có quyền truy cập trang này");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+      return false;
+    }
     return true;
   },
 

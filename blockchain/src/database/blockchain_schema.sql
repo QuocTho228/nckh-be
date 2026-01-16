@@ -874,6 +874,73 @@ MODIFY COLUMN action VARCHAR(200) NOT NULL DEFAULT ''
 COMMENT 'Mô tả hành động vận chuyển - sẽ được update bởi TransportDetailsStored event nếu có';
 
 -- =====================================================
+-- FIX: Thêm cột approved_by vào blockchain_batches
+-- =====================================================
+
+-- 1. Thêm cột approved_by và approved_on
+ALTER TABLE blockchain_batches 
+ADD COLUMN approved_by INT DEFAULT NULL COMMENT 'Inspector ID đã phê duyệt/từ chối',
+ADD COLUMN approved_on TIMESTAMP NULL COMMENT 'Thời điểm phê duyệt/từ chối',
+ADD COLUMN rejection_reason TEXT COMMENT 'Lý do từ chối (nếu có)',
+ADD FOREIGN KEY (approved_by) REFERENCES users(uid) ON DELETE SET NULL;
+
+-- 2. Thêm index cho performance
+CREATE INDEX idx_approved_by ON blockchain_batches(approved_by);
+CREATE INDEX idx_approved_on ON blockchain_batches(approved_on);
+CREATE INDEX idx_status_approved_by ON blockchain_batches(status, approved_by);
+
+-- 3. Update View để bao gồm inspector info
+DROP VIEW IF EXISTS vw_batch_full_traceability;
+
+CREATE OR REPLACE VIEW vw_batch_full_traceability AS
+SELECT 
+    b.batch_id,
+    b.batch_name,
+    b.sscc,
+    b.status,
+    b.current_stage,
+    b.producer_id,
+    u.name as producer_name,
+    b.production_date_iso,
+    b.total_products,
+    
+    -- Inspector info
+    b.approved_by,
+    inspector.name as inspector_name,
+    b.approved_on,
+    b.rejection_reason,
+    
+    -- Purchase info
+    pr.purchase_id,
+    pr.purchaser_id,
+    pr.total_quantity as purchase_quantity,
+    pr.quality_grade,
+    
+    -- Processing info
+    proc.processing_id,
+    proc.processor_id,
+    proc.method as processing_method,
+    
+    -- Quality info
+    (SELECT COUNT(*) FROM quality_tests qt WHERE qt.batch_id = b.batch_id AND qt.passed = TRUE) as passed_tests,
+    (SELECT COUNT(*) FROM quality_tests qt WHERE qt.batch_id = b.batch_id) as total_tests,
+    
+    -- Transport info
+    b.transport_status,
+    b.detailed_transport_status,
+    (SELECT COUNT(*) FROM transport_events te WHERE te.batch_id = b.batch_id) as transport_event_count,
+    
+    -- Warehouse info
+    (SELECT COUNT(*) FROM warehouse_confirmations wc WHERE wc.batch_id = b.batch_id) as warehouse_count
+    
+FROM blockchain_batches b
+LEFT JOIN users u ON b.producer_id = u.uid
+LEFT JOIN users inspector ON b.approved_by = inspector.uid
+LEFT JOIN purchase_records pr ON b.batch_id = pr.batch_id
+LEFT JOIN processing_records proc ON b.batch_id = proc.batch_id
+ORDER BY b.batch_id DESC;
+
+-- =====================================================
 -- DATABASE CLEANUP SCRIPT
 -- =====================================================
 

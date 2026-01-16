@@ -962,7 +962,7 @@ function setupRoutes(app, db) {
   // ==========================================
   // LUỒNG ĐÚNG THEO QĐ 5272:
   // 1. FARMER: Trồng cây + Chăm sóc + Tạo lô hàng
-  // 2. ADMIN: Phê duyệt/Từ chối lô hàng
+  // 2. INSPECTOR: Phê duyệt/Từ chối lô hàng
   // 3. PURCHASER: Thu mua
   // 4. TRANSPORTER: Vận chuyển lần 1 (nông trại → cơ sở sơ chế)
   // 5. PROCESSOR: Sơ chế + Đóng gói sản phẩm
@@ -1721,16 +1721,16 @@ function setupRoutes(app, db) {
   );
 
   // ==========================================
-  // BƯỚC 2: ADMIN - PHÊ DUYỆT
+  // BƯỚC 2: Inspector - PHÊ DUYỆT
   // ==========================================
 
   /**
-   * GET /api/admin/pending-batches
+   * GET /api/inspector/pending-batches
    * Xem danh sách lô hàng chờ phê duyệt
-   * Role: Admin/Inspector (role_id = 2)
+   * Role: inspector/Inspector (role_id = 2)
    */
   app.get(
-    "/api/admin/pending-batches",
+    "/api/inspector/pending-batches",
     requireAuth,
     requireRole(ROLES.INSPECTOR),
     async (req, res) => {
@@ -1741,12 +1741,13 @@ function setupRoutes(app, db) {
           u.name as farmer_name,
           u.phone as farmer_phone,
           u.address as farmer_address,
+          u.email as farmer_email,
           p.product_name
         FROM blockchain_batches bb
         LEFT JOIN users u ON bb.producer_id = u.uid
         LEFT JOIN products p ON bb.product_type_id = p.product_id
         WHERE bb.status = 'PendingApproval'
-        ORDER BY bb.created_at ASC
+        ORDER BY bb.created_at DESC
       `);
 
         res.json({
@@ -1764,12 +1765,150 @@ function setupRoutes(app, db) {
   );
 
   /**
-   * POST /api/admin/approve-batch/:batchId
+   * GET /api/inspector/all-batches
+   * Lấy TẤT CẢ lô hàng (với filter tùy chọn)
+   */
+  app.get(
+    "/api/inspector/all-batches",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const statusFilter = req.query.status; // 'pending', 'approved', 'rejected'
+
+        let whereClause = "WHERE 1=1";
+        const params = [];
+
+        if (statusFilter === "pending") {
+          whereClause += " AND bb.status = 'PendingApproval'";
+        } else if (statusFilter === "approved") {
+          whereClause += " AND bb.status = 'Approved'";
+        } else if (statusFilter === "rejected") {
+          whereClause += " AND bb.status = 'Rejected'";
+        }
+        // Nếu không có filter hoặc filter = 'all' thì lấy tất cả
+
+        const [batches] = await db.query(
+          `SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.address as farmer_address,
+          u.email as farmer_email,
+          p.product_name,
+          inspector.name as inspector_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users inspector ON bb.approved_by = inspector.uid
+        ${whereClause}
+        ORDER BY bb.created_at DESC`,
+          params
+        );
+
+        res.json({
+          success: true,
+          count: batches.length,
+          data: batches,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy tất cả batches:", error);
+        res.status(500).json({
+          error: "Không thể lấy danh sách: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/inspector/approved-batches
+   * Lấy danh sách lô đã phê duyệt
+   */
+  app.get(
+    "/api/inspector/approved-batches",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const [batches] = await db.query(`
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.address as farmer_address,
+          u.email as farmer_email,
+          p.product_name,
+          inspector.name as inspector_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users inspector ON bb.approved_by = inspector.uid
+        WHERE bb.status = 'Approved'
+        ORDER BY bb.approved_on DESC
+      `);
+
+        res.json({
+          success: true,
+          count: batches.length,
+          data: batches,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy lô đã duyệt:", error);
+        res.status(500).json({
+          error: "Không thể lấy danh sách: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/inspector/rejected-batches
+   * Lấy danh sách lô bị từ chối
+   */
+  app.get(
+    "/api/inspector/rejected-batches",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const [batches] = await db.query(`
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.address as farmer_address,
+          u.email as farmer_email,
+          p.product_name,
+          inspector.name as inspector_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users inspector ON bb.approved_by = inspector.uid
+        WHERE bb.status = 'Rejected'
+        ORDER BY bb.approved_on DESC
+      `);
+
+        res.json({
+          success: true,
+          count: batches.length,
+          data: batches,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy lô bị từ chối:", error);
+        res.status(500).json({
+          error: "Không thể lấy danh sách: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * POST /api/inspector/approve-batch/:batchId
    * Phê duyệt lô hàng
-   * Role: Admin/Inspector
+   * Role: Inspector
    */
   app.post(
-    "/api/admin/approve-batch/:batchId",
+    "/api/inspector/approve-batch/:batchId",
     requireAuth,
     requireRole(ROLES.INSPECTOR),
     async (req, res) => {
@@ -1777,7 +1916,6 @@ function setupRoutes(app, db) {
       try {
         const inspectorId = req.session.userId;
         const blockchainBatchId = req.params.batchId;
-        // const localBatchId = req.body.localBatchId || null;
 
         if (!blockchainBatchId || isNaN(blockchainBatchId)) {
           return res.status(400).json({ error: "Batch ID không hợp lệ" });
@@ -1797,38 +1935,20 @@ function setupRoutes(app, db) {
           return res.status(404).json({ error: "Không tìm thấy lô hàng" });
         }
 
-        // 2. ⭐ KIỂM TRA TRẠNG THÁI TRÊN BLOCKCHAIN
+        // 2. Kiểm tra blockchain
         console.log("🔍 Checking batch on blockchain...");
 
-        let batchDetails;
-        try {
-          batchDetails = await traceabilityContract.methods
-            .getBatchDetails(BigInt(blockchainBatchId))
-            .call();
-
-          console.log("📦 Batch details from blockchain:", {
-            batchId: batchDetails.batchId.toString(),
-            name: batchDetails.name,
-            status: batchDetails.status.toString(), // 0=Pending, 1=Approved, 2=Rejected
-            producerId: batchDetails.producerId.toString(),
-            sscc: batchDetails.sscc,
-          });
-        } catch (error) {
-          await connection.rollback();
-          console.error("❌ Lỗi khi lấy batch details:", error);
-          return res.status(500).json({
-            error:
-              "Không thể lấy thông tin batch từ blockchain: " + error.message,
-          });
-        }
+        const batchDetails = await traceabilityContract.methods
+          .getBatchDetails(BigInt(blockchainBatchId))
+          .call();
 
         const statusMap = ["PendingApproval", "Approved", "Rejected"];
         const blockchainStatus = statusMap[batchDetails.status.toString()];
 
-        // Đồng bộ status từ blockchain vào DB nếu khác biệt
+        // Đồng bộ status
         if (batchRows[0].status !== blockchainStatus) {
           console.log(
-            `⚠️ Status không đồng bộ! DB: ${batchRows[0].status}, Blockchain: ${blockchainStatus}. Đồng bộ DB...`
+            `⚠️ Đồng bộ status: DB=${batchRows[0].status} → Blockchain=${blockchainStatus}`
           );
           await connection.query(
             "UPDATE blockchain_batches SET status = ? WHERE batch_id = ?",
@@ -1836,45 +1956,20 @@ function setupRoutes(app, db) {
           );
         }
 
-        // Kiểm tra status sau đồng bộ
         if (batchDetails.status.toString() !== "0") {
           await connection.rollback();
           return res.status(400).json({
-            error: `Batch trên blockchain đã ở trạng thái: ${blockchainStatus}. Không thể approve.`,
-            blockchainStatus: blockchainStatus,
-            databaseStatus: batchRows[0].status,
+            error: `Batch đã ở trạng thái: ${blockchainStatus}`,
+            blockchainStatus,
           });
         }
 
-        console.log("✅ Batch is PendingApproval, proceeding...");
+        // 3. Estimate gas
+        await traceabilityContract.methods
+          .approveBatch(BigInt(blockchainBatchId), BigInt(inspectorId))
+          .estimateGas({ from: web3.eth.defaultAccount });
 
-        // 3. Estimate gas để phát hiện lỗi sớm
-        try {
-          const estimatedGas = await traceabilityContract.methods
-            .approveBatch(BigInt(blockchainBatchId), BigInt(inspectorId))
-            .estimateGas({ from: web3.eth.defaultAccount });
-
-          console.log(`✅ Gas estimation successful: ${estimatedGas}`);
-        } catch (estimateError) {
-          await connection.rollback();
-          console.error("❌ Gas estimation failed:", estimateError);
-
-          // Parse lỗi từ estimateGas
-          let errorReason = "Unknown reason";
-          if (estimateError.message) {
-            errorReason = estimateError.message;
-          }
-
-          return res.status(400).json({
-            error: "Transaction sẽ bị revert. Chi tiết:",
-            reason: errorReason,
-            suggestion:
-              "Kiểm tra: 1) Batch có tồn tại? 2) Status = PendingApproval? 3) Inspector có quyền?",
-          });
-        }
-
-        // 4. Thực hiện approve
-        console.log("🚀 Sending approve transaction...");
+        // 4. Approve trên blockchain
         const result = await traceabilityContract.methods
           .approveBatch(BigInt(blockchainBatchId), BigInt(inspectorId))
           .send({
@@ -1882,22 +1977,26 @@ function setupRoutes(app, db) {
             gas: 5000000,
           });
 
-        console.log("✅ Batch approved on blockchain:", result.transactionHash);
+        console.log("✅ Approved on blockchain:", result.transactionHash);
 
-        // 5. Cập nhật DB: Explicit update status
+        // 5. ⭐ UPDATE DB: Lưu approved_by và approved_on
         await connection.query(
-          "UPDATE blockchain_batches SET status = 'Approved' WHERE batch_id = ?",
-          [blockchainBatchId]
+          `UPDATE blockchain_batches 
+         SET status = 'Approved', 
+             approved_by = ?, 
+             approved_on = NOW(),
+             blockchain_tx_hash = ?
+         WHERE batch_id = ?`,
+          [inspectorId, result.transactionHash, blockchainBatchId]
         );
 
-        // Gọi notify (nếu cần gửi thông báo)
-        // await notifyApproveBatch(connection, localBatchId, inspectorId, 1);
-        // await connection.commit();
+        await connection.commit();
 
         res.json({
           success: true,
           message: "Lô hàng đã được phê duyệt thành công",
           transactionHash: result.transactionHash,
+          approvedBy: inspectorId,
         });
       } catch (error) {
         if (connection) await connection.rollback();
@@ -1907,12 +2006,10 @@ function setupRoutes(app, db) {
         let errorDetails = null;
 
         if (error.receipt && error.receipt.status === 0n) {
-          errorMessage = "Transaction bị revert trên blockchain";
+          errorMessage = "Transaction bị revert";
           errorDetails = {
-            reason:
-              "Có thể do: batch không tồn tại, status không phải PendingApproval, hoặc thiếu quyền",
+            reason: "Batch không tồn tại hoặc status không hợp lệ",
             transactionHash: error.receipt.transactionHash,
-            gasUsed: error.receipt.gasUsed.toString(),
           };
         }
 
@@ -1927,12 +2024,12 @@ function setupRoutes(app, db) {
   );
 
   /**
-   * POST /api/admin/reject-batch/:batchId
+   * POST /api/inspector/reject-batch/:batchId
    * Từ chối lô hàng
-   * Role: Admin/Inspector
+   * Role: Inspector
    */
   app.post(
-    "/api/admin/reject-batch/:batchId",
+    "/api/inspector/reject-batch/:batchId",
     requireAuth,
     requireRole(ROLES.INSPECTOR),
     async (req, res) => {
@@ -1940,7 +2037,6 @@ function setupRoutes(app, db) {
       try {
         const inspectorId = req.session.userId;
         const blockchainBatchId = req.params.batchId;
-        // const localBatchId = req.body.localBatchId || null;
         const reason = req.body.reason || req.body.data?.reason || "";
 
         if (!reason || reason.trim() === "") {
@@ -1968,7 +2064,7 @@ function setupRoutes(app, db) {
 
         if (batchRows[0].status !== "PendingApproval") {
           await connection.rollback();
-          return res.status(400).json({ error: "Lô hàng này đã được xử lý" });
+          return res.status(400).json({ error: "Lô hàng đã được xử lý" });
         }
 
         const result = await traceabilityContract.methods
@@ -1979,29 +2075,310 @@ function setupRoutes(app, db) {
           )
           .send({ from: web3.eth.defaultAccount, gas: 5000000 });
 
-        // Cập nhật DB: Explicit update status
+        // ⭐ UPDATE DB: Lưu approved_by, approved_on và rejection_reason
         await connection.query(
-          "UPDATE blockchain_batches SET status = 'Rejected' WHERE batch_id = ?",
-          [blockchainBatchId]
+          `UPDATE blockchain_batches 
+         SET status = 'Rejected', 
+             approved_by = ?, 
+             approved_on = NOW(),
+             rejection_reason = ?,
+             blockchain_tx_hash = ?
+         WHERE batch_id = ?`,
+          [
+            inspectorId,
+            reason.trim(),
+            result.transactionHash,
+            blockchainBatchId,
+          ]
         );
 
-        // await notifyApproveBatch(connection, localBatchId, inspectorId, 2);
-        // await connection.commit();
+        await connection.commit();
 
         res.json({
           success: true,
           message: "Lô hàng đã bị từ chối",
           reason: reason.trim(),
           transactionHash: result.transactionHash,
+          rejectedBy: inspectorId,
         });
       } catch (error) {
         if (connection) await connection.rollback();
-        console.error("Lỗi từ chối:", error);
+        console.error("❌ Lỗi từ chối:", error);
         res.status(500).json({
           error: "Không thể từ chối: " + error.message,
         });
       } finally {
         if (connection) connection.release();
+      }
+    }
+  );
+
+  /**
+   * GET /api/inspector/stats
+   * Thống kê tổng quan cho inspector
+   */
+  app.get(
+    "/api/inspector/stats",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const inspectorId = req.session.userId;
+
+        // Đếm tổng số lô
+        const [stats] = await db.query(`
+        SELECT 
+          COUNT(*) as total,
+          SUM(CASE WHEN status = 'PendingApproval' THEN 1 ELSE 0 END) as pending,
+          SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as approved,
+          SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) as rejected
+        FROM blockchain_batches
+      `);
+
+        // ⭐ Đếm số lô inspector này đã duyệt (dùng approved_by)
+        const [myStats] = await db.query(
+          `SELECT COUNT(*) as my_approvals
+         FROM blockchain_batches 
+         WHERE approved_by = ? AND status IN ('Approved', 'Rejected')`,
+          [inspectorId]
+        );
+
+        // Lô mới nhất chờ duyệt
+        const [latestPending] = await db.query(
+          `SELECT 
+          bb.*,
+          u.name as farmer_name,
+          p.product_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        WHERE bb.status = 'PendingApproval'
+        ORDER BY bb.created_at DESC
+        LIMIT 5`
+        );
+
+        res.json({
+          success: true,
+          data: {
+            total: stats[0].total || 0,
+            pending: stats[0].pending || 0,
+            approved: stats[0].approved || 0,
+            rejected: stats[0].rejected || 0,
+            myApprovals: myStats[0].my_approvals || 0,
+            latestPending: latestPending,
+          },
+        });
+      } catch (error) {
+        console.error("❌ Lỗi stats:", error);
+        res.status(500).json({
+          error: "Không thể lấy thống kê: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/inspector/batch/:id/full-info
+   * Lấy đầy đủ thông tin lô hàng để review
+   */
+  app.get(
+    "/api/inspector/batch/:id/full-info",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        // 1. Lấy thông tin batch từ DB (bao gồm rejection_reason)
+        const [batchRows] = await db.query(
+          `SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.email as farmer_email,
+          u.address as farmer_address,
+          p.product_name,
+          p.product_id,
+          inspector.name as inspector_name,
+          bb.rejection_reason,
+          bb.approved_on
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users inspector ON bb.approved_by = inspector.uid
+        WHERE bb.batch_id = ?`,
+          [batchId]
+        );
+
+        if (batchRows.length === 0) {
+          return res.status(404).json({ error: "Không tìm thấy lô hàng" });
+        }
+
+        const batch = batchRows[0];
+
+        // 2. Lấy ảnh sản phẩm - SỬA: dùng batch_product_images
+        let images = [];
+        try {
+          const [productImages] = await db.query(
+            `SELECT image_url 
+           FROM batch_product_images 
+           WHERE batch_id = ?
+           ORDER BY image_order ASC, created_at ASC`,
+            [batchId]
+          );
+          images = productImages.map((img) => img.image_url);
+        } catch (error) {
+          console.warn("⚠️ Không thể lấy ảnh sản phẩm:", error.message);
+          // Không throw error, chỉ log warning
+        }
+
+        // 3. Lấy ảnh chứng nhận
+        let certificateImage = null;
+        if (batch.certificate_image_url) {
+          certificateImage = batch.certificate_image_url;
+        }
+
+        // 4. Lấy danh sách cây nguồn gốc
+        let sourceTrees = [];
+        try {
+          const [trees] = await db.query(
+            `SELECT t.*
+           FROM tree_batch_links tbl
+           JOIN trees t ON tbl.tree_id = t.tree_id
+           WHERE tbl.batch_id = ?`,
+            [batchId]
+          );
+          sourceTrees = trees;
+        } catch (error) {
+          console.warn("⚠️ Không thể lấy cây nguồn gốc:", error.message);
+        }
+
+        // 5. Lấy thông tin từ blockchain
+        let blockchainData = null;
+        try {
+          const batchDetails = await traceabilityContract.methods
+            .getBatchDetails(BigInt(batchId))
+            .call();
+
+          blockchainData = {
+            batchId: batchDetails.batchId.toString(),
+            sscc: batchDetails.sscc,
+            status: ["PendingApproval", "Approved", "Rejected"][
+              batchDetails.status.toString()
+            ],
+            producerId: batchDetails.producerId.toString(),
+            currentStage: Number(batchDetails.currentStage),
+            productionDate: new Date(
+              Number(batchDetails.productionDate) * 1000
+            ).toISOString(),
+          };
+        } catch (error) {
+          console.warn("⚠️ Không thể lấy dữ liệu blockchain:", error.message);
+        }
+
+        res.json({
+          success: true,
+          data: {
+            batch,
+            images,
+            certificateImage,
+            sourceTrees,
+            blockchain: blockchainData,
+          },
+        });
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy chi tiết batch:", error);
+        res.status(500).json({
+          error: "Không thể lấy thông tin: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/inspector/my-approvals
+   * Lịch sử phê duyệt của inspector hiện tại
+   */
+  app.get(
+    "/api/inspector/my-approvals",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const inspectorId = req.session.userId;
+        const status = req.query.status; // 'all', 'approved', 'rejected'
+
+        let whereClause = "WHERE bb.approved_by = ?";
+        let params = [inspectorId];
+
+        if (status === "approved") {
+          whereClause += " AND bb.status = 'Approved'";
+        } else if (status === "rejected") {
+          whereClause += " AND bb.status = 'Rejected'";
+        } else {
+          whereClause += " AND bb.status IN ('Approved', 'Rejected')";
+        }
+
+        const [batches] = await db.query(
+          `SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          p.product_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        ${whereClause}
+        ORDER BY bb.approved_on DESC`,
+          params
+        );
+
+        res.json({
+          success: true,
+          count: batches.length,
+          data: batches,
+        });
+      } catch (error) {
+        console.error("❌ Lỗi my-approvals:", error);
+        res.status(500).json({
+          error: "Không thể lấy lịch sử: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/inspector/batch/:id/history
+   * Lịch sử thay đổi của batch từ blockchain
+   */
+  app.get(
+    "/api/inspector/batch/:id/history",
+    requireAuth,
+    requireRole(ROLES.INSPECTOR),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        // Lấy events từ blockchain logger
+        const [events] = await db.query(
+          `
+        SELECT * FROM blockchain_event_log
+        WHERE event_name IN ('BatchCreated', 'BatchApproved', 'BatchRejected')
+        AND JSON_EXTRACT(event_data, '$.batchId') = ?
+        ORDER BY timestamp DESC
+      `,
+          [batchId]
+        );
+
+        res.json({
+          success: true,
+          data: events,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy lịch sử batch:", error);
+        res.status(500).json({
+          error: "Không thể lấy lịch sử: " + error.message,
+        });
       }
     }
   );

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phê Duyệt Lô Hàng - Kiểm Duyệt Viên</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-shield-alt text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Kiểm Duyệt
+            </span>
+          </div>
+
+          <!-- Breadcrumb -->
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/inspector/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <a href="/inspector/danh-sach-lo.html" class="hover:text-green-600">
+              Danh sách lô
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Phê duyệt</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Inspector&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">
+                  Kiểm duyệt viên
+                </div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/inspector/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="approvalForm()"
+      x-init="init()"
+    >
+      <!-- Loading -->
+      <div x-show="loading" x-cloak class="flex justify-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Error State -->
+      <div x-show="error && !loading" x-cloak class="text-center py-12">
+        <i class="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
+        <p class="text-gray-700 mb-4" x-text="error"></p>
+        <a href="/inspector/danh-sach-lo.html" class="btn-primary">
+          <i class="fas fa-arrow-left mr-2"></i> Quay lại danh sách
+        </a>
+      </div>
+
+      <!-- Content -->
+      <template x-if="!loading && !error && batchData">
+        <div>
+          <!-- Header -->
+          <div
+            class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8"
+          >
+            <div class="flex items-start justify-between">
+              <div>
+                <h1
+                  class="text-3xl font-bold mb-2"
+                  x-text="batchData.batch.batch_name"
+                ></h1>
+                <div class="flex flex-wrap gap-3 text-sm opacity-90">
+                  <div>
+                    <i class="fas fa-barcode mr-2"></i>
+                    <span>SSCC: </span>
+                    <button
+                      @click="Utils.copyToClipboard(batchData.batch.sscc)"
+                      class="font-mono hover:underline"
+                      x-text="batchData.batch.sscc"
+                    ></button>
+                  </div>
+                  <div>
+                    <i class="fas fa-calendar mr-2"></i>
+                    <span
+                      x-text="Utils.formatDate(batchData.batch.production_date_iso)"
+                    ></span>
+                  </div>
+                  <div>
+                    <i class="fas fa-box mr-2"></i>
+                    <span x-text="batchData.batch.quantity + ' kg'"></span>
+                  </div>
+                </div>
+              </div>
+
+              <span
+                :class="Utils.getStatusBadge(batchData.batch.status)"
+                class="badge text-lg px-4 py-2"
+                x-text="Utils.getStatusText(batchData.batch.status)"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Main Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Batch Info -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- ⭐ REJECTION REASON - Hiển thị nếu bị từ chối -->
+              <template
+                x-if="batchData.batch.status === 'Rejected' && batchData.batch.rejection_reason"
+              >
+                <div
+                  class="bg-red-50 border-l-4 border-red-500 rounded-xl shadow-md p-6"
+                >
+                  <div class="flex items-start gap-3">
+                    <i
+                      class="fas fa-exclamation-triangle text-red-500 text-2xl mt-1"
+                    ></i>
+                    <div class="flex-1">
+                      <h3 class="text-lg font-bold text-red-900 mb-2">
+                        Lô hàng đã bị từ chối
+                      </h3>
+                      <div class="mb-3">
+                        <p class="text-sm text-red-700 mb-1">Lý do từ chối:</p>
+                        <p
+                          class="text-red-900 bg-white rounded-lg p-3"
+                          x-text="batchData.batch.rejection_reason"
+                        ></p>
+                      </div>
+                      <div class="flex items-center gap-4 text-sm text-red-700">
+                        <div x-show="batchData.batch.inspector_name">
+                          <i class="fas fa-user mr-1"></i>
+                          <span>Người từ chối: </span>
+                          <strong
+                            x-text="batchData.batch.inspector_name"
+                          ></strong>
+                        </div>
+                        <div x-show="batchData.batch.approved_on">
+                          <i class="fas fa-clock mr-1"></i>
+                          <span>Thời gian: </span>
+                          <strong
+                            x-text="Utils.formatDate(batchData.batch.approved_on)"
+                          ></strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- ⭐ APPROVAL INFO - Hiển thị nếu đã phê duyệt -->
+              <template
+                x-if="batchData.batch.status === 'Approved' && batchData.batch.inspector_name"
+              >
+                <div
+                  class="bg-green-50 border-l-4 border-green-500 rounded-xl shadow-md p-6"
+                >
+                  <div class="flex items-start gap-3">
+                    <i
+                      class="fas fa-check-circle text-green-500 text-2xl mt-1"
+                    ></i>
+                    <div class="flex-1">
+                      <h3 class="text-lg font-bold text-green-900 mb-2">
+                        Lô hàng đã được phê duyệt
+                      </h3>
+                      <div
+                        class="flex items-center gap-4 text-sm text-green-700"
+                      >
+                        <div>
+                          <i class="fas fa-user mr-1"></i>
+                          <span>Người duyệt: </span>
+                          <strong
+                            x-text="batchData.batch.inspector_name"
+                          ></strong>
+                        </div>
+                        <div x-show="batchData.batch.approved_on">
+                          <i class="fas fa-clock mr-1"></i>
+                          <span>Thời gian: </span>
+                          <strong
+                            x-text="Utils.formatDate(batchData.batch.approved_on)"
+                          ></strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Thông tin nông dân -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-user text-green-600"></i>
+                  Thông tin nông dân
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p class="text-gray-600 mb-1">Họ tên</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.farmer_name || 'N/A'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Số điện thoại</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.farmer_phone || 'N/A'"
+                    ></p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="text-gray-600 mb-1">Email</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.farmer_email || 'N/A'"
+                    ></p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="text-gray-600 mb-1">Địa chỉ</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.farmer_address || 'N/A'"
+                    ></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thông tin lô hàng -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-info-circle text-green-600"></i>
+                  Thông tin lô hàng
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p class="text-gray-600 mb-1">Loại sản phẩm</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.product_name || 'N/A'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Số lượng</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.quantity + ' kg'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Thửa đất</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="batchData.batch.farm_plot_number || 'N/A'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Ngày bắt đầu</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="Utils.formatDate(batchData.batch.start_date_iso)"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Ngày kết thúc</p>
+                    <p
+                      class="font-semibold text-gray-900"
+                      x-text="Utils.formatDate(batchData.batch.end_date_iso)"
+                    ></p>
+                  </div>
+                </div>
+
+                <template x-if="batchData.batch.harvest_notes">
+                  <div class="mt-4 pt-4 border-t">
+                    <p class="text-gray-600 mb-2">Ghi chú thu hoạch</p>
+                    <p
+                      class="text-gray-900"
+                      x-text="batchData.batch.harvest_notes"
+                    ></p>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Cây nguồn gốc -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-tree text-green-600"></i>
+                  Cây nguồn gốc
+                  <span
+                    class="badge badge-success ml-2"
+                    x-text="batchData.sourceTrees.length + ' cây'"
+                  ></span>
+                </h2>
+
+                <div
+                  x-show="batchData.sourceTrees.length === 0"
+                  class="text-center py-4 text-gray-500"
+                >
+                  Chưa có thông tin cây nguồn gốc
+                </div>
+
+                <div
+                  x-show="batchData.sourceTrees.length > 0"
+                  class="grid grid-cols-1 md:grid-cols-2 gap-3"
+                >
+                  <template
+                    x-for="tree in batchData.sourceTrees"
+                    :key="tree.tree_id"
+                  >
+                    <div
+                      class="border rounded-lg p-3 hover:bg-gray-50 transition"
+                    >
+                      <div
+                        class="font-bold text-gray-900 mb-1"
+                        x-text="tree.tree_qr_code"
+                      ></div>
+                      <div
+                        class="text-sm text-gray-600"
+                        x-text="tree.tree_type + ' - ' + tree.variety"
+                      ></div>
+                      <div class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-calendar mr-1"></i>
+                        <span
+                          x-text="'Trồng: ' + Utils.formatDate(tree.planted_date_iso)"
+                        ></span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Ảnh sản phẩm -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-images text-green-600"></i>
+                  Ảnh sản phẩm
+                </h2>
+
+                <div
+                  x-show="batchData.images.length === 0"
+                  class="text-center py-4 text-gray-500"
+                >
+                  Chưa có ảnh
+                </div>
+
+                <div
+                  x-show="batchData.images.length > 0"
+                  class="grid grid-cols-2 md:grid-cols-3 gap-3"
+                >
+                  <template x-for="image in batchData.images" :key="image">
+                    <img
+                      :src="image"
+                      alt="Ảnh sản phẩm"
+                      class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-75 transition"
+                      @click="viewImage(image)"
+                    />
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Actions & Certificate -->
+            <div class="space-y-6">
+              <!-- Action Buttons -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold mb-4">Thao tác</h3>
+
+                <template x-if="batchData.batch.status === 'PendingApproval'">
+                  <div class="space-y-3">
+                    <button
+                      @click="approveBatch()"
+                      class="btn-primary w-full"
+                      :disabled="submitting"
+                    >
+                      <i class="fas fa-check mr-2"></i> Phê duyệt
+                    </button>
+                    <button
+                      @click="rejectBatch()"
+                      class="btn-secondary w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                      :disabled="submitting"
+                    >
+                      <i class="fas fa-times mr-2"></i> Từ chối
+                    </button>
+                  </div>
+                </template>
+
+                <template x-if="batchData.batch.status !== 'PendingApproval'">
+                  <div
+                    class="bg-gray-50 rounded-lg p-4 text-center text-gray-600"
+                  >
+                    <i class="fas fa-info-circle text-2xl mb-2"></i>
+                    <p class="text-sm">
+                      Lô hàng đã được
+                      <span
+                        class="font-semibold"
+                        x-text="batchData.batch.status === 'Approved' ? 'phê duyệt' : 'từ chối'"
+                      ></span>
+                    </p>
+                  </div>
+                </template>
+
+                <a
+                  href="/inspector/danh-sach-lo.html"
+                  class="btn-secondary w-full text-center mt-3 block"
+                >
+                  <i class="fas fa-arrow-left mr-2"></i> Quay lại danh sách
+                </a>
+              </div>
+
+              <!-- Certificate -->
+              <template x-if="batchData.certificateImage">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                  <h3 class="font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-certificate text-yellow-500"></i>
+                    Chứng nhận
+                  </h3>
+                  <img
+                    :src="batchData.certificateImage"
+                    alt="Chứng nhận"
+                    class="w-full rounded-lg cursor-pointer hover:opacity-75 transition"
+                    @click="viewImage(batchData.certificateImage)"
+                  />
+                </div>
+              </template>
+
+              <!-- Blockchain Info -->
+              <template x-if="batchData.blockchain">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                  <h3 class="font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-link text-blue-500"></i>
+                    Blockchain Info
+                  </h3>
+                  <div class="space-y-2 text-sm">
+                    <div>
+                      <span class="text-gray-600">Batch ID:</span>
+                      <span
+                        class="font-mono ml-2"
+                        x-text="batchData.blockchain.batchId"
+                      ></span>
+                    </div>
+                    <div>
+                      <span class="text-gray-600">Status:</span>
+                      <span
+                        class="ml-2"
+                        x-text="batchData.blockchain.status"
+                      ></span>
+                    </div>
+                    <div>
+                      <span class="text-gray-600">Stage:</span>
+                      <span
+                        class="ml-2"
+                        x-text="batchData.blockchain.currentStage"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/approval-form.js"></script>
+  </body>
+</html>

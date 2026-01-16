@@ -190,6 +190,54 @@ const API = {
     return this.upload(CONFIG.API.CREATE_BATCH, formData);
   },
 
+  // === INSPECTOR APIs ===
+
+  /**
+   * Lấy thống kê inspector
+   */
+  async getInspectorStats() {
+    return this.get(CONFIG.API.INSPECTOR_STATS);
+  },
+
+  /**
+   * Lấy danh sách lô chờ duyệt
+   */
+  async getPendingBatches() {
+    return this.get(CONFIG.API.INSPECTOR_PENDING_BATCHES);
+  },
+
+  /**
+   * Lấy thông tin đầy đủ của lô hàng
+   */
+  async getBatchFullInfo(batchId) {
+    const url = CONFIG.API.INSPECTOR_BATCH_FULL_INFO.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  /**
+   * Lấy lịch sử phê duyệt của inspector
+   */
+  async getMyApprovals(status = null) {
+    const params = status ? { status } : {};
+    return this.get(CONFIG.API.INSPECTOR_MY_APPROVALS, params);
+  },
+
+  /**
+   * Phê duyệt lô hàng
+   */
+  async approveBatch(batchId) {
+    const url = CONFIG.API.INSPECTOR_APPROVE_BATCH.replace(":id", batchId);
+    return this.post(url);
+  },
+
+  /**
+   * Từ chối lô hàng
+   */
+  async rejectBatch(batchId, reason) {
+    const url = CONFIG.API.INSPECTOR_REJECT_BATCH.replace(":id", batchId);
+    return this.post(url, { reason });
+  },
+
   // === MASTER DATA APIs ===
 
   /**
