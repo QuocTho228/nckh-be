@@ -37,6 +37,14 @@ const CONFIG = {
     INSPECTOR_MY_APPROVALS: "/api/inspector/my-approvals",
     INSPECTOR_APPROVE_BATCH: "/api/inspector/approve-batch/:id",
     INSPECTOR_REJECT_BATCH: "/api/inspector/reject-batch/:id",
+
+    // Purchaser
+    PURCHASER_STATS: "/api/purchaser/stats",
+    PURCHASER_APPROVED_BATCHES: "/api/purchaser/approved-batches",
+    PURCHASER_BATCH_DETAILS: "/api/purchaser/batch/:id/details",
+    PURCHASER_MY_PURCHASES: "/api/purchaser/my-purchases",
+    PURCHASER_RECORD_PURCHASE: "/api/purchaser/record-purchase",
+    PURCHASER_PURCHASE_IMAGES: "/api/purchaser/purchase/:id/images",
   },
 
   // Roles

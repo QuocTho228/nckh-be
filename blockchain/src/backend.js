@@ -2607,7 +2607,7 @@ function setupRoutes(app, db) {
         const farmerId = batchRows[0].producer_id;
 
         // Upload images
-        const purchaseImages = req.files["purchaseImages"] || [];
+        const purchaseImages = (req.files && req.files["purchaseImages"]) || [];
         let purchaseImageUrls = [];
         for (const file of purchaseImages) {
           const result = await uploadFile(file);
@@ -2777,6 +2777,318 @@ function setupRoutes(app, db) {
         console.error("Lỗi khi lấy danh sách thu mua:", error);
         res.status(500).json({
           error: "Không thể lấy danh sách: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/purchaser/stats
+   * Thống kê tổng quan cho purchaser
+   */
+  app.get(
+    "/api/purchaser/stats",
+    requireAuth,
+    requireRole(ROLES.PURCHASER),
+    async (req, res) => {
+      try {
+        const purchaserId = req.session.userId;
+
+        // Đếm tổng số lô đã mua
+        const [purchaseStats] = await db.query(
+          `
+        SELECT 
+          COUNT(*) as total_purchases,
+          COALESCE(SUM(total_quantity), 0) as total_quantity,
+          COALESCE(SUM(total_price), 0) as total_amount
+        FROM purchase_records
+        WHERE purchaser_id = ?
+      `,
+          [purchaserId]
+        );
+
+        // Số lô đã duyệt (sẵn sàng mua)
+        const [availableStats] = await db.query(`
+        SELECT COUNT(*) as available_batches
+        FROM blockchain_batches
+        WHERE status = 'Approved' 
+        AND current_stage = 'Created'
+      `);
+
+        // Lô mua gần nhất
+        const [recentPurchases] = await db.query(
+          `
+        SELECT 
+          pr.*,
+          bb.batch_name,
+          bb.sscc,
+          bb.product_type_id,
+          prod.product_name,
+          u.name as farmer_name
+        FROM purchase_records pr
+        LEFT JOIN blockchain_batches bb ON pr.batch_id = bb.batch_id
+        LEFT JOIN products prod ON bb.product_type_id = prod.product_id
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        WHERE pr.purchaser_id = ?
+        ORDER BY pr.purchase_date_iso DESC
+        LIMIT 5
+      `,
+          [purchaserId]
+        );
+
+        res.json({
+          success: true,
+          data: {
+            totalPurchases: purchaseStats[0].total_purchases || 0,
+            totalQuantity: purchaseStats[0].total_quantity || 0,
+            totalAmount: purchaseStats[0].total_amount || 0,
+            availableBatches: availableStats[0].available_batches || 0,
+            recentPurchases: recentPurchases,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy thống kê purchaser:", error);
+        res.status(500).json({
+          error: "Không thể lấy thống kê: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/purchaser/batch/:id/details
+   * Lấy chi tiết lô hàng trước khi mua
+   */
+  app.get(
+    "/api/purchaser/batch/:id/details",
+    requireAuth,
+    requireRole(ROLES.PURCHASER),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        // 1. Lấy thông tin batch
+        const [batchRows] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.email as farmer_email,
+          u.address as farmer_address,
+          p.product_name,
+          p.product_id,
+          inspector.name as inspector_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users inspector ON bb.approved_by = inspector.uid
+        WHERE bb.batch_id = ?
+      `,
+          [batchId]
+        );
+
+        if (batchRows.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: "Không tìm thấy lô hàng",
+          });
+        }
+
+        const batch = batchRows[0];
+
+        // Kiểm tra lô có thể mua không
+        if (batch.status !== "Approved") {
+          return res.status(400).json({
+            success: false,
+            error: "Lô hàng chưa được phê duyệt, không thể mua",
+          });
+        }
+
+        if (batch.current_stage !== "Created") {
+          return res.status(400).json({
+            success: false,
+            error: "Lô hàng đã được mua, không thể mua lại",
+          });
+        }
+
+        // 2. Lấy ảnh sản phẩm từ bảng batch_product_images
+        const [images] = await db.query(
+          `
+        SELECT image_url 
+        FROM batch_product_images 
+        WHERE batch_id = ?
+        ORDER BY image_order ASC, created_at ASC
+      `,
+          [batchId]
+        );
+
+        // 3. Lấy ảnh chứng nhận
+        const certificateImage = batch.certificate_image_url || null;
+
+        // 4. Lấy cây nguồn gốc
+        const [sourceTrees] = await db.query(
+          `
+        SELECT 
+          t.*
+        FROM tree_batch_links tbl
+        JOIN trees t ON tbl.tree_id = t.tree_id
+        WHERE tbl.batch_id = ?
+      `,
+          [batchId]
+        );
+
+        // 5. Kiểm tra xem đã có ai mua chưa (double check)
+        const [existingPurchase] = await db.query(
+          `
+        SELECT purchase_id, purchaser_id, purchase_date_iso
+        FROM purchase_records
+        WHERE batch_id = ?
+        LIMIT 1
+      `,
+          [batchId]
+        );
+
+        // 6. Lấy thông tin blockchain
+        let blockchainData = null;
+        try {
+          const batchDetails = await traceabilityContract.methods
+            .getBatchDetails(BigInt(batchId))
+            .call();
+
+          blockchainData = {
+            batchId: batchDetails.batchId.toString(),
+            name: batchDetails.name,
+            sscc: batchDetails.sscc,
+            status: ["PendingApproval", "Approved", "Rejected"][
+              batchDetails.status.toString()
+            ],
+            currentStage: Number(batchDetails.currentStage),
+            producerId: batchDetails.producerId.toString(),
+            productionDate: new Date(
+              Number(batchDetails.productionDate) * 1000
+            ).toISOString(),
+          };
+        } catch (error) {
+          console.error("Lỗi lấy dữ liệu blockchain:", error);
+        }
+
+        res.json({
+          success: true,
+          data: {
+            batch,
+            images: images.map((img) => img.image_url),
+            certificateImage,
+            sourceTrees,
+            blockchain: blockchainData,
+            alreadyPurchased: existingPurchase.length > 0,
+            purchaseInfo: existingPurchase[0] || null,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết batch:", error);
+        res.status(500).json({
+          success: false,
+          error: "Không thể lấy thông tin: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/purchaser/purchase/:id/images
+   * Lấy ảnh của lần mua hàng
+   */
+  app.get(
+    "/api/purchaser/purchase/:id/images",
+    requireAuth,
+    requireRole(ROLES.PURCHASER),
+    async (req, res) => {
+      try {
+        const purchaseId = req.params.id;
+        const purchaserId = req.session.userId;
+
+        // Kiểm tra purchase thuộc về purchaser này
+        const [purchase] = await db.query(
+          `
+        SELECT purchase_id, batch_id
+        FROM purchases
+        WHERE purchase_id = ? AND purchaser_id = ?
+      `,
+          [purchaseId, purchaserId]
+        );
+
+        if (purchase.length === 0) {
+          return res.status(404).json({
+            error:
+              "Không tìm thấy giao dịch mua hàng hoặc bạn không có quyền truy cập",
+          });
+        }
+
+        // Lấy ảnh
+        const [images] = await db.query(
+          `
+        SELECT image_url, created_at
+        FROM purchase_images
+        WHERE purchase_id = ?
+        ORDER BY created_at ASC
+      `,
+          [purchaseId]
+        );
+
+        res.json({
+          success: true,
+          data: {
+            purchaseId: purchaseId,
+            batchId: purchase[0].batch_id,
+            images: images.map((img) => img.image_url),
+            count: images.length,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy ảnh purchase:", error);
+        res.status(500).json({
+          error: "Không thể lấy ảnh: " + error.message,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/purchaser/batch/:id/purchase-history
+   * Kiểm tra lịch sử mua của batch (nếu có)
+   */
+  app.get(
+    "/api/purchaser/batch/:id/purchase-history",
+    requireAuth,
+    requireRole(ROLES.PURCHASER),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        const [purchases] = await db.query(
+          `
+        SELECT 
+          p.*,
+          u.name as purchaser_name,
+          u.phone as purchaser_phone
+        FROM purchases p
+        LEFT JOIN users u ON p.purchaser_id = u.uid
+        WHERE p.batch_id = ?
+        ORDER BY p.purchase_date DESC
+      `,
+          [batchId]
+        );
+
+        res.json({
+          success: true,
+          data: purchases,
+          hasPurchase: purchases.length > 0,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy lịch sử mua:", error);
+        res.status(500).json({
+          error: "Không thể lấy lịch sử: " + error.message,
         });
       }
     }

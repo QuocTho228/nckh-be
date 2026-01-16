@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Dashboard - Thu Mua Viên</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-shopping-cart text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Thu Mua
+            </span>
+          </div>
+
+          <!-- User Menu -->
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Purchaser&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">
+                  Thu mua viên
+                </div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Welcome Banner -->
+      <div
+        x-data="purchaserDashboard()"
+        x-init="init()"
+        class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8"
+      >
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fas fa-hand-wave mr-2"></i>
+          Xin chào, <span id="welcomeName">Thu mua viên</span>!
+        </h1>
+        <p class="opacity-90">Quản lý thu mua và tồn kho</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div
+        x-data="statsData()"
+        x-init="init()"
+        class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+      >
+        <!-- Lô sẵn sàng mua -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition cursor-pointer"
+          @click="window.location.href='/purchaser/danh-sach-lo-duyet.html'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Lô sẵn sàng</p>
+              <p
+                class="text-3xl font-bold text-green-600"
+                x-text="stats.availableBatches"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-box text-3xl text-green-600"></i>
+            </div>
+          </div>
+          <a
+            href="/purchaser/danh-sach-lo-duyet.html"
+            class="text-sm text-green-600 hover:text-green-700 mt-4 inline-block"
+          >
+            Xem ngay <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Tổng đã mua -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng đã mua</p>
+              <p
+                class="text-3xl font-bold text-blue-600"
+                x-text="stats.totalPurchases"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <i class="fas fa-shopping-cart text-3xl text-blue-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tổng khối lượng -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng khối lượng</p>
+              <p
+                class="text-3xl font-bold text-purple-600"
+                x-text="Utils.formatNumber(stats.totalQuantity || 0)"
+              ></p>
+              <p class="text-xs text-gray-500">kg</p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center"
+            >
+              <i class="fas fa-weight text-3xl text-purple-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tổng giá trị -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng giá trị</p>
+              <p
+                class="text-3xl font-bold text-orange-600"
+                x-text="Utils.formatNumber(stats.totalAmount || 0)"
+              ></p>
+              <p class="text-xs text-gray-500">VNĐ</p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center"
+            >
+              <i class="fas fa-coins text-3xl text-orange-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <template x-if="loading">
+          <div class="col-span-4 flex justify-center py-8">
+            <div class="spinner"></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-yellow-500"></i> Thao tác nhanh
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a
+            href="/purchaser/danh-sach-lo-duyet.html"
+            class="btn-primary text-center"
+          >
+            <i class="fas fa-list-check mr-2"></i> Xem lô đã duyệt
+          </a>
+          <a
+            href="/purchaser/lich-su-mua.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-history mr-2"></i> Lịch sử thu mua
+          </a>
+          <button onclick="location.reload()" class="btn-secondary text-center">
+            <i class="fas fa-sync mr-2"></i> Làm mới dữ liệu
+          </button>
+        </div>
+      </div>
+
+      <!-- Giao dịch gần nhất -->
+      <div
+        x-data="recentPurchases()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-clock text-blue-500"></i> Giao dịch gần nhất
+          </h2>
+          <a
+            href="/purchaser/lich-su-mua.html"
+            class="text-sm text-green-600 hover:text-green-700"
+          >
+            Xem tất cả <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" x-cloak class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && purchases.length === 0"
+          x-cloak
+          class="text-center py-12"
+        >
+          <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Chưa có giao dịch nào</p>
+          <a
+            href="/purchaser/danh-sach-lo-duyet.html"
+            class="btn-primary inline-block mt-4"
+          >
+            <i class="fas fa-shopping-cart mr-2"></i> Bắt đầu thu mua
+          </a>
+        </div>
+
+        <!-- Purchases List -->
+        <div
+          x-show="!loading && purchases.length > 0"
+          x-cloak
+          class="space-y-4"
+        >
+          <template x-for="purchase in purchases" :key="purchase.purchase_id">
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3
+                      class="font-bold text-lg"
+                      x-text="purchase.batch_name"
+                    ></h3>
+                    <span class="badge badge-success">Đã mua</span>
+                  </div>
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3"
+                  >
+                    <div>
+                      <i class="fas fa-user mr-2"></i>
+                      <span x-text="purchase.farmer_name || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-leaf mr-2"></i>
+                      <span x-text="purchase.product_name || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-box mr-2"></i>
+                      <span x-text="purchase.quantity_kg + ' kg'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-2"></i>
+                      <span
+                        x-text="Utils.formatDate(purchase.purchase_date)"
+                      ></span>
+                    </div>
+                  </div>
+                  <div class="text-sm">
+                    <span class="text-gray-600">Giá trị:</span>
+                    <span
+                      class="font-bold text-green-600 ml-2"
+                      x-text="Utils.formatNumber(purchase.total_price) + ' VNĐ'"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

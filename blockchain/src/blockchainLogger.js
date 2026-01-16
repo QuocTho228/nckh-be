@@ -951,7 +951,7 @@ class BlockchainLogger {
         await connection.query(
           `
             UPDATE blockchain_batches 
-            SET status = 'Approved', current_stage = 'Purchased'
+            SET status = 'Approved', current_stage = 'Created'
             WHERE batch_id = ?
           `,
           [data.batchId]

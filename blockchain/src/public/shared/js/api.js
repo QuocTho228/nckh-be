@@ -238,6 +238,52 @@ const API = {
     return this.post(url, { reason });
   },
 
+  // === PURCHASER APIs ===
+
+  /**
+   * Lấy thống kê purchaser
+   */
+  async getPurchaserStats() {
+    return this.get(CONFIG.API.PURCHASER_STATS);
+  },
+
+  /**
+   * Lấy danh sách lô đã duyệt
+   */
+  async getApprovedBatches() {
+    return this.get(CONFIG.API.PURCHASER_APPROVED_BATCHES);
+  },
+
+  /**
+   * Lấy chi tiết lô hàng
+   */
+  async getBatchDetailsForPurchase(batchId) {
+    const url = CONFIG.API.PURCHASER_BATCH_DETAILS.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  /**
+   * Lấy lịch sử mua hàng
+   */
+  async getMyPurchases() {
+    return this.get(CONFIG.API.PURCHASER_MY_PURCHASES);
+  },
+
+  /**
+   * Ghi nhận mua hàng
+   */
+  async recordPurchase(formData) {
+    return this.upload(CONFIG.API.PURCHASER_RECORD_PURCHASE, formData);
+  },
+
+  /**
+   * Lấy ảnh của purchase
+   */
+  async getPurchaseImages(purchaseId) {
+    const url = CONFIG.API.PURCHASER_PURCHASE_IMAGES.replace(":id", purchaseId);
+    return this.get(url);
+  },
+
   // === MASTER DATA APIs ===
 
   /**
