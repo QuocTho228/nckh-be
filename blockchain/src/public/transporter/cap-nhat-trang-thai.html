@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Cập Nhật Trạng Thái - Vận Chuyển</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-truck text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >Vận Chuyển</span
+            >
+          </div>
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/transporter/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Cập nhật trạng thái</span>
+          </div>
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Transporter&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">
+                  Vận chuyển viên
+                </div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/transporter/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="statusUpdate()"
+      x-init="init()"
+    >
+      <!-- Loading -->
+      <div x-show="loading" x-cloak class="flex justify-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Error -->
+      <div x-show="error && !loading" x-cloak class="text-center py-12">
+        <i class="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
+        <p class="text-gray-700 mb-4" x-text="error"></p>
+        <a href="/transporter/danh-sach-lo-can-van.html" class="btn-primary">
+          <i class="fas fa-arrow-left mr-2"></i> Quay lại
+        </a>
+      </div>
+
+      <!-- Content -->
+      <template x-if="!loading && !error && batchData">
+        <div>
+          <!-- Header -->
+          <div
+            class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8"
+          >
+            <h1
+              class="text-3xl font-bold mb-2"
+              x-text="batchData.batch.batch_name"
+            ></h1>
+            <div class="flex flex-wrap gap-3 text-sm opacity-90">
+              <div>
+                <i class="fas fa-barcode mr-2"></i>SSCC:
+                <span x-text="batchData.batch.sscc"></span>
+              </div>
+              <div>
+                <i class="fas fa-route mr-2"></i>
+                <span
+                  x-text="batchData.transportPhase === 'transport1' ? 'Lần 1: Đến nhà máy' : 'Lần 2: Đến kho'"
+                ></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Form -->
+            <div class="lg:col-span-2">
+              <form
+                @submit.prevent="submitUpdate()"
+                class="bg-white rounded-xl shadow-md p-6"
+              >
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                  <i class="fas fa-truck-moving text-blue-600"></i>
+                  Thông tin vận chuyển
+                </h2>
+
+                <div class="space-y-6">
+                  <!-- From/To Location -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Điểm đi <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        x-model="formData.fromLocation"
+                        required
+                        class="input-gradient"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Điểm đến <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        x-model="formData.toLocation"
+                        required
+                        class="input-gradient"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Vehicle Info -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Phương tiện <span class="text-red-500">*</span>
+                      </label>
+                      <select
+                        x-model="formData.vehicle"
+                        required
+                        class="input-gradient"
+                      >
+                        <option value="">-- Chọn --</option>
+                        <option value="Xe tải nhỏ">Xe tải nhỏ</option>
+                        <option value="Xe tải trung">Xe tải trung</option>
+                        <option value="Xe container">Xe container</option>
+                        <option value="Xe đông lạnh">Xe đông lạnh</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Biển số xe <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        x-model="formData.licensePlate"
+                        required
+                        placeholder="VD: 59A-12345"
+                        class="input-gradient"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Environment -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Nhiệt độ vận chuyển (°C)
+                      </label>
+                      <input
+                        type="number"
+                        x-model="formData.temperature"
+                        placeholder="VD: 25"
+                        class="input-gradient"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Độ ẩm (%)
+                      </label>
+                      <input
+                        type="number"
+                        x-model="formData.humidity"
+                        min="0"
+                        max="100"
+                        placeholder="VD: 60"
+                        class="input-gradient"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Notes -->
+                  <div>
+                    <label
+                      class="block text-sm font-semibold text-gray-700 mb-2"
+                      >Ghi chú</label
+                    >
+                    <textarea
+                      x-model="formData.notes"
+                      rows="3"
+                      class="input-gradient"
+                      placeholder="Ghi chú về quá trình vận chuyển..."
+                    ></textarea>
+                  </div>
+
+                  <!-- Images -->
+                  <div>
+                    <label
+                      class="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Ảnh minh chứng (tối đa 5 ảnh)
+                    </label>
+                    <input
+                      type="file"
+                      id="transportImages"
+                      accept="image/*"
+                      multiple
+                      max="5"
+                      @change="handleImages($event)"
+                      class="input-gradient"
+                    />
+                    <div
+                      id="imagePreview"
+                      class="grid grid-cols-3 md:grid-cols-5 gap-2 mt-3"
+                    ></div>
+                  </div>
+
+                  <!-- Status Selection -->
+                  <div class="bg-blue-50 rounded-lg p-4">
+                    <label
+                      class="block text-sm font-semibold text-gray-700 mb-3"
+                    >
+                      Chọn hành động <span class="text-red-500">*</span>
+                    </label>
+
+                    <!-- Show current status -->
+                    <div
+                      class="mb-4 p-3 bg-white rounded-lg border border-gray-200"
+                    >
+                      <div class="text-xs text-gray-500 mb-1">
+                        Trạng thái hiện tại:
+                      </div>
+                      <div class="font-semibold text-gray-900">
+                        <template
+                          x-if="batchData.batch.detailed_transport_status === 'NotStarted'"
+                        >
+                          <span class="text-gray-600">Chưa vận chuyển</span>
+                        </template>
+                        <template
+                          x-if="batchData.batch.detailed_transport_status === 'InTransit'"
+                        >
+                          <span class="text-blue-600">Đang vận chuyển</span>
+                        </template>
+                        <template
+                          x-if="batchData.batch.detailed_transport_status === 'Paused'"
+                        >
+                          <span class="text-yellow-600">Tạm dừng</span>
+                        </template>
+                        <template
+                          x-if="batchData.batch.detailed_transport_status === 'Delivered'"
+                        >
+                          <span class="text-green-600">Đã giao</span>
+                        </template>
+                      </div>
+                    </div>
+
+                    <!-- Available actions -->
+                    <div class="space-y-3">
+                      <template
+                        x-for="action in availableActions"
+                        :key="action.code"
+                      >
+                        <label
+                          class="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition hover:shadow-md"
+                          :class="[
+                            formData.selectedAction == action.code ? (
+                              action.color === 'blue' ? 'border-blue-500 bg-blue-50' :
+                              action.color === 'green' ? 'border-green-500 bg-green-50' :
+                              action.color === 'yellow' ? 'border-yellow-500 bg-yellow-50' :
+                              'border-gray-200 bg-white'
+                            ) : 'border-gray-200 bg-white'
+                          ]"
+                        >
+                          <input
+                            type="radio"
+                            x-model.number="formData.selectedAction"
+                            :value="action.code"
+                            class="w-5 h-5 mt-0.5"
+                          />
+                          <div class="flex-1">
+                            <div
+                              class="font-semibold text-gray-900"
+                              x-text="action.name"
+                            ></div>
+                            <div
+                              class="text-xs text-gray-600 mt-1"
+                              x-text="action.description"
+                            ></div>
+                          </div>
+                          <i
+                            class="fas fa-check-circle text-xl"
+                            :class="formData.selectedAction == action.code ? 'text-green-600' : 'text-gray-300'"
+                          ></i>
+                        </label>
+                      </template>
+                    </div>
+
+                    <!-- No actions available warning -->
+                    <div
+                      x-show="availableActions.length === 0"
+                      class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm"
+                    >
+                      <i
+                        class="fas fa-exclamation-triangle text-yellow-600 mr-2"
+                      ></i>
+                      <span class="text-yellow-800"
+                        >Không có hành động nào khả dụng cho trạng thái hiện
+                        tại</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Submit -->
+                  <div class="flex gap-3 pt-4 border-t">
+                    <a
+                      href="/transporter/danh-sach-lo-can-van.html"
+                      class="btn-secondary flex-1 text-center"
+                    >
+                      <i class="fas fa-times mr-2"></i> Hủy
+                    </a>
+                    <button
+                      type="submit"
+                      class="btn-primary flex-1"
+                      :disabled="submitting"
+                    >
+                      <template x-if="!submitting">
+                        <span
+                          ><i class="fas fa-check mr-2"></i> Xác nhận cập
+                          nhật</span
+                        >
+                      </template>
+                      <template x-if="submitting">
+                        <span
+                          ><i class="fas fa-spinner fa-spin mr-2"></i> Đang xử
+                          lý...</span
+                        >
+                      </template>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Sidebar Info -->
+            <div class="space-y-6">
+              <!-- Batch Info -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold mb-4">Thông tin lô hàng</h3>
+                <div class="space-y-3 text-sm">
+                  <div>
+                    <span class="text-gray-600">Sản phẩm:</span>
+                    <span
+                      class="font-semibold ml-2"
+                      x-text="batchData.batch.product_name"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Số lượng:</span>
+                    <span
+                      class="font-semibold ml-2"
+                      x-text="batchData.batch.quantity + ' kg'"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Nông dân:</span>
+                    <span
+                      class="font-semibold ml-2"
+                      x-text="batchData.batch.farmer_name"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transport History - FIXED -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold mb-4">Lịch sử vận chuyển</h3>
+
+                <!-- Empty state -->
+                <div
+                  x-show="!batchData || !batchData.history || batchData.history.length === 0"
+                  class="text-sm text-gray-500"
+                >
+                  Chưa có lịch sử
+                </div>
+
+                <!-- History list -->
+                <div
+                  x-show="batchData && batchData.history && batchData.history.length > 0"
+                  class="space-y-3"
+                >
+                  <template
+                    x-for="(h, index) in (batchData && batchData.history) || []"
+                    :key="'history-' + index"
+                  >
+                    <div class="text-xs p-3 bg-gray-50 rounded">
+                      <div
+                        class="font-semibold mb-1"
+                        x-text="h.action || 'Không rõ'"
+                      ></div>
+                      <div
+                        class="text-gray-600"
+                        x-show="h.timestamp_iso"
+                        x-text="h.timestamp_iso ? Utils.formatDateTime(h.timestamp_iso) : ''"
+                      ></div>
+                      <div
+                        class="text-gray-600 mt-1"
+                        x-show="h.location"
+                        x-text="h.location ? '📍 ' + h.location : ''"
+                      ></div>
+                      <div
+                        class="text-gray-600 mt-1"
+                        x-show="h.transporter_name"
+                        x-text="h.transporter_name ? '👤 ' + h.transporter_name : ''"
+                      ></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/status-update.js"></script>
+  </body>
+</html>

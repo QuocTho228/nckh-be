@@ -51,7 +51,7 @@ const storage = multer.diskStorage({
     const uploadPath = path.join(
       uploadDir,
       today.getFullYear().toString(),
-      (today.getMonth() + 1).toString()
+      (today.getMonth() + 1).toString(),
     );
 
     if (!fs.existsSync(uploadPath)) {
@@ -192,14 +192,14 @@ const traceabilityContractABI =
 const traceabilityContractAddress = process.env.TRACEABILITY_CONTRACT_ADDRESS; // Cần cập nhật sau khi triển khai
 const traceabilityContract = new web3.eth.Contract(
   traceabilityContractABI,
-  traceabilityContractAddress
+  traceabilityContractAddress,
 );
 
 const activityLogABI = require("../build/contracts/ActivityLog.json").abi;
 const activityLogAddress = process.env.ACTIVITY_LOG_CONTRACT_ADDRESS; // Cần cập nhật sau khi triển khai
 const activityLogContract = new web3.eth.Contract(
   activityLogABI,
-  activityLogAddress
+  activityLogAddress,
 );
 
 // Tạo thư mục uploads cho activities
@@ -207,7 +207,7 @@ const activityUploadDir = path.join(
   __dirname,
   "public",
   "uploads",
-  "activities"
+  "activities",
 );
 if (!fs.existsSync(activityUploadDir)) {
   fs.mkdirSync(activityUploadDir, { recursive: true });
@@ -220,7 +220,7 @@ const activityStorage = multer.diskStorage({
     const uploadPath = path.join(
       activityUploadDir,
       today.getFullYear().toString(),
-      (today.getMonth() + 1).toString()
+      (today.getMonth() + 1).toString(),
     );
 
     if (!fs.existsSync(uploadPath)) {
@@ -332,7 +332,7 @@ function convertBigIntToString(item) {
       Object.entries(item).map(([key, value]) => [
         key,
         convertBigIntToString(value),
-      ])
+      ]),
     );
   }
   return item;
@@ -341,7 +341,7 @@ function convertBigIntToString(item) {
 async function checkFileStatusWithRetry(
   fileName,
   maxRetries = 5,
-  retryDelay = 1000
+  retryDelay = 1000,
 ) {
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -433,7 +433,7 @@ async function checkUserExists(userId) {
   } catch (error) {
     console.error("Lỗi khi kiểm tra người dùng:", error);
     throw new Error(
-      "Không thể kiểm tra thông tin người dùng: " + error.message
+      "Không thể kiểm tra thông tin người dùng: " + error.message,
     );
   }
 }
@@ -458,7 +458,7 @@ async function checkProductExists(productId) {
       (error, results) => {
         if (error) return reject(error);
         resolve(results.length > 0);
-      }
+      },
     );
   });
 }
@@ -481,7 +481,7 @@ async function getProducerById(producerId) {
           });
         }
         resolve(results[0]);
-      }
+      },
     );
   });
 }
@@ -820,7 +820,7 @@ function setupRoutes(app, db) {
   app.get("/api/products-home", async (req, res) => {
     try {
       const [products] = await db.query(
-        "SELECT product_id, product_name, img FROM products"
+        "SELECT product_id, product_name, img FROM products",
       );
       res.status(200).json(products);
     } catch (error) {
@@ -842,7 +842,7 @@ function setupRoutes(app, db) {
           LEFT JOIN regions rg ON u.region_id = rg.region_id
           WHERE u.uid = ?
       `,
-        [userId]
+        [userId],
       );
 
       if (user.length === 0) {
@@ -864,7 +864,7 @@ function setupRoutes(app, db) {
       const productId = req.params.productId;
       const [results] = await db.query(
         "SELECT product_id, product_name, description, price, img, uses, process FROM products WHERE product_id = ?",
-        [productId]
+        [productId],
       );
 
       if (results.length > 0) {
@@ -892,7 +892,7 @@ function setupRoutes(app, db) {
       const producerId = req.params.uid;
       console.log(
         "Đang truy xuất nhật ký hoạt động của người sản xuất cho producerId:",
-        producerId
+        producerId,
       );
 
       const producerActivityLogs = await traceabilityContract.methods
@@ -900,14 +900,14 @@ function setupRoutes(app, db) {
         .call();
       console.log(
         "Số lượng nhật ký hoạt động của người sản xuất:",
-        producerActivityLogs.length
+        producerActivityLogs.length,
       );
 
       const convertedLogs = convertBigIntToString(producerActivityLogs);
       const formattedLogs = await Promise.all(
         convertedLogs.map(async (log) => {
           const relatedProducts = await getRelatedProducts(
-            log.relatedProductIds
+            log.relatedProductIds,
           );
           return {
             timestamp: new Date(Number(log.timestamp) * 1000).toISOString(),
@@ -922,7 +922,7 @@ function setupRoutes(app, db) {
               image_url: product.image_url,
             })),
           };
-        })
+        }),
       );
 
       res.status(200).json({
@@ -932,7 +932,7 @@ function setupRoutes(app, db) {
     } catch (error) {
       console.error(
         "Lỗi khi truy xuất nhật ký hoạt động của người sản xuất:",
-        error
+        error,
       );
       res.status(500).json({
         error:
@@ -945,7 +945,7 @@ function setupRoutes(app, db) {
   // Thêm route để serve static files
   app.use(
     "/uploads",
-    express.static(path.join(__dirname, "public", "uploads"))
+    express.static(path.join(__dirname, "public", "uploads")),
   );
 
   // ==========================================
@@ -1109,7 +1109,7 @@ function setupRoutes(app, db) {
             BigInt(regionId),
             treeType,
             variety,
-            coordinates
+            coordinates,
           )
           .send({ from: web3.eth.defaultAccount, gas: 3000000 });
 
@@ -1157,7 +1157,7 @@ function setupRoutes(app, db) {
             coordinates,
             qrImageUrl,
             result.transactionHash,
-          ]
+          ],
         );
 
         await connection.commit();
@@ -1190,7 +1190,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -1265,7 +1265,7 @@ function setupRoutes(app, db) {
         const placeholders = treeIds.map(() => "?").join(",");
         const [trees] = await connection.query(
           `SELECT tree_id FROM trees WHERE tree_id IN (${placeholders}) AND farmer_id = ?`,
-          [...treeIds, farmerId]
+          [...treeIds, farmerId],
         );
 
         if (trees.length !== treeIds.length) {
@@ -1295,7 +1295,7 @@ function setupRoutes(app, db) {
               BigInt(farmerId),
               parseInt(category),
               activityName,
-              description || ""
+              description || "",
             )
             .send({ from: web3.eth.defaultAccount, gas: 3000000 });
 
@@ -1335,7 +1335,7 @@ function setupRoutes(app, db) {
                 humidity ? parseInt(humidity) : 0,
                 weather || "",
                 healthStatus || "",
-                notes || ""
+                notes || "",
               )
               .send({ from: web3.eth.defaultAccount, gas: 2000000 });
           }
@@ -1377,7 +1377,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -1404,7 +1404,7 @@ function setupRoutes(app, db) {
         // Kiểm tra tree thuộc farmer hiện tại
         const trees = await query(
           `SELECT * FROM trees WHERE tree_id = ? AND farmer_id = ?`,
-          [treeId, farmerId]
+          [treeId, farmerId],
         );
 
         if (trees.length === 0) {
@@ -1426,7 +1426,7 @@ function setupRoutes(app, db) {
         WHERE tal.tree_id = ?
         ORDER BY tal.timestamp_iso DESC
         `,
-          [treeId]
+          [treeId],
         );
 
         // Lấy images cho mỗi activity
@@ -1434,14 +1434,14 @@ function setupRoutes(app, db) {
           activities.map(async (act) => {
             const images = await query(
               `SELECT image_url FROM tree_activity_images WHERE log_id = ?`,
-              [act.log_id]
+              [act.log_id],
             );
 
             return {
               ...act,
               images: images.map((img) => img.image_url),
             };
-          })
+          }),
         );
 
         res.json({
@@ -1476,7 +1476,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử hoạt động: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -1545,7 +1545,7 @@ function setupRoutes(app, db) {
 
         const [user] = await connection.query(
           "SELECT uid FROM users WHERE uid = ? AND role_id = 1",
-          [producerId]
+          [producerId],
         );
         if (user.length === 0) {
           await connection.rollback();
@@ -1554,7 +1554,7 @@ function setupRoutes(app, db) {
 
         const [prod] = await connection.query(
           "SELECT product_id FROM products WHERE product_id = ?",
-          [productId]
+          [productId],
         );
         if (prod.length === 0) {
           await connection.rollback();
@@ -1565,7 +1565,7 @@ function setupRoutes(app, db) {
         const placeholders = treeIds.map(() => "?").join(",");
         const [trees] = await connection.query(
           `SELECT tree_id FROM trees WHERE tree_id IN (${placeholders}) AND farmer_id = ? AND is_active = TRUE`,
-          [...treeIds, producerId]
+          [...treeIds, producerId],
         );
         if (trees.length !== treeIds.length) {
           await connection.rollback();
@@ -1607,7 +1607,7 @@ function setupRoutes(app, db) {
             quantity,
             BigInt(productId),
             BigInt(startTimestamp),
-            BigInt(endTimestamp)
+            BigInt(endTimestamp),
           )
           .send({ from: web3.eth.defaultAccount, gas: 5000000 });
 
@@ -1658,14 +1658,14 @@ function setupRoutes(app, db) {
             certificateImageUrl,
             dataHash,
             result.transactionHash,
-          ]
+          ],
         );
 
         // Lưu ảnh sản phẩm vào batch_product_images
         for (let i = 0; i < productImageUrls.length; i++) {
           await query(
             "INSERT INTO batch_product_images (batch_id, image_url, image_order) VALUES (?, ?, ?)",
-            [batchId, productImageUrls[i], i + 1]
+            [batchId, productImageUrls[i], i + 1],
           );
         }
 
@@ -1677,7 +1677,7 @@ function setupRoutes(app, db) {
               BigInt(treeId),
               BigInt(batchId),
               BigInt(producerId),
-              harvestNotes
+              harvestNotes,
             )
             .send({ from: web3.eth.defaultAccount, gas: 2000000 });
 
@@ -1716,7 +1716,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -1768,7 +1768,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách lô hàng: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -1786,7 +1786,7 @@ function setupRoutes(app, db) {
        FROM batch_product_images 
        WHERE batch_id = ? 
        ORDER BY image_order ASC`,
-        [batchId]
+        [batchId],
       );
 
       console.log("📸 Found images:", images.length); // ✅ DEBUG
@@ -1821,7 +1821,7 @@ function setupRoutes(app, db) {
 
         const [trees] = await db.query(
           `SELECT * FROM trees WHERE farmer_id = ? ORDER BY planted_date_iso DESC`,
-          [farmerId]
+          [farmerId],
         );
 
         res.json({
@@ -1835,7 +1835,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách cây: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -1879,7 +1879,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -1921,7 +1921,7 @@ function setupRoutes(app, db) {
         LEFT JOIN users inspector ON bb.approved_by = inspector.uid
         ${whereClause}
         ORDER BY bb.created_at DESC`,
-          params
+          params,
         );
 
         res.json({
@@ -1935,7 +1935,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -1976,7 +1976,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2017,7 +2017,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2045,7 +2045,7 @@ function setupRoutes(app, db) {
         // 1. Kiểm tra DB
         const [batchRows] = await connection.query(
           "SELECT status FROM blockchain_batches WHERE batch_id = ?",
-          [blockchainBatchId]
+          [blockchainBatchId],
         );
 
         if (batchRows.length === 0) {
@@ -2066,11 +2066,11 @@ function setupRoutes(app, db) {
         // Đồng bộ status
         if (batchRows[0].status !== blockchainStatus) {
           console.log(
-            `⚠️ Đồng bộ status: DB=${batchRows[0].status} → Blockchain=${blockchainStatus}`
+            `⚠️ Đồng bộ status: DB=${batchRows[0].status} → Blockchain=${blockchainStatus}`,
           );
           await connection.query(
             "UPDATE blockchain_batches SET status = ? WHERE batch_id = ?",
-            [blockchainStatus, blockchainBatchId]
+            [blockchainStatus, blockchainBatchId],
           );
         }
 
@@ -2105,7 +2105,7 @@ function setupRoutes(app, db) {
              approved_on = NOW(),
              blockchain_tx_hash = ?
          WHERE batch_id = ?`,
-          [inspectorId, result.transactionHash, blockchainBatchId]
+          [inspectorId, result.transactionHash, blockchainBatchId],
         );
 
         await connection.commit();
@@ -2138,7 +2138,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -2172,7 +2172,7 @@ function setupRoutes(app, db) {
 
         const [batchRows] = await connection.query(
           "SELECT status FROM blockchain_batches WHERE batch_id = ?",
-          [blockchainBatchId]
+          [blockchainBatchId],
         );
 
         if (batchRows.length === 0) {
@@ -2189,7 +2189,7 @@ function setupRoutes(app, db) {
           .rejectBatch(
             BigInt(blockchainBatchId),
             BigInt(inspectorId),
-            reason.trim()
+            reason.trim(),
           )
           .send({ from: web3.eth.defaultAccount, gas: 5000000 });
 
@@ -2207,7 +2207,7 @@ function setupRoutes(app, db) {
             reason.trim(),
             result.transactionHash,
             blockchainBatchId,
-          ]
+          ],
         );
 
         await connection.commit();
@@ -2228,7 +2228,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -2258,7 +2258,7 @@ function setupRoutes(app, db) {
           `SELECT COUNT(*) as my_approvals
          FROM blockchain_batches 
          WHERE approved_by = ? AND status IN ('Approved', 'Rejected')`,
-          [inspectorId]
+          [inspectorId],
         );
 
         // Lô mới nhất chờ duyệt
@@ -2272,7 +2272,7 @@ function setupRoutes(app, db) {
         LEFT JOIN products p ON bb.product_type_id = p.product_id
         WHERE bb.status = 'PendingApproval'
         ORDER BY bb.created_at DESC
-        LIMIT 5`
+        LIMIT 5`,
         );
 
         res.json({
@@ -2292,7 +2292,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy thống kê: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2325,7 +2325,7 @@ function setupRoutes(app, db) {
         LEFT JOIN products p ON bb.product_type_id = p.product_id
         LEFT JOIN users inspector ON bb.approved_by = inspector.uid
         WHERE bb.batch_id = ?`,
-          [batchId]
+          [batchId],
         );
 
         if (batchRows.length === 0) {
@@ -2342,7 +2342,7 @@ function setupRoutes(app, db) {
            FROM batch_product_images 
            WHERE batch_id = ?
            ORDER BY image_order ASC, created_at ASC`,
-            [batchId]
+            [batchId],
           );
           images = productImages.map((img) => img.image_url);
         } catch (error) {
@@ -2364,7 +2364,7 @@ function setupRoutes(app, db) {
            FROM tree_batch_links tbl
            JOIN trees t ON tbl.tree_id = t.tree_id
            WHERE tbl.batch_id = ?`,
-            [batchId]
+            [batchId],
           );
           sourceTrees = trees;
         } catch (error) {
@@ -2387,7 +2387,7 @@ function setupRoutes(app, db) {
             producerId: batchDetails.producerId.toString(),
             currentStage: Number(batchDetails.currentStage),
             productionDate: new Date(
-              Number(batchDetails.productionDate) * 1000
+              Number(batchDetails.productionDate) * 1000,
             ).toISOString(),
           };
         } catch (error) {
@@ -2410,7 +2410,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy thông tin: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2448,7 +2448,7 @@ function setupRoutes(app, db) {
         LEFT JOIN products p ON bb.product_type_id = p.product_id
         ${whereClause}
         ORDER BY bb.approved_on DESC`,
-          params
+          params,
         );
 
         res.json({
@@ -2462,7 +2462,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2485,7 +2485,7 @@ function setupRoutes(app, db) {
         AND JSON_EXTRACT(event_data, '$.batchId') = ?
         ORDER BY timestamp DESC
       `,
-          [batchId]
+          [batchId],
         );
 
         res.json({
@@ -2498,7 +2498,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -2544,7 +2544,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2594,7 +2594,7 @@ function setupRoutes(app, db) {
         // ✅ Lấy farmer_id từ blockchain_batches
         const [batchRows] = await connection.query(
           "SELECT producer_id FROM blockchain_batches WHERE batch_id = ?",
-          [batchId]
+          [batchId],
         );
 
         if (!batchRows || batchRows.length === 0) {
@@ -2620,7 +2620,7 @@ function setupRoutes(app, db) {
             BigInt(batchId),
             BigInt(purchaserId),
             BigInt(Math.round(totalQuantity * 1000)),
-            BigInt(Math.round(pricePerUnit * 1000))
+            BigInt(Math.round(pricePerUnit * 1000)),
           )
           .send({ from: web3.eth.defaultAccount, gas: 3000000 });
 
@@ -2628,7 +2628,7 @@ function setupRoutes(app, db) {
         let purchaseId = null;
         if (result.events?.PurchaseRecorded) {
           purchaseId = Number(
-            result.events.PurchaseRecorded.returnValues.purchaseId
+            result.events.PurchaseRecorded.returnValues.purchaseId,
           );
         }
 
@@ -2641,7 +2641,7 @@ function setupRoutes(app, db) {
 
         // ✅ Lấy timestamp từ blockchain
         const receipt = await web3.eth.getTransactionReceipt(
-          result.transactionHash
+          result.transactionHash,
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
         const timestamp = Number(block.timestamp);
@@ -2678,7 +2678,7 @@ function setupRoutes(app, db) {
             qualityGrade || null,
             notes || null,
             result.transactionHash,
-          ]
+          ],
         );
 
         // ✅ INSERT ảnh vào purchase_images
@@ -2686,7 +2686,7 @@ function setupRoutes(app, db) {
           const imageValues = purchaseImageUrls.map((url) => [purchaseId, url]);
           await connection.query(
             `INSERT INTO purchase_images (purchase_id, image_url) VALUES ?`,
-            [imageValues]
+            [imageValues],
           );
         }
 
@@ -2695,7 +2695,7 @@ function setupRoutes(app, db) {
           `UPDATE blockchain_batches 
          SET current_stage = 'Purchased', purchaser_id = ? 
          WHERE batch_id = ?`,
-          [parseInt(purchaserId), parseInt(batchId)]
+          [parseInt(purchaserId), parseInt(batchId)],
         );
 
         // Gọi addPurchaseDetails (off-chain)
@@ -2704,7 +2704,7 @@ function setupRoutes(app, db) {
             .addPurchaseDetails(
               BigInt(purchaseId),
               qualityGrade || "",
-              notes || ""
+              notes || "",
             )
             .send({ from: web3.eth.defaultAccount, gas: 1500000 });
         }
@@ -2732,7 +2732,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -2765,7 +2765,7 @@ function setupRoutes(app, db) {
         WHERE bb.purchaser_id = ?
         ORDER BY pr.purchase_date_iso DESC
       `,
-          [purchaserId]
+          [purchaserId],
         );
 
         res.json({
@@ -2779,7 +2779,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2804,7 +2804,7 @@ function setupRoutes(app, db) {
         FROM purchase_records
         WHERE purchaser_id = ?
       `,
-          [purchaserId]
+          [purchaserId],
         );
 
         // Số lô đã duyệt (sẵn sàng mua)
@@ -2833,7 +2833,7 @@ function setupRoutes(app, db) {
         ORDER BY pr.purchase_date_iso DESC
         LIMIT 5
       `,
-          [purchaserId]
+          [purchaserId],
         );
 
         res.json({
@@ -2852,7 +2852,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy thống kê: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -2885,7 +2885,7 @@ function setupRoutes(app, db) {
         LEFT JOIN users inspector ON bb.approved_by = inspector.uid
         WHERE bb.batch_id = ?
       `,
-          [batchId]
+          [batchId],
         );
 
         if (batchRows.length === 0) {
@@ -2920,7 +2920,7 @@ function setupRoutes(app, db) {
         WHERE batch_id = ?
         ORDER BY image_order ASC, created_at ASC
       `,
-          [batchId]
+          [batchId],
         );
 
         // 3. Lấy ảnh chứng nhận
@@ -2935,7 +2935,7 @@ function setupRoutes(app, db) {
         JOIN trees t ON tbl.tree_id = t.tree_id
         WHERE tbl.batch_id = ?
       `,
-          [batchId]
+          [batchId],
         );
 
         // 5. Kiểm tra xem đã có ai mua chưa (double check)
@@ -2946,7 +2946,7 @@ function setupRoutes(app, db) {
         WHERE batch_id = ?
         LIMIT 1
       `,
-          [batchId]
+          [batchId],
         );
 
         // 6. Lấy thông tin blockchain
@@ -2966,7 +2966,7 @@ function setupRoutes(app, db) {
             currentStage: Number(batchDetails.currentStage),
             producerId: batchDetails.producerId.toString(),
             productionDate: new Date(
-              Number(batchDetails.productionDate) * 1000
+              Number(batchDetails.productionDate) * 1000,
             ).toISOString(),
           };
         } catch (error) {
@@ -2992,7 +2992,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy thông tin: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -3015,7 +3015,7 @@ function setupRoutes(app, db) {
         FROM purchases
         WHERE purchase_id = ? AND purchaser_id = ?
       `,
-          [purchaseId, purchaserId]
+          [purchaseId, purchaserId],
         );
 
         if (purchase.length === 0) {
@@ -3033,7 +3033,7 @@ function setupRoutes(app, db) {
         WHERE purchase_id = ?
         ORDER BY created_at ASC
       `,
-          [purchaseId]
+          [purchaseId],
         );
 
         res.json({
@@ -3051,7 +3051,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy ảnh: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -3077,7 +3077,7 @@ function setupRoutes(app, db) {
         WHERE p.batch_id = ?
         ORDER BY p.purchase_date DESC
       `,
-          [batchId]
+          [batchId],
         );
 
         res.json({
@@ -3091,7 +3091,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -3168,7 +3168,7 @@ function setupRoutes(app, db) {
 
         const [currentBatch] = await connection.query(
           `SELECT detailed_transport_status FROM blockchain_batches WHERE batch_id = ?`,
-          [batchId]
+          [batchId],
         );
 
         if (!currentBatch || currentBatch.length === 0) {
@@ -3217,12 +3217,12 @@ function setupRoutes(app, db) {
             BigInt(transporterId),
             BigInt(actionCode),
             temperature ? BigInt(temperature) : BigInt(0),
-            humidity ? BigInt(humidity) : BigInt(0)
+            humidity ? BigInt(humidity) : BigInt(0),
           )
           .send({ from: web3.eth.defaultAccount, gas: 3000000 });
 
         const receipt = await web3.eth.getTransactionReceipt(
-          result.transactionHash
+          result.transactionHash,
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
         const timestamp = Number(block.timestamp);
@@ -3246,7 +3246,7 @@ function setupRoutes(app, db) {
             temperature ? parseInt(temperature) : null,
             humidity ? parseInt(humidity) : null,
             result.transactionHash,
-          ]
+          ],
         );
 
         let detailedStatus;
@@ -3278,7 +3278,7 @@ function setupRoutes(app, db) {
           `UPDATE blockchain_batches
         SET detailed_transport_status = ?, transport_status = ?
         WHERE batch_id = ?`,
-          [detailedStatus, transportStatus, batchId]
+          [detailedStatus, transportStatus, batchId],
         );
 
         await connection.commit();
@@ -3302,7 +3302,115 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
+  );
+  /**
+   * ========================================
+   * GET BATCH DETAILS FOR TRANSPORT
+   * ========================================
+   */
+  app.get(
+    "/api/transporter/batch/:id/details",
+    requireAuth,
+    requireRole(ROLES.TRANSPORTER),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        const [batchRows] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.address as farmer_address,
+          prod.product_name,
+          pr.total_quantity as purchased_quantity,
+          pr.total_price as purchase_price,
+          purchaser.name as purchaser_name,
+          purchaser.address as purchaser_address
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products prod ON bb.product_type_id = prod.product_id
+        LEFT JOIN purchase_records pr ON bb.batch_id = pr.batch_id
+        LEFT JOIN users purchaser ON pr.purchaser_id = purchaser.uid
+        WHERE bb.batch_id = ?
+      `,
+          [batchId],
+        );
+
+        if (batchRows.length === 0) {
+          return res.status(404).json({
+            error: "Không tìm thấy lô hàng",
+            batchId: batchId,
+          });
+        }
+
+        const batch = batchRows[0];
+
+        // Kiểm tra stage hợp lệ
+        if (
+          batch.current_stage !== "Purchased" &&
+          batch.current_stage !== "QualityInspected"
+        ) {
+          return res.status(400).json({
+            error: "Lô hàng không ở trạng thái cần vận chuyển",
+            currentStage: batch.current_stage,
+            validStages: ["Purchased", "QualityInspected"],
+          });
+        }
+
+        // ✅ Lấy lịch sử vận chuyển - FORMAT THEO GIỜ VIỆT NAM
+        const [history] = await db.query(
+          `
+        SELECT 
+          te.*,
+          u.name as transporter_name,
+          DATE_FORMAT(
+            CONVERT_TZ(te.timestamp_iso, '+00:00', '+07:00'),
+            '%d/%m/%Y %H:%i:%s'
+          ) as timestamp_vn
+        FROM transport_events te
+        LEFT JOIN users u ON te.participant_id = u.uid
+        WHERE te.batch_id = ?
+        ORDER BY te.timestamp_iso DESC
+      `,
+          [batchId],
+        );
+
+        // Lấy ảnh sản phẩm
+        const [images] = await db.query(
+          `
+        SELECT image_url 
+        FROM batch_product_images 
+        WHERE batch_id = ?
+        ORDER BY image_order ASC, created_at ASC
+      `,
+          [batchId],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            batch,
+            history,
+            images: images.map((img) => img.image_url),
+            transportPhase:
+              batch.current_stage === "Purchased" ? "transport1" : "transport2",
+            destination:
+              batch.current_stage === "Purchased"
+                ? "Nhà máy sản xuất"
+                : "Kho bãi",
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết batch:", error);
+        res.status(500).json({
+          error: "Không thể lấy thông tin",
+          message: error.message,
+        });
+      }
+    },
   );
 
   /**
@@ -3333,7 +3441,7 @@ function setupRoutes(app, db) {
         WHERE te.participant_id = ?
         ORDER BY te.timestamp_iso DESC
       `,
-          [transporterId]
+          [transporterId],
         );
 
         res.json({
@@ -3347,7 +3455,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -3372,7 +3480,7 @@ function setupRoutes(app, db) {
         WHERE te.batch_id = ?
         ORDER BY te.timestamp_iso ASC
       `,
-          [batchId]
+          [batchId],
         );
 
         res.json({
@@ -3386,7 +3494,357 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử: " + error.message,
         });
       }
-    }
+    },
+  );
+
+  /**
+   * GET /api/transporter/batches-to-transport
+   * Lấy danh sách lô cần vận chuyển
+   * Stage = Purchased (lần 1) hoặc QualityInspected (lần 2)
+   */
+  app.get(
+    "/api/transporter/batches-to-transport",
+    requireAuth,
+    requireRole(ROLES.TRANSPORTER),
+    async (req, res) => {
+      try {
+        const [batches] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          prod.product_name,
+          pr.total_quantity as purchased_quantity,
+          pr.total_price as purchase_price,
+          pr.purchaser_id,
+          purchaser.name as purchaser_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products prod ON bb.product_type_id = prod.product_id
+        LEFT JOIN purchase_records pr ON bb.batch_id = pr.batch_id
+        LEFT JOIN users purchaser ON pr.purchaser_id = purchaser.uid
+        WHERE bb.status = 'Approved' 
+        AND bb.current_stage IN ('Purchased', 'QualityInspected')
+        ORDER BY bb.created_at DESC
+      `,
+        );
+
+        // Phân loại theo stage
+        const transport1 = batches.filter(
+          (b) => b.current_stage === "Purchased",
+        );
+        const transport2 = batches.filter(
+          (b) => b.current_stage === "QualityInspected",
+        );
+
+        res.json({
+          success: true,
+          data: {
+            all: batches,
+            transport1: transport1, // Từ purchaser đến processor
+            transport2: transport2, // Từ processor đến warehouse
+            total: batches.length,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy lô cần vận chuyển:", error);
+        res.status(500).json({
+          error: "Không thể lấy danh sách: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/transporter/stats
+   * Thống kê cho transporter
+   */
+  app.get(
+    "/api/transporter/stats",
+    requireAuth,
+    requireRole(ROLES.TRANSPORTER),
+    async (req, res) => {
+      try {
+        const transporterId = req.session.userId;
+
+        // Đếm số lô đang vận chuyển (transport_status = InTransit)
+        const [inTransit] = await db.query(
+          `
+        SELECT COUNT(*) as count
+        FROM blockchain_batches
+        WHERE transport_status = 'InTransit'
+      `,
+        );
+
+        // Đếm số lô đã hoàn thành vận chuyển bởi transporter này
+        const [completed] = await db.query(
+          `
+        SELECT COUNT(DISTINCT batch_id) as count
+        FROM transport_events
+        WHERE participant_id = ? AND action LIKE '%hoàn thành%'
+      `,
+          [transporterId],
+        );
+
+        // Lô cần vận chuyển (Purchased hoặc QualityInspected)
+        const [pending] = await db.query(
+          `
+        SELECT COUNT(*) as count
+        FROM blockchain_batches
+        WHERE status = 'Approved' 
+        AND current_stage IN ('Purchased', 'QualityInspected')
+      `,
+        );
+
+        // Lô đã giao (Delivered) do transporter này
+        const [delivered] = await db.query(
+          `
+        SELECT COUNT(DISTINCT batch_id) as count
+        FROM transport_events
+        WHERE participant_id = ? 
+        AND (action LIKE '%hoàn thành%' OR action LIKE '%Complete%' OR action LIKE '%Delivered%')
+      `,
+          [transporterId],
+        );
+
+        // Lịch sử gần nhất
+        const [recentTransports] = await db.query(
+          `
+        SELECT 
+          te.*,
+          bb.batch_name,
+          bb.sscc,
+          bb.current_stage,
+          prod.product_name
+        FROM transport_events te
+        LEFT JOIN blockchain_batches bb ON te.batch_id = bb.batch_id
+        LEFT JOIN products prod ON bb.product_type_id = prod.product_id
+        WHERE te.participant_id = ?
+        ORDER BY te.timestamp_iso DESC
+        LIMIT 5
+      `,
+          [transporterId],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            inTransit: inTransit[0].count || 0,
+            completed: completed[0].count || 0,
+            pending: pending[0].count || 0,
+            delivered: delivered[0].count || 0,
+            recentTransports: recentTransports,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy thống kê transporter:", error);
+        res.status(500).json({
+          error: "Không thể lấy thống kê: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/transporter/batch/:id/current-status
+   * Lấy trạng thái vận chuyển hiện tại của lô
+   */
+  app.get(
+    "/api/transporter/batch/:id/current-status",
+    requireAuth,
+    requireRole(ROLES.TRANSPORTER),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        // Lấy thông tin batch
+        const [batchRows] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          prod.product_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products prod ON bb.product_type_id = prod.product_id
+        WHERE bb.batch_id = ?
+      `,
+          [batchId],
+        );
+
+        if (batchRows.length === 0) {
+          return res.status(404).json({ error: "Không tìm thấy lô hàng" });
+        }
+
+        const batch = batchRows[0];
+
+        // FIX: Lấy lịch sử vận chuyển từ transport_events
+        const [history] = await db.query(
+          `
+        SELECT 
+          te.*,
+          u.name as transporter_name
+        FROM transport_events te
+        LEFT JOIN users u ON te.participant_id = u.uid
+        WHERE te.batch_id = ?
+        ORDER BY te.timestamp_iso DESC
+      `,
+          [batchId],
+        );
+
+        // Kiểm tra xem đang ở giai đoạn vận chuyển nào
+        let transportPhase = null;
+        if (batch.current_stage === "Purchased") {
+          transportPhase = "transport1"; // Chờ vận chuyển lần 1
+        } else if (batch.current_stage === "QualityInspected") {
+          transportPhase = "transport2"; // Chờ vận chuyển lần 2
+        } else if (batch.current_stage === "Transported1") {
+          transportPhase = "completed1"; // Đã vận chuyển lần 1
+        } else if (batch.current_stage === "Warehoused") {
+          transportPhase = "completed2"; // Đã vận chuyển lần 2
+        }
+
+        // Lấy thông tin từ blockchain
+        let blockchainData = null;
+        try {
+          const batchDetails = await traceabilityContract.methods
+            .getBatchDetails(BigInt(batchId))
+            .call();
+
+          blockchainData = {
+            currentStage: batchDetails.currentStage,
+            transportStatus:
+              batchDetails.transportStatus === 0n
+                ? "NotStarted"
+                : batchDetails.transportStatus === 1n
+                  ? "InTransit"
+                  : "Delivered",
+          };
+        } catch (error) {
+          console.error("Lỗi lấy blockchain data:", error);
+        }
+
+        res.json({
+          success: true,
+          data: {
+            batch,
+            transportPhase,
+            transportStatus: batch.transport_status,
+            history,
+            blockchain: blockchainData,
+            canTransport:
+              batch.current_stage === "Purchased" ||
+              batch.current_stage === "QualityInspected",
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy trạng thái:", error);
+        res.status(500).json({
+          error: "Không thể lấy trạng thái: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/transporter/batch/:id/details
+   * Lấy chi tiết đầy đủ của lô để cập nhật trạng thái
+   */
+  app.get(
+    "/api/transporter/batch/:id/details",
+    requireAuth,
+    requireRole(ROLES.TRANSPORTER),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        // FIX: Sử dụng purchase_records thay vì purchases
+        const [batchRows] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.address as farmer_address,
+          prod.product_name,
+          pr.total_quantity as purchased_quantity,
+          pr.total_price as purchase_price,
+          purchaser.name as purchaser_name,
+          purchaser.address as purchaser_address
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products prod ON bb.product_type_id = prod.product_id
+        LEFT JOIN purchase_records pr ON bb.batch_id = pr.batch_id
+        LEFT JOIN users purchaser ON pr.purchaser_id = purchaser.uid
+        WHERE bb.batch_id = ?
+      `,
+          [batchId],
+        );
+
+        if (batchRows.length === 0) {
+          return res.status(404).json({ error: "Không tìm thấy lô hàng" });
+        }
+
+        const batch = batchRows[0];
+
+        // Kiểm tra có thể vận chuyển không
+        if (
+          batch.current_stage !== "Purchased" &&
+          batch.current_stage !== "QualityInspected"
+        ) {
+          return res.status(400).json({
+            error: "Lô hàng không ở trạng thái cần vận chuyển",
+            currentStage: batch.current_stage,
+          });
+        }
+
+        // FIX: Lấy lịch sử vận chuyển từ transport_events
+        const [history] = await db.query(
+          `
+        SELECT 
+          te.*,
+          u.name as transporter_name
+        FROM transport_events te
+        LEFT JOIN users u ON te.participant_id = u.uid
+        WHERE te.batch_id = ?
+        ORDER BY te.timestamp_iso DESC
+      `,
+          [batchId],
+        );
+
+        // Lấy ảnh sản phẩm
+        const [images] = await db.query(
+          `
+        SELECT image_url 
+        FROM batch_product_images 
+        WHERE batch_id = ?
+        ORDER BY image_order ASC, created_at ASC
+      `,
+          [batchId],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            batch,
+            history,
+            images: images.map((img) => img.image_url),
+            transportPhase:
+              batch.current_stage === "Purchased" ? "transport1" : "transport2",
+            destination:
+              batch.current_stage === "Purchased"
+                ? "Nhà máy sản xuất"
+                : "Kho bãi",
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết batch:", error);
+        res.status(500).json({
+          error: "Không thể lấy thông tin: " + error.message,
+        });
+      }
+    },
   );
 
   // ==========================================
@@ -3438,7 +3896,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -3500,7 +3958,7 @@ function setupRoutes(app, db) {
             BigInt(processorId),
             BigInt(method),
             BigInt(Math.round(inputWeight * 1000)),
-            BigInt(Math.round(outputWeight * 1000))
+            BigInt(Math.round(outputWeight * 1000)),
           )
           .send({ from: web3.eth.defaultAccount, gas: 3000000 });
 
@@ -3508,7 +3966,7 @@ function setupRoutes(app, db) {
         let processingId = null;
         if (result.events?.ProcessingRecorded) {
           processingId = Number(
-            result.events.ProcessingRecorded.returnValues.processingId
+            result.events.ProcessingRecorded.returnValues.processingId,
           );
         }
 
@@ -3521,7 +3979,7 @@ function setupRoutes(app, db) {
 
         // Lấy timestamp từ blockchain
         const receipt = await web3.eth.getTransactionReceipt(
-          result.transactionHash
+          result.transactionHash,
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
         const timestamp = Number(block.timestamp);
@@ -3564,7 +4022,7 @@ function setupRoutes(app, db) {
             methodDescription || null,
             notes || null,
             result.transactionHash,
-          ]
+          ],
         );
 
         // ✅ INSERT ảnh vào processing_images
@@ -3575,7 +4033,7 @@ function setupRoutes(app, db) {
           ]);
           await connection.query(
             `INSERT INTO processing_images (processing_id, image_url) VALUES ?`,
-            [imageValues]
+            [imageValues],
           );
         }
 
@@ -3584,7 +4042,7 @@ function setupRoutes(app, db) {
           `UPDATE blockchain_batches 
          SET current_stage = 'Processed', processor_id = ? 
          WHERE batch_id = ?`,
-          [parseInt(processorId), parseInt(batchId)]
+          [parseInt(processorId), parseInt(batchId)],
         );
 
         // Gọi addProcessingDetails (off-chain)
@@ -3593,7 +4051,7 @@ function setupRoutes(app, db) {
             .addProcessingDetails(
               BigInt(processingId),
               methodDescription || "",
-              notes || ""
+              notes || "",
             )
             .send({ from: web3.eth.defaultAccount, gas: 1500000 });
         }
@@ -3621,7 +4079,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -3686,7 +4144,7 @@ function setupRoutes(app, db) {
         for (const treeId of treeIds) {
           const [result] = await connection.query(
             `SELECT tree_id FROM tree_batch_links WHERE batch_id = ? AND tree_id = ?`,
-            [batchId, treeId]
+            [batchId, treeId],
           );
           treeValidations.push({
             treeId,
@@ -3709,7 +4167,7 @@ function setupRoutes(app, db) {
 
         const sourceTreeIds = products.map((p) => BigInt(p.treeId));
         const weights = products.map((p) =>
-          BigInt(Math.round(p.weight * 1000))
+          BigInt(Math.round(p.weight * 1000)),
         );
         const packageType = products[0].packageType;
 
@@ -3719,7 +4177,7 @@ function setupRoutes(app, db) {
             BigInt(batchId),
             sourceTreeIds,
             weights,
-            packageType
+            packageType,
           )
           .send({ from: web3.eth.defaultAccount, gas: 5000000 });
 
@@ -3727,7 +4185,7 @@ function setupRoutes(app, db) {
 
         // Lấy timestamp
         const receipt = await web3.eth.getTransactionReceipt(
-          result.transactionHash
+          result.transactionHash,
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
         const timestamp = Number(block.timestamp);
@@ -3744,7 +4202,7 @@ function setupRoutes(app, db) {
             filter: { batchId: batchId },
             fromBlock: receipt.blockNumber,
             toBlock: receipt.blockNumber,
-          }
+          },
         );
 
         const productTreeLinkedEvents =
@@ -3755,18 +4213,18 @@ function setupRoutes(app, db) {
 
         // Filter chỉ lấy events của transaction này
         const relevantProductEvents = productCreatedEvents.filter(
-          (e) => e.transactionHash === result.transactionHash
+          (e) => e.transactionHash === result.transactionHash,
         );
 
         const relevantLinkEvents = productTreeLinkedEvents.filter(
-          (e) => e.transactionHash === result.transactionHash
+          (e) => e.transactionHash === result.transactionHash,
         );
 
         console.log(
-          `📦 Found ${relevantProductEvents.length} ProductCreated events (getPastEvents)`
+          `📦 Found ${relevantProductEvents.length} ProductCreated events (getPastEvents)`,
         );
         console.log(
-          `🌳 Found ${relevantLinkEvents.length} ProductTreeLinked events (getPastEvents)`
+          `🌳 Found ${relevantLinkEvents.length} ProductTreeLinked events (getPastEvents)`,
         );
 
         if (relevantProductEvents.length === 0) {
@@ -3810,7 +4268,7 @@ function setupRoutes(app, db) {
               pkgType,
               weight,
               result.transactionHash,
-            ]
+            ],
           );
 
           createdProducts.push({
@@ -3831,7 +4289,7 @@ function setupRoutes(app, db) {
           await connection.query(
             `INSERT IGNORE INTO product_source_trees (product_id, tree_id)
            VALUES (?, ?)`,
-            [productId, treeId]
+            [productId, treeId],
           );
           console.log(`✅ Linked product ${productId} to tree ${treeId}`);
         }
@@ -3841,7 +4299,7 @@ function setupRoutes(app, db) {
           `UPDATE blockchain_batches 
          SET total_products = total_products + ? 
          WHERE batch_id = ?`,
-          [relevantProductEvents.length, parseInt(batchId)]
+          [relevantProductEvents.length, parseInt(batchId)],
         );
 
         await connection.commit();
@@ -3849,7 +4307,7 @@ function setupRoutes(app, db) {
         // ✅ Map products với sourceTreeId từ productTreeLinkedEvents
         const productsWithTrees = createdProducts.map((p) => {
           const linkEvent = relevantLinkEvents.find(
-            (e) => Number(e.returnValues.productId) === p.productId
+            (e) => Number(e.returnValues.productId) === p.productId,
           );
           return {
             ...p,
@@ -3878,7 +4336,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -3911,7 +4369,7 @@ function setupRoutes(app, db) {
         WHERE bb.processor_id = ?
         ORDER BY pr.processing_date_iso DESC
       `,
-          [processorId]
+          [processorId],
         );
 
         res.json({
@@ -3925,7 +4383,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -3971,7 +4429,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -4038,7 +4496,7 @@ function setupRoutes(app, db) {
         let testId = null;
         if (contractResult.events?.QualityTestRecorded) {
           testId = Number(
-            contractResult.events.QualityTestRecorded.returnValues.testId
+            contractResult.events.QualityTestRecorded.returnValues.testId,
           );
         }
 
@@ -4051,7 +4509,7 @@ function setupRoutes(app, db) {
 
         // ✅ Lấy timestamp từ blockchain
         const receipt = await web3.eth.getTransactionReceipt(
-          contractResult.transactionHash
+          contractResult.transactionHash,
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
         const timestamp = Number(block.timestamp);
@@ -4086,7 +4544,7 @@ function setupRoutes(app, db) {
             standard || null,
             notes || null,
             contractResult.transactionHash,
-          ]
+          ],
         );
 
         // ✅ INSERT ảnh vào quality_test_images
@@ -4094,7 +4552,7 @@ function setupRoutes(app, db) {
           const imageValues = testImageUrls.map((url) => [testId, url]);
           await connection.query(
             `INSERT INTO quality_test_images (test_id, image_url) VALUES ?`,
-            [imageValues]
+            [imageValues],
           );
         }
 
@@ -4104,7 +4562,7 @@ function setupRoutes(app, db) {
             `UPDATE blockchain_batches 
            SET current_stage = 'QualityInspected', quality_inspector_id = ? 
            WHERE batch_id = ?`,
-            [parseInt(inspectorId), parseInt(batchId)]
+            [parseInt(inspectorId), parseInt(batchId)],
           );
         }
 
@@ -4117,7 +4575,7 @@ function setupRoutes(app, db) {
               testType || "",
               testMethod || "",
               result || "",
-              standard || ""
+              standard || "",
             )
             .send({ from: web3.eth.defaultAccount, gas: 2000000 });
         }
@@ -4149,7 +4607,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
   /**
    * GET /api/quality-inspector/my-tests
@@ -4181,7 +4639,7 @@ function setupRoutes(app, db) {
         WHERE qt.inspector_id = ?
         ORDER BY qt.test_date_iso DESC
       `,
-          [inspectorId]
+          [inspectorId],
         );
 
         res.json({
@@ -4195,7 +4653,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -4255,7 +4713,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -4299,7 +4757,7 @@ function setupRoutes(app, db) {
         // ✅ Kiểm tra đã confirm chưa
         const [existingConfirm] = await connection.query(
           `SELECT id FROM warehouse_confirmations WHERE batch_id = ? AND warehouse_id = ?`,
-          [batchId, warehouseId]
+          [batchId, warehouseId],
         );
 
         if (existingConfirm.length > 0) {
@@ -4316,7 +4774,7 @@ function setupRoutes(app, db) {
 
         // ✅ Lấy timestamp từ blockchain
         const receipt = await web3.eth.getTransactionReceipt(
-          result.transactionHash
+          result.transactionHash,
         );
         const block = await web3.eth.getBlock(receipt.blockNumber);
         const timestamp = Number(block.timestamp);
@@ -4338,7 +4796,7 @@ function setupRoutes(app, db) {
             parseInt(warehouseId),
             timestampISO,
             result.transactionHash,
-          ]
+          ],
         );
 
         // ✅ Update blockchain_batches
@@ -4346,7 +4804,7 @@ function setupRoutes(app, db) {
           `UPDATE blockchain_batches 
          SET current_stage = 'Warehoused' 
          WHERE batch_id = ?`,
-          [parseInt(batchId)]
+          [parseInt(batchId)],
         );
 
         await connection.commit();
@@ -4370,7 +4828,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -4404,7 +4862,7 @@ function setupRoutes(app, db) {
         GROUP BY bb.batch_id
         ORDER BY wc.confirmed_at DESC
       `,
-          [warehouseId]
+          [warehouseId],
         );
 
         res.json({
@@ -4418,7 +4876,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy tồn kho: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -4476,7 +4934,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy danh sách sản phẩm: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -4508,7 +4966,7 @@ function setupRoutes(app, db) {
           `SELECT product_id, batch_id, is_active, sold_date 
          FROM blockchain_products 
          WHERE product_qr_code = ?`,
-          [productQRCode]
+          [productQRCode],
         );
 
         if (products.length === 0) {
@@ -4542,7 +5000,7 @@ function setupRoutes(app, db) {
              sold_date = ?,
              sold_date_iso = ?
          WHERE product_qr_code = ?`,
-          [timestamp, timestampISO, productQRCode]
+          [timestamp, timestampISO, productQRCode],
         );
 
         // ✅ INSERT vào product_sales
@@ -4559,7 +5017,7 @@ function setupRoutes(app, db) {
             timestamp,
             timestampISO,
             notes || null,
-          ]
+          ],
         );
 
         await connection.commit();
@@ -4583,7 +5041,7 @@ function setupRoutes(app, db) {
       } finally {
         if (connection) connection.release();
       }
-    }
+    },
   );
 
   /**
@@ -4615,7 +5073,7 @@ function setupRoutes(app, db) {
         WHERE ps.distributor_id = ?
         ORDER BY ps.sold_date_iso DESC
         LIMIT 100`,
-          [distributorId]
+          [distributorId],
         );
 
         res.json({
@@ -4631,7 +5089,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy lịch sử bán hàng: " + error.message,
         });
       }
-    }
+    },
   );
 
   // ==========================================
@@ -4687,7 +5145,7 @@ function setupRoutes(app, db) {
         // Lấy thông tin sản phẩm từ database
         const [products] = await db.query(
           `SELECT * FROM blockchain_products WHERE product_qr_code = ?`,
-          [productQRCode]
+          [productQRCode],
         );
 
         if (products.length === 0) {
@@ -4732,7 +5190,7 @@ function setupRoutes(app, db) {
         LEFT JOIN wards w ON producer.ward_id = w.ward_id
         WHERE bb.batch_id = ?
         `,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         if (batchInfo.length === 0) {
@@ -4757,7 +5215,7 @@ function setupRoutes(app, db) {
         WHERE pst.product_id = ?
         GROUP BY t.tree_id
         `,
-          [product.product_id]
+          [product.product_id],
         );
 
         // Lấy thông tin thu mua
@@ -4774,7 +5232,7 @@ function setupRoutes(app, db) {
         ORDER BY pr.purchase_date_iso DESC
         LIMIT 1
         `,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         // Lấy thông tin sơ chế
@@ -4791,7 +5249,7 @@ function setupRoutes(app, db) {
         ORDER BY proc.processing_date_iso DESC
         LIMIT 1
         `,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         // Lấy phụ gia sơ chế (nếu có) - REMOVED: Bảng processing_additives đã xóa
@@ -4810,7 +5268,7 @@ function setupRoutes(app, db) {
         WHERE qt.batch_id = ?
         ORDER BY qt.test_date_iso DESC
         `,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         // Lấy lịch sử vận chuyển
@@ -4825,7 +5283,7 @@ function setupRoutes(app, db) {
         WHERE te.batch_id = ?
         ORDER BY te.timestamp_iso ASC
         `,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         // Lấy thông tin kho
@@ -4840,7 +5298,7 @@ function setupRoutes(app, db) {
         LEFT JOIN users warehouse ON wc.warehouse_id = warehouse.uid
         WHERE wc.batch_id = ?
         `,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         // Lấy ảnh sản phẩm/lô hàng
@@ -4848,7 +5306,7 @@ function setupRoutes(app, db) {
           `SELECT image_url FROM batch_product_images 
          WHERE batch_id = ? 
          ORDER BY image_order`,
-          [product.batch_id]
+          [product.batch_id],
         );
 
         // Lấy ảnh chứng nhận (nếu có)
@@ -4861,7 +5319,7 @@ function setupRoutes(app, db) {
           processingInfo[0],
           qualityTests,
           transportHistory,
-          warehouseInfo
+          warehouseInfo,
         );
 
         res.json({
@@ -5010,7 +5468,7 @@ function setupRoutes(app, db) {
           error: "Không thể lấy thông tin: " + error.message,
         });
       }
-    }
+    },
   );
 
   /**
@@ -5055,7 +5513,7 @@ function setupRoutes(app, db) {
       LEFT JOIN wards w ON producer.ward_id = w.ward_id
       WHERE bb.sscc = ?
       `,
-        [sscc]
+        [sscc],
       );
 
       if (batches.length === 0) {
@@ -5083,7 +5541,7 @@ function setupRoutes(app, db) {
       WHERE pr.batch_id = ?
       ORDER BY pr.purchase_date_iso DESC
       `,
-        [batchId]
+        [batchId],
       );
 
       // Lấy ảnh thu mua
@@ -5091,7 +5549,7 @@ function setupRoutes(app, db) {
       if (purchases.length > 0) {
         [purchaseImages] = await db.query(
           `SELECT image_url FROM purchase_images WHERE purchase_id = ?`,
-          [purchases[0].purchase_id]
+          [purchases[0].purchase_id],
         );
       }
 
@@ -5108,7 +5566,7 @@ function setupRoutes(app, db) {
       WHERE proc.batch_id = ?
       ORDER BY proc.processing_date_iso DESC
       `,
-        [batchId]
+        [batchId],
       );
 
       // Lấy ảnh sơ chế (không còn bảng processing_additives)
@@ -5116,7 +5574,7 @@ function setupRoutes(app, db) {
       for (const proc of processings) {
         const [images] = await db.query(
           `SELECT image_url FROM processing_images WHERE processing_id = ?`,
-          [proc.processing_id]
+          [proc.processing_id],
         );
 
         processingDetails.push({
@@ -5137,7 +5595,7 @@ function setupRoutes(app, db) {
       WHERE qt.batch_id = ?
       ORDER BY qt.test_date_iso DESC
       `,
-        [batchId]
+        [batchId],
       );
 
       // Lấy ảnh kiểm định
@@ -5145,7 +5603,7 @@ function setupRoutes(app, db) {
       for (const test of qualityTests) {
         const [images] = await db.query(
           `SELECT image_url FROM quality_test_images WHERE test_id = ?`,
-          [test.test_id]
+          [test.test_id],
         );
         qualityTestsWithImages.push({
           ...test,
@@ -5165,7 +5623,7 @@ function setupRoutes(app, db) {
       WHERE te.batch_id = ?
       ORDER BY te.timestamp_iso ASC
       `,
-        [batchId]
+        [batchId],
       );
 
       // Lấy thông tin kho
@@ -5180,13 +5638,13 @@ function setupRoutes(app, db) {
       LEFT JOIN users warehouse ON wc.warehouse_id = warehouse.uid
       WHERE wc.batch_id = ?
       `,
-        [batchId]
+        [batchId],
       );
 
       // Lấy danh sách sản phẩm
       const [products] = await db.query(
         `SELECT * FROM blockchain_products WHERE batch_id = ? ORDER BY product_id`,
-        [batchId]
+        [batchId],
       );
 
       // Lấy ảnh lô hàng
@@ -5194,7 +5652,7 @@ function setupRoutes(app, db) {
         `SELECT image_url FROM batch_product_images 
        WHERE batch_id = ? 
        ORDER BY image_order`,
-        [batchId]
+        [batchId],
       );
 
       // Lấy activity logs
@@ -5208,7 +5666,7 @@ function setupRoutes(app, db) {
       WHERE bal.batch_id = ?
       ORDER BY bal.timestamp_iso ASC
       `,
-        [batchId]
+        [batchId],
       );
 
       // Tạo timeline
@@ -5219,7 +5677,7 @@ function setupRoutes(app, db) {
         qualityTests,
         transportEvents,
         warehouses,
-        activityLogs
+        activityLogs,
       );
 
       res.json({
@@ -5369,7 +5827,7 @@ function setupRoutes(app, db) {
       // Lấy thông tin sản phẩm
       const [products] = await db.query(
         "SELECT product_id, batch_id FROM blockchain_products WHERE product_qr_code = ?",
-        [productQR]
+        [productQR],
       );
 
       if (products.length === 0) {
@@ -5398,7 +5856,7 @@ function setupRoutes(app, db) {
       LEFT JOIN provinces prov ON r.region_id = prov.province_id
       WHERE pst.product_id = ?
       `,
-        [productId]
+        [productId],
       );
 
       // Lấy lịch sử chăm sóc cho từng cây
@@ -5416,7 +5874,7 @@ function setupRoutes(app, db) {
           WHERE tal.tree_id = ?
           ORDER BY tal.timestamp_iso ASC
           `,
-            [tree.tree_id]
+            [tree.tree_id],
           );
 
           // Lấy ảnh cho mỗi activity
@@ -5424,13 +5882,13 @@ function setupRoutes(app, db) {
             activities.map(async (activity) => {
               const [images] = await db.query(
                 `SELECT image_url FROM tree_activity_images WHERE log_id = ?`,
-                [activity.log_id]
+                [activity.log_id],
               );
               return {
                 ...activity,
                 images: images.map((img) => img.image_url),
               };
-            })
+            }),
           );
 
           return {
@@ -5481,7 +5939,7 @@ function setupRoutes(app, db) {
 
             totalActivities: activitiesWithImages.length,
           };
-        })
+        }),
       );
 
       res.json({
@@ -5528,7 +5986,7 @@ function setupRoutes(app, db) {
       LEFT JOIN wards w ON u.ward_id = w.ward_id
       WHERE t.tree_qr_code = ?
       `,
-        [treeQR]
+        [treeQR],
       );
 
       if (trees.length === 0) {
@@ -5552,7 +6010,7 @@ function setupRoutes(app, db) {
       WHERE tal.tree_id = ?
       ORDER BY tal.timestamp_iso DESC
       `,
-        [tree.tree_id]
+        [tree.tree_id],
       );
 
       // Lấy ảnh cho mỗi activity
@@ -5560,13 +6018,13 @@ function setupRoutes(app, db) {
         activities.map(async (activity) => {
           const [images] = await db.query(
             `SELECT image_url FROM tree_activity_images WHERE log_id = ?`,
-            [activity.log_id]
+            [activity.log_id],
           );
           return {
             ...activity,
             images: images.map((img) => img.image_url),
           };
-        })
+        }),
       );
 
       // Lấy thông tin harvest (nếu có)
@@ -5582,7 +6040,7 @@ function setupRoutes(app, db) {
       WHERE tbl.tree_id = ?
       ORDER BY tbl.harvest_date_iso DESC
       `,
-        [tree.tree_id]
+        [tree.tree_id],
       );
 
       res.json({
@@ -5649,7 +6107,7 @@ function setupRoutes(app, db) {
             totalHarvests: harvests.length,
             daysSincePlanted: Math.floor(
               (new Date() - new Date(tree.planted_date_iso)) /
-                (1000 * 60 * 60 * 24)
+                (1000 * 60 * 60 * 24),
             ),
           },
         },
@@ -5676,7 +6134,7 @@ function setupRoutes(app, db) {
       // Lấy batchId
       const [batches] = await db.query(
         "SELECT batch_id, batch_name FROM blockchain_batches WHERE sscc = ?",
-        [sscc]
+        [sscc],
       );
 
       if (batches.length === 0) {
@@ -5764,7 +6222,7 @@ function setupRoutes(app, db) {
     processing,
     qualityTests,
     transportEvents,
-    warehouses
+    warehouses,
   ) {
     const timeline = [];
 
@@ -5840,7 +6298,7 @@ function setupRoutes(app, db) {
 
     // Sắp xếp theo thời gian
     return timeline.sort(
-      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
     );
   }
 
@@ -5854,7 +6312,7 @@ function setupRoutes(app, db) {
     qualityTests,
     transportEvents,
     warehouses,
-    activityLogs
+    activityLogs,
   ) {
     const timeline = _generateTimeline(
       batch,
@@ -5862,7 +6320,7 @@ function setupRoutes(app, db) {
       processing,
       qualityTests,
       transportEvents,
-      warehouses
+      warehouses,
     );
 
     // Thêm activity logs vào timeline
@@ -5881,7 +6339,7 @@ function setupRoutes(app, db) {
 
     // Sắp xếp lại
     return timeline.sort(
-      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
     );
   }
 

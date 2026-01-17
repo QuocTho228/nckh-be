@@ -45,6 +45,15 @@ const CONFIG = {
     PURCHASER_MY_PURCHASES: "/api/purchaser/my-purchases",
     PURCHASER_RECORD_PURCHASE: "/api/purchaser/record-purchase",
     PURCHASER_PURCHASE_IMAGES: "/api/purchaser/purchase/:id/images",
+
+    // Transporter
+    TRANSPORTER_STATS: "/api/transporter/stats",
+    TRANSPORTER_BATCHES: "/api/transporter/batches-to-transport",
+    TRANSPORTER_BATCH_DETAILS: "/api/transporter/batch/:id/details",
+    TRANSPORTER_CURRENT_STATUS: "/api/transporter/batch/:id/current-status",
+    TRANSPORTER_UPDATE_STATUS: "/api/transporter/update-status",
+    TRANSPORTER_MY_TRANSPORTS: "/api/transporter/my-transports",
+    TRANSPORTER_BATCH_HISTORY: "/api/transporter/batch/:id/transport-history",
   },
 
   // Roles

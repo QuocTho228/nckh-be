@@ -284,6 +284,45 @@ const API = {
     return this.get(url);
   },
 
+  // === TRANSPORTER APIs ===
+
+  /**
+   * Lấy thống kê transporter
+   */
+  async getTransporterStats() {
+    return this.get(CONFIG.API.TRANSPORTER_STATS);
+  },
+
+  /**
+   * Lấy danh sách lô cần vận chuyển
+   */
+  async getBatchesToTransport() {
+    return this.get(CONFIG.API.TRANSPORTER_BATCHES);
+  },
+
+  /**
+   * Lấy chi tiết lô để vận chuyển
+   */
+  async getBatchDetailsForTransport(batchId) {
+    const url = CONFIG.API.TRANSPORTER_BATCH_DETAILS.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  /**
+   * Lấy trạng thái hiện tại của lô
+   */
+  async getBatchCurrentStatus(batchId) {
+    const url = CONFIG.API.TRANSPORTER_CURRENT_STATUS.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  /**
+   * Cập nhật trạng thái vận chuyển
+   */
+  async updateTransportStatus(formData) {
+    return this.upload(CONFIG.API.TRANSPORTER_UPDATE_STATUS, formData);
+  },
+
   // === MASTER DATA APIs ===
 
   /**
