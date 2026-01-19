@@ -952,6 +952,216 @@ AFTER coordinates;
 CREATE INDEX idx_tree_qr_code ON trees(tree_qr_code);
 
 -- =====================================================
+-- DATABASE SCHEMA UPDATE: TEM QR BỘ CÔNG AN
+-- =====================================================
+
+-- Bảng quản lý tem QR do Bộ Công An cấp
+CREATE TABLE government_qr_stamps (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Mã QR theo định dạng: SRCA + Năm + 8 chữ số
+    qr_code VARCHAR(20) NOT NULL UNIQUE COMMENT 'VD: SRCA2024-00000001',
+    
+    -- Thông tin tem
+    prefix VARCHAR(10) NOT NULL DEFAULT 'SRCA' COMMENT 'Tiền tố: SRCA = Sầu Riêng Chống Giả',
+    issue_year INT NOT NULL COMMENT 'Năm cấp phát',
+    serial_number VARCHAR(8) NOT NULL COMMENT 'Số serial 8 chữ số',
+    
+    -- Loại sản phẩm
+    product_type VARCHAR(50) NOT NULL DEFAULT 'DURIAN' COMMENT 'DURIAN, DRAGON_FRUIT, MANGO...',
+    
+    -- Trạng thái
+    status ENUM('AVAILABLE', 'USED', 'EXPIRED', 'REVOKED') NOT NULL DEFAULT 'AVAILABLE',
+    
+    -- Thông tin cấp phát
+    issued_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Ngày cấp phát',
+    issued_by VARCHAR(100) COMMENT 'Cơ quan cấp phát',
+    batch_number VARCHAR(50) COMMENT 'Lô tem (một lần in nhiều tem)',
+    
+    -- Thông tin sử dụng
+    used_date TIMESTAMP NULL COMMENT 'Ngày sử dụng',
+    used_by_user_id INT NULL COMMENT 'ID người sử dụng (Processor)',
+    used_by_user_name VARCHAR(255) NULL COMMENT 'Tên người sử dụng',
+    used_for_batch_id BIGINT NULL COMMENT 'ID lô hàng sử dụng tem này',
+    used_for_product_id BIGINT NULL COMMENT 'ID sản phẩm đơn lẻ sử dụng tem này',
+    
+    -- QR Image
+    qr_image_url VARCHAR(500) COMMENT 'URL ảnh tem QR đã in',
+    
+    -- Blockchain
+    blockchain_tx_hash VARCHAR(66) COMMENT 'Transaction hash khi sử dụng tem',
+    
+    -- Metadata
+    notes TEXT COMMENT 'Ghi chú',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Indexes
+    INDEX idx_qr_code (qr_code),
+    INDEX idx_status (status),
+    INDEX idx_product_type (product_type),
+    INDEX idx_issue_year (issue_year),
+    INDEX idx_used_date (used_date),
+    INDEX idx_batch_number (batch_number),
+    INDEX idx_used_by_user (used_by_user_id),
+    INDEX idx_used_for_batch (used_for_batch_id),
+    INDEX idx_used_for_product (used_for_product_id),
+    
+    -- Foreign Keys
+    FOREIGN KEY (used_by_user_id) REFERENCES users(uid) ON DELETE SET NULL,
+    FOREIGN KEY (used_for_batch_id) REFERENCES blockchain_batches(batch_id) ON DELETE SET NULL,
+    FOREIGN KEY (used_for_product_id) REFERENCES blockchain_products(product_id) ON DELETE SET NULL
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Quản lý tem QR do Bộ Công An cấp phát - theo QĐ 5272/QĐ-BNNMT';
+
+-- CẬP NHẬT BẢNG blockchain_products
+-- Thêm cột government_qr_stamp_id vào blockchain_products
+ALTER TABLE blockchain_products 
+ADD COLUMN government_qr_stamp_id INT NULL COMMENT 'ID tem QR Bộ Công An' AFTER product_qr_code,
+ADD FOREIGN KEY (government_qr_stamp_id) REFERENCES government_qr_stamps(id) ON DELETE SET NULL;
+
+-- Thêm index
+CREATE INDEX idx_government_qr_stamp ON blockchain_products(government_qr_stamp_id);
+
+-- TẠO TRIGGER ĐƠN GIẢN (KHÔNG LOG)
+DELIMITER //
+
+DROP TRIGGER IF EXISTS trg_update_stamp_status_on_product_create //
+
+CREATE TRIGGER trg_update_stamp_status_on_product_create
+AFTER INSERT ON blockchain_products
+FOR EACH ROW
+BEGIN
+    -- Chỉ cập nhật trạng thái tem, không log
+    IF NEW.government_qr_stamp_id IS NOT NULL THEN
+        UPDATE government_qr_stamps
+        SET 
+            status = 'USED',
+            used_date = NOW(),
+            used_for_product_id = NEW.product_id,
+            used_for_batch_id = NEW.batch_id
+        WHERE id = NEW.government_qr_stamp_id
+        AND status = 'AVAILABLE';
+    END IF;
+END //
+
+DELIMITER ;
+
+-- TẠO 2 STORED PROCEDURES CẦN THIẾT
+-- 1. Procedure tạo tem QR hàng loạt
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS sp_generate_government_stamps //
+
+CREATE PROCEDURE sp_generate_government_stamps(
+    IN p_prefix VARCHAR(10),
+    IN p_year INT,
+    IN p_start_number INT,
+    IN p_quantity INT,
+    IN p_product_type VARCHAR(50),
+    IN p_issued_by VARCHAR(100),
+    IN p_batch_number VARCHAR(50)
+)
+BEGIN
+    DECLARE v_counter INT DEFAULT 0;
+    DECLARE v_serial VARCHAR(8);
+    DECLARE v_qr_code VARCHAR(20);
+    
+    WHILE v_counter < p_quantity DO
+        SET v_serial = LPAD(p_start_number + v_counter, 8, '0');
+        SET v_qr_code = CONCAT(p_prefix, p_year, '-', v_serial);
+        
+        INSERT INTO government_qr_stamps (
+            qr_code,
+            prefix,
+            issue_year,
+            serial_number,
+            product_type,
+            status,
+            issued_by,
+            batch_number
+        ) VALUES (
+            v_qr_code,
+            p_prefix,
+            p_year,
+            v_serial,
+            p_product_type,
+            'AVAILABLE',
+            p_issued_by,
+            p_batch_number
+        );
+        
+        SET v_counter = v_counter + 1;
+    END WHILE;
+    
+    SELECT CONCAT('✅ Đã tạo ', p_quantity, ' tem QR thành công!') as result;
+END //
+
+DELIMITER ;
+
+-- 2. Procedure validate tem QR
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS sp_validate_government_stamp //
+
+CREATE PROCEDURE sp_validate_government_stamp(
+    IN p_qr_code VARCHAR(20),
+    OUT p_is_valid BOOLEAN,
+    OUT p_status VARCHAR(20),
+    OUT p_message VARCHAR(500)
+)
+BEGIN
+    DECLARE v_status VARCHAR(20);
+    DECLARE v_used_by VARCHAR(255);
+    
+    SELECT status, used_by_user_name 
+    INTO v_status, v_used_by
+    FROM government_qr_stamps
+    WHERE qr_code = p_qr_code;
+    
+    IF v_status IS NULL THEN
+        SET p_is_valid = FALSE;
+        SET p_status = 'NOT_FOUND';
+        SET p_message = 'Mã QR không tồn tại trong hệ thống';
+    ELSEIF v_status = 'USED' THEN
+        SET p_is_valid = FALSE;
+        SET p_status = 'USED';
+        SET p_message = CONCAT('Tem đã được sử dụng bởi: ', COALESCE(v_used_by, 'N/A'));
+    ELSEIF v_status = 'EXPIRED' THEN
+        SET p_is_valid = FALSE;
+        SET p_status = 'EXPIRED';
+        SET p_message = 'Tem đã hết hạn sử dụng';
+    ELSEIF v_status = 'REVOKED' THEN
+        SET p_is_valid = FALSE;
+        SET p_status = 'REVOKED';
+        SET p_message = 'Tem đã bị thu hồi';
+    ELSE
+        SET p_is_valid = TRUE;
+        SET p_status = 'AVAILABLE';
+        SET p_message = 'Tem hợp lệ và có thể sử dụng';
+    END IF;
+END //
+
+DELIMITER ;
+
+
+-- TẠO VIEW THỐNG KÊ ĐỐN GIẢN
+DROP VIEW IF EXISTS vw_government_stamps_statistics;
+
+CREATE VIEW vw_government_stamps_statistics AS
+SELECT 
+    COUNT(*) as total_stamps,
+    SUM(CASE WHEN status = 'AVAILABLE' THEN 1 ELSE 0 END) as available_stamps,
+    SUM(CASE WHEN status = 'USED' THEN 1 ELSE 0 END) as used_stamps,
+    SUM(CASE WHEN status = 'EXPIRED' THEN 1 ELSE 0 END) as expired_stamps,
+    SUM(CASE WHEN status = 'REVOKED' THEN 1 ELSE 0 END) as revoked_stamps,
+    product_type,
+    issue_year
+FROM government_qr_stamps
+GROUP BY product_type, issue_year;
+
+-- =====================================================
 -- DATABASE CLEANUP SCRIPT
 -- =====================================================
 

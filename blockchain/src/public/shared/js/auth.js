@@ -72,13 +72,20 @@ const Auth = {
   },
 
   /**
+   * Kiểm tra có phải processor không
+   */
+  isProcessor() {
+    return this.hasRole(CONFIG.ROLES.PROCESSOR);
+  },
+
+  /**
    * Đăng xuất
    */
   async logout() {
     const confirmed = await Utils.confirm(
       "Đăng xuất",
       "Bạn có chắc muốn đăng xuất?",
-      "Đăng xuất"
+      "Đăng xuất",
     );
 
     if (!confirmed) return;
@@ -154,6 +161,23 @@ const Auth = {
   },
 
   /**
+   * Require purchaser role
+   */
+  async requirePurchaser() {
+    const isLoggedIn = await this.requireAuth();
+    if (!isLoggedIn) return false;
+
+    if (!this.isPurchaser()) {
+      Utils.toast.error("Bạn không có quyền truy cập trang này");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+      return false;
+    }
+    return true;
+  },
+
+  /**
    * Require transporter role
    */
   async requireTransporter() {
@@ -171,13 +195,13 @@ const Auth = {
   },
 
   /**
-   * Require purchaser role
+   * Require processor role
    */
-  async requirePurchaser() {
+  async requireProcessor() {
     const isLoggedIn = await this.requireAuth();
     if (!isLoggedIn) return false;
 
-    if (!this.isPurchaser()) {
+    if (!this.isProcessor()) {
       Utils.toast.error("Bạn không có quyền truy cập trang này");
       setTimeout(() => {
         window.location.href = "/";

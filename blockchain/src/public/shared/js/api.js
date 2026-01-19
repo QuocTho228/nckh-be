@@ -1,6 +1,6 @@
 /**
  * ========================================
- * API.JS - Axios API Client
+ * API.JS - Axios API Client (Updated)
  * ========================================
  */
 const API = {
@@ -9,7 +9,7 @@ const API = {
    */
   client: axios.create({
     baseURL: CONFIG.API_BASE_URL,
-    withCredentials: true, // Gửi cookie tự động
+    withCredentials: true,
     headers: {
       "Content-Type": "application/json",
     },
@@ -19,49 +19,41 @@ const API = {
    * Setup interceptors
    */
   setupInterceptors() {
-    // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        // Có thể thêm loading state ở đây
         return config;
       },
       (error) => {
         return Promise.reject(error);
-      }
+      },
     );
 
-    // Response interceptor
     this.client.interceptors.response.use(
       (response) => {
         return response;
       },
       (error) => {
         if (error.response) {
-          // Server trả về error
           const { status, data } = error.response;
 
           if (status === 401) {
-            // Unauthorized - chuyển về login
             Utils.toast.error("Phiên đăng nhập hết hạn");
             setTimeout(() => {
               window.location.href = "/account/dangnhap.html";
             }, 1500);
           } else if (status === 403) {
-            // Forbidden
             Utils.toast.error(
-              data.error || "Bạn không có quyền thực hiện thao tác này"
+              data.error || "Bạn không có quyền thực hiện thao tác này",
             );
           } else if (status >= 500) {
-            // Server error
             Utils.toast.error("Lỗi server, vui lòng thử lại sau");
           }
         } else if (error.request) {
-          // Request được gửi nhưng không nhận được response
           Utils.toast.error("Không thể kết nối đến server");
         }
 
         return Promise.reject(error);
-      }
+      },
     );
   },
 
@@ -137,7 +129,7 @@ const API = {
         onUploadProgress: (progressEvent) => {
           if (onProgress) {
             const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+              (progressEvent.loaded * 100) / progressEvent.total,
             );
             onProgress(percentCompleted);
           }
@@ -154,85 +146,52 @@ const API = {
 
   // === FARMER APIs ===
 
-  /**
-   * Lấy danh sách cây của nông dân
-   */
   async getMyTrees() {
     return this.get(CONFIG.API.FARMER_TREES);
   },
 
-  /**
-   * Đăng ký cây mới
-   */
   async registerTree(data) {
     return this.post(CONFIG.API.REGISTER_TREE, data);
   },
 
-  /**
-   * Thêm nhật ký chăm sóc cây
-   */
   async addTreeCare(formData) {
     return this.upload(CONFIG.API.ADD_TREE_CARE, formData);
   },
 
-  /**
-   * Lấy danh sách lô hàng
-   */
   async getMyBatches(status = null) {
     const params = status ? { status } : {};
     return this.get(CONFIG.API.FARMER_BATCHES, params);
   },
 
-  /**
-   * Tạo lô hàng mới
-   */
   async createBatch(formData) {
     return this.upload(CONFIG.API.CREATE_BATCH, formData);
   },
 
   // === INSPECTOR APIs ===
 
-  /**
-   * Lấy thống kê inspector
-   */
   async getInspectorStats() {
     return this.get(CONFIG.API.INSPECTOR_STATS);
   },
 
-  /**
-   * Lấy danh sách lô chờ duyệt
-   */
   async getPendingBatches() {
     return this.get(CONFIG.API.INSPECTOR_PENDING_BATCHES);
   },
 
-  /**
-   * Lấy thông tin đầy đủ của lô hàng
-   */
   async getBatchFullInfo(batchId) {
     const url = CONFIG.API.INSPECTOR_BATCH_FULL_INFO.replace(":id", batchId);
     return this.get(url);
   },
 
-  /**
-   * Lấy lịch sử phê duyệt của inspector
-   */
   async getMyApprovals(status = null) {
     const params = status ? { status } : {};
     return this.get(CONFIG.API.INSPECTOR_MY_APPROVALS, params);
   },
 
-  /**
-   * Phê duyệt lô hàng
-   */
   async approveBatch(batchId) {
     const url = CONFIG.API.INSPECTOR_APPROVE_BATCH.replace(":id", batchId);
     return this.post(url);
   },
 
-  /**
-   * Từ chối lô hàng
-   */
   async rejectBatch(batchId, reason) {
     const url = CONFIG.API.INSPECTOR_REJECT_BATCH.replace(":id", batchId);
     return this.post(url, { reason });
@@ -240,45 +199,27 @@ const API = {
 
   // === PURCHASER APIs ===
 
-  /**
-   * Lấy thống kê purchaser
-   */
   async getPurchaserStats() {
     return this.get(CONFIG.API.PURCHASER_STATS);
   },
 
-  /**
-   * Lấy danh sách lô đã duyệt
-   */
   async getApprovedBatches() {
     return this.get(CONFIG.API.PURCHASER_APPROVED_BATCHES);
   },
 
-  /**
-   * Lấy chi tiết lô hàng
-   */
   async getBatchDetailsForPurchase(batchId) {
     const url = CONFIG.API.PURCHASER_BATCH_DETAILS.replace(":id", batchId);
     return this.get(url);
   },
 
-  /**
-   * Lấy lịch sử mua hàng
-   */
   async getMyPurchases() {
     return this.get(CONFIG.API.PURCHASER_MY_PURCHASES);
   },
 
-  /**
-   * Ghi nhận mua hàng
-   */
   async recordPurchase(formData) {
     return this.upload(CONFIG.API.PURCHASER_RECORD_PURCHASE, formData);
   },
 
-  /**
-   * Lấy ảnh của purchase
-   */
   async getPurchaseImages(purchaseId) {
     const url = CONFIG.API.PURCHASER_PURCHASE_IMAGES.replace(":id", purchaseId);
     return this.get(url);
@@ -286,71 +227,128 @@ const API = {
 
   // === TRANSPORTER APIs ===
 
-  /**
-   * Lấy thống kê transporter
-   */
   async getTransporterStats() {
     return this.get(CONFIG.API.TRANSPORTER_STATS);
   },
 
-  /**
-   * Lấy danh sách lô cần vận chuyển
-   */
   async getBatchesToTransport() {
     return this.get(CONFIG.API.TRANSPORTER_BATCHES);
   },
 
-  /**
-   * Lấy chi tiết lô để vận chuyển
-   */
   async getBatchDetailsForTransport(batchId) {
     const url = CONFIG.API.TRANSPORTER_BATCH_DETAILS.replace(":id", batchId);
     return this.get(url);
   },
 
-  /**
-   * Lấy trạng thái hiện tại của lô
-   */
   async getBatchCurrentStatus(batchId) {
     const url = CONFIG.API.TRANSPORTER_CURRENT_STATUS.replace(":id", batchId);
     return this.get(url);
   },
 
-  /**
-   * Cập nhật trạng thái vận chuyển
-   */
   async updateTransportStatus(formData) {
     return this.upload(CONFIG.API.TRANSPORTER_UPDATE_STATUS, formData);
   },
 
-  // === MASTER DATA APIs ===
+  // === PROCESSOR APIs ===
+
+  async getProcessorStats() {
+    return this.get(CONFIG.API.PROCESSOR_STATS);
+  },
+
+  async getPendingProcessingBatches() {
+    return this.get(CONFIG.API.PROCESSOR_PENDING_BATCHES);
+  },
+
+  async getBatchProcessingDetails(batchId) {
+    const url = CONFIG.API.PROCESSOR_BATCH_DETAILS.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  async getBatchTrees(batchId) {
+    const url = CONFIG.API.PROCESSOR_BATCH_TREES.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  async recordProcessing(formData) {
+    return this.upload(CONFIG.API.PROCESSOR_RECORD_PROCESSING, formData);
+  },
+
+  async createProducts(data) {
+    return this.post(CONFIG.API.PROCESSOR_CREATE_PRODUCTS, data);
+  },
+
+  async getMyProcessedBatches() {
+    return this.get(CONFIG.API.PROCESSOR_MY_BATCHES);
+  },
+
+  async getProductsByBatch(batchId) {
+    const url = CONFIG.API.PROCESSOR_PRODUCTS_BY_BATCH.replace(":id", batchId);
+    return this.get(url);
+  },
+
+  async getMyProducts() {
+    return this.get(CONFIG.API.PROCESSOR_MY_PRODUCTS);
+  },
+
+  async getProductDetails(productId) {
+    const url = CONFIG.API.PROCESSOR_PRODUCT_DETAILS.replace(":id", productId);
+    return this.get(url);
+  },
+
+  // === GOVERNMENT STAMPS APIs ===
 
   /**
-   * Lấy danh sách sản phẩm
+   * Tạo tem QR hàng loạt
    */
+  async generateGovernmentStamps(data) {
+    return this.post(CONFIG.API.STAMPS_GENERATE, data);
+  },
+
+  /**
+   * Lấy danh sách tem QR
+   */
+  async getGovernmentStamps(params = {}) {
+    return this.get(CONFIG.API.STAMPS_LIST, params);
+  },
+
+  /**
+   * Validate tem QR
+   */
+  async validateGovernmentStamp(qrCode) {
+    return this.post(CONFIG.API.STAMPS_VALIDATE, { qrCode });
+  },
+
+  /**
+   * Lấy thống kê tem QR
+   */
+  async getGovernmentStampsStatistics() {
+    return this.get(CONFIG.API.STAMPS_STATISTICS);
+  },
+
+  /**
+   * Lấy chi tiết tem QR
+   */
+  async getGovernmentStampDetails(qrCode) {
+    const url = CONFIG.API.STAMPS_DETAILS.replace(":qrCode", qrCode);
+    return this.get(url);
+  },
+
+  // === MASTER DATA APIs ===
+
   async getProducts() {
     return this.get(CONFIG.API.PRODUCTS);
   },
 
-  /**
-   * Lấy danh sách vùng
-   */
   async getRegions() {
     return this.get(CONFIG.API.REGIONS);
   },
 
   // === AUTH APIs ===
 
-  /**
-   * Lấy thông tin user hiện tại
-   */
   async getUserInfo() {
     return this.get(CONFIG.API.USER_INFO);
   },
 
-  /**
-   * Đăng xuất
-   */
   async logout() {
     return this.post(CONFIG.API.LOGOUT);
   },

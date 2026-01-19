@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Đóng Gói Sản Phẩm - Quét QR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+
+      #qr-reader {
+        border: 3px solid #10b981;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .stamp-preview {
+        background: white;
+        border: 2px solid #028040;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .stamp-header {
+        background: #028040;
+        color: white;
+        padding: 8px;
+        text-align: center;
+        border-radius: 4px;
+        margin-bottom: 8px;
+      }
+
+      .scan-success {
+        animation: scanSuccess 0.5s ease-out;
+      }
+
+      @keyframes scanSuccess {
+        0% {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+
+  < class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-industry text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Sơ Chế
+            </span>
+          </div>
+
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/processor/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Đóng gói sản phẩm</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Processor&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Processor</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/processor/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="packagingWithScanner()"
+      x-init="init()"
+    >
+      <!-- Loading -->
+      <div x-show="loading" x-cloak class="flex justify-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Error State -->
+      <div x-show="error && !loading" x-cloak class="text-center py-12">
+        <i class="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
+        <p class="text-gray-700 mb-4" x-text="error"></p>
+        <a href="/processor/lich-su-so-che.html" class="btn-primary">
+          <i class="fas fa-arrow-left mr-2"></i> Quay lại
+        </a>
+      </div>
+
+      <!-- Content -->
+      <template x-if="!loading && !error && batchData">
+        <div>
+          <!-- Header -->
+          <div
+            class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl shadow-lg p-6 text-white mb-8"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <h1
+                  class="text-3xl font-bold mb-2"
+                  x-text="'Đóng Gói: ' + batchData.batch.batch_name"
+                ></h1>
+                <p class="opacity-90">
+                  Lô:
+                  <span class="font-mono" x-text="batchData.batch.sscc"></span>
+                </p>
+              </div>
+              <div
+                class="text-right bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3"
+              >
+                <div class="text-sm opacity-90 mb-1">Sử dụng tem QR</div>
+                <div class="flex items-center gap-2 text-xl font-bold">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>Bộ Công An</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="font-semibold text-gray-700">Tiến độ đóng gói</span>
+              <span class="text-gray-600">
+                <span
+                  class="font-bold text-green-600"
+                  x-text="products.length"
+                ></span>
+                / <span x-text="targetQuantity"></span> sản phẩm
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+              <div
+                class="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
+                :style="`width: ${Math.min(100, (products.length / targetQuantity * 100)).toFixed(0)}%`"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Main Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left: QR Scanner -->
+            <div class="space-y-6">
+              <!-- Scanner Card -->
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-camera text-blue-600"></i>
+                  Quét mã QR từ tem Bộ Công An
+                </h2>
+
+                <!-- Scanner Mode Toggle -->
+                <div class="flex gap-2 mb-4">
+                  <button
+                    @click="switchToCamera()"
+                    :class="scanMode === 'camera' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                    class="flex-1 py-3 rounded-lg font-semibold transition"
+                  >
+                    <i class="fas fa-camera mr-2"></i>
+                    Camera
+                  </button>
+                  <button
+                    @click="switchToUpload()"
+                    :class="scanMode === 'upload' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                    class="flex-1 py-3 rounded-lg font-semibold transition"
+                  >
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload ảnh
+                  </button>
+                </div>
+
+                <!-- Camera Scanner -->
+                <div x-show="scanMode === 'camera'" x-cloak>
+                  <div id="qr-reader" class="mb-4"></div>
+                  <div class="text-center text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Đưa tem QR vào khung hình để quét
+                  </div>
+                </div>
+
+                <!-- Upload Scanner -->
+                <div x-show="scanMode === 'upload'" x-cloak>
+                  <div
+                    class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-500 transition cursor-pointer"
+                    @click="$refs.fileInput.click()"
+                  >
+                    <i
+                      class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"
+                    ></i>
+                    <p class="text-lg font-semibold text-gray-700 mb-2">
+                      Tải ảnh tem QR lên
+                    </p>
+                    <p class="text-sm text-gray-500">
+                      Nhấn để chọn ảnh hoặc kéo thả vào đây
+                    </p>
+                    <input
+                      type="file"
+                      x-ref="fileInput"
+                      @change="handleFileUpload($event)"
+                      accept="image/*"
+                      class="hidden"
+                    />
+                  </div>
+                </div>
+
+                <!-- Last Scanned QR with Stamp Preview -->
+                <div x-show="lastScannedQR" class="mt-4">
+                  <div class="stamp-preview scan-success">
+                    <div class="stamp-header">
+                      <div class="font-bold text-sm">BỘ CÔNG AN</div>
+                      <div class="text-xs opacity-90">TRUY XUẤT NGUỒN GỐC</div>
+                    </div>
+
+                    <div class="text-center mb-3">
+                      <div
+                        class="bg-green-500 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"
+                      >
+                        <i class="fas fa-check text-xl"></i>
+                      </div>
+                      <div class="text-xs text-gray-600 mb-1">
+                        Mã QR vừa quét:
+                      </div>
+                      <div
+                        class="font-mono font-bold text-green-700 text-lg"
+                        x-text="lastScannedQR"
+                      ></div>
+                    </div>
+
+                    <div
+                      class="text-center text-sm font-semibold border-t pt-2"
+                    >
+                      SẦU RIÊNG VIỆT NAM
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Product Form -->
+              <div
+                class="bg-white rounded-xl shadow-lg p-6"
+                x-show="lastScannedQR"
+              >
+                <h3 class="text-lg font-bold mb-4">Thông tin sản phẩm</h3>
+
+                <div class="space-y-4">
+                  <!-- Cây nguồn gốc -->
+                  <div>
+                    <label class="block text-sm font-bold mb-2">
+                      <i class="fas fa-tree text-green-600 mr-2"></i>
+                      Cây nguồn gốc <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                      x-model="currentProduct.treeId"
+                      class="input-gradient"
+                      required
+                    >
+                      <option value="">-- Chọn cây --</option>
+                      <template
+                        x-for="(tree, idx) in sourceTrees"
+                        :key="'tree-select-' + idx"
+                      >
+                        <option
+                          :value="tree.tree_id"
+                          x-text="`${tree.tree_qr_code} - ${tree.tree_type}`"
+                        ></option>
+                      </template>
+                    </select>
+                  </div>
+
+                  <!-- Khối lượng -->
+                  <div>
+                    <label class="block text-sm font-bold mb-2">
+                      <i class="fas fa-weight text-purple-600 mr-2"></i>
+                      Khối lượng (kg) <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      x-model="currentProduct.weight"
+                      step="0.01"
+                      min="0.01"
+                      class="input-gradient"
+                      placeholder="VD: 2.5"
+                      required
+                    />
+                  </div>
+
+                  <!-- Loại bao bì -->
+                  <div>
+                    <label class="block text-sm font-bold mb-2">
+                      <i class="fas fa-box-open text-orange-600 mr-2"></i>
+                      Loại bao bì <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                      x-model="currentProduct.packageType"
+                      class="input-gradient"
+                      required
+                    >
+                      <option value="">-- Chọn loại bao bì --</option>
+                      <option value="Túi nilon">Túi nilon</option>
+                      <option value="Hộp nhựa">Hộp nhựa</option>
+                      <option value="Khay xốp">Khay xốp</option>
+                      <option value="Thùng carton">Thùng carton</option>
+                    </select>
+                  </div>
+
+                  <!-- Add button -->
+                  <button
+                    @click="addProductWithQR()"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <i class="fas fa-plus-circle"></i>
+                    Thêm vào danh sách
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Product List -->
+            <div class="space-y-6">
+              <!-- Products List -->
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fas fa-list text-green-600"></i>
+                    Danh sách sản phẩm
+                    <span
+                      class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                      x-text="products.length"
+                    ></span>
+                  </h2>
+                </div>
+
+                <!-- Empty State -->
+                <div
+                  x-show="products.length === 0"
+                  class="text-center py-12 text-gray-400"
+                >
+                  <i class="fas fa-box-open text-6xl mb-4 opacity-30"></i>
+                  <p class="text-lg">Chưa có sản phẩm</p>
+                  <p class="text-sm">Quét mã QR để bắt đầu</p>
+                </div>
+
+                <!-- Products -->
+                <div
+                  x-show="products.length > 0"
+                  class="space-y-3 max-h-[600px] overflow-y-auto"
+                >
+                  <template
+                    x-for="(product, index) in products"
+                    :key="'product-' + index"
+                  >
+                    <div
+                      class="border-2 border-gray-200 rounded-lg p-4 hover:border-green-500 transition"
+                    >
+                      <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                          <div
+                            class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow"
+                          >
+                            <span x-text="index + 1"></span>
+                          </div>
+                          <div>
+                            <div class="font-bold text-gray-900">
+                              Sản phẩm <span x-text="index + 1"></span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                              <i
+                                class="fas fa-shield-alt text-green-600 text-xs"
+                              ></i>
+                              <span
+                                class="text-sm text-green-600 font-mono font-semibold"
+                                x-text="product.governmentQR"
+                              ></span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          @click="removeProduct(index)"
+                          class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition"
+                        >
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </div>
+
+                      <div class="grid grid-cols-3 gap-2 text-sm">
+                        <div>
+                          <div class="text-gray-600 text-xs">Cây</div>
+                          <div
+                            class="font-semibold text-xs"
+                            x-text="getTreeName(product.treeId)"
+                          ></div>
+                        </div>
+                        <div>
+                          <div class="text-gray-600 text-xs">Khối lượng</div>
+                          <div
+                            class="font-semibold"
+                            x-text="product.weight + ' kg'"
+                          ></div>
+                        </div>
+                        <div>
+                          <div class="text-gray-600 text-xs">Bao bì</div>
+                          <div
+                            class="font-semibold text-xs"
+                            x-text="product.packageType"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Total Weight -->
+                <div x-show="products.length > 0" class="mt-6 pt-4 border-t-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-700 font-semibold"
+                      >Tổng khối lượng:</span
+                    >
+                    <span
+                      class="text-2xl font-bold text-green-600"
+                      x-text="totalWeight.toFixed(2) + ' kg'"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button
+                @click="submitPackaging()"
+                :disabled="products.length === 0 || submitting"
+                class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-5 rounded-xl font-bold text-lg shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              >
+                <i class="fas fa-check-circle text-2xl"></i>
+                <span
+                  x-text="submitting ? 'Đang xử lý...' : `Hoàn tất đóng gói (${products.length} sản phẩm)`"
+                ></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Info Box -->
+          <div class="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+            <h3 class="font-bold text-blue-900 mb-3 flex items-center gap-2">
+              <i class="fas fa-info-circle"></i>
+              Hướng dẫn sử dụng
+            </h3>
+            <ul class="space-y-2 text-sm text-blue-800">
+              <li>
+                • <strong>Bước 1:</strong> Quét mã QR từ tem Bộ Công An (hoặc
+                upload ảnh tem)
+              </li>
+              <li>
+                • <strong>Bước 2:</strong> Chọn cây nguồn gốc, nhập khối lượng
+                và loại bao bì
+              </li>
+              <li>
+                • <strong>Bước 3:</strong> Thêm vào danh sách và lặp lại cho các
+                sản phẩm tiếp theo
+              </li>
+              <li>
+                • <strong>Bước 4:</strong> Hoàn tất đóng gói để ghi lên
+                blockchain
+              </li>
+              <li>• Mỗi tem QR chỉ được sử dụng 1 lần duy nhất</li>
+              <li>• Hệ thống tự động kiểm tra tính hợp lệ của tem</li>
+            </ul>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/packaging-form.js"></script>
+
+  </body>
+</html>

@@ -54,6 +54,25 @@ const CONFIG = {
     TRANSPORTER_UPDATE_STATUS: "/api/transporter/update-status",
     TRANSPORTER_MY_TRANSPORTS: "/api/transporter/my-transports",
     TRANSPORTER_BATCH_HISTORY: "/api/transporter/batch/:id/transport-history",
+
+    // Processor
+    PROCESSOR_STATS: "/api/processor/stats",
+    PROCESSOR_PENDING_BATCHES: "/api/processor/pending-batches",
+    PROCESSOR_BATCH_DETAILS: "/api/processor/batch/:id/processing-details",
+    PROCESSOR_BATCH_TREES: "/api/processor/batch/:id/trees",
+    PROCESSOR_RECORD_PROCESSING: "/api/processor/record-processing",
+    PROCESSOR_CREATE_PRODUCTS: "/api/processor/create-products",
+    PROCESSOR_MY_BATCHES: "/api/processor/my-batches",
+    PROCESSOR_PRODUCTS_BY_BATCH: "/api/processor/products/by-batch/:id",
+    PROCESSOR_MY_PRODUCTS: "/api/processor/my-products",
+    PROCESSOR_PRODUCT_DETAILS: "/api/processor/product/:id/details",
+
+    // Government Stamps (Tem QR Bộ Công An)
+    STAMPS_GENERATE: "/api/government-stamps/generate",
+    STAMPS_LIST: "/api/government-stamps/list",
+    STAMPS_VALIDATE: "/api/government-stamps/validate",
+    STAMPS_STATISTICS: "/api/government-stamps/statistics",
+    STAMPS_DETAILS: "/api/government-stamps/:qrCode/details",
   },
 
   // Roles
@@ -90,6 +109,14 @@ const CONFIG = {
     REJECTED: "Rejected",
   },
 
+  // Government Stamp Status
+  STAMP_STATUS: {
+    AVAILABLE: "AVAILABLE",
+    USED: "USED",
+    EXPIRED: "EXPIRED",
+    REVOKED: "REVOKED",
+  },
+
   // File upload limits
   FILE: {
     MAX_SIZE: 10 * 1024 * 1024, // 10MB
@@ -104,6 +131,7 @@ const CONFIG = {
     QUANTITY_MIN: 0.01,
     ACTIVITY_NAME_MIN: 3,
     ACTIVITY_NAME_MAX: 200,
+    QR_CODE_PATTERN: /^[A-Z]{2,10}\d{4}-\d{8}$/,
   },
 };
 

@@ -4087,6 +4087,259 @@ function setupRoutes(app, db) {
    * Đóng gói sản phẩm đơn lẻ (sau khi sơ chế)
    * Role: Processor
    */
+
+  // app.post(
+  //   "/api/processor/create-products",
+  //   requireAuth,
+  //   requireRole(ROLES.PROCESSOR),
+  //   async (req, res) => {
+  //     let connection;
+  //     try {
+  //       const processorId = req.session.userId;
+  //       const { batchId, products } = req.body;
+
+  //       if (
+  //         !batchId ||
+  //         !products ||
+  //         !Array.isArray(products) ||
+  //         products.length === 0
+  //       ) {
+  //         return res.status(400).json({
+  //           error: "Thiếu thông tin sản phẩm",
+  //         });
+  //       }
+
+  //       for (const product of products) {
+  //         if (!product.treeId || !product.weight || !product.packageType) {
+  //           return res.status(400).json({
+  //             error: "Mỗi sản phẩm phải có treeId, weight và packageType",
+  //           });
+  //         }
+  //       }
+
+  //       connection = await db.getConnection();
+  //       await connection.beginTransaction();
+
+  //       const batchDetails = await traceabilityContract.methods
+  //         .getBatchDetails(batchId)
+  //         .call();
+
+  //       if (batchDetails.currentStage.toString() !== "3") {
+  //         await connection.rollback();
+  //         return res.status(400).json({
+  //           error: "Lô hàng chưa được sơ chế",
+  //         });
+  //       }
+
+  //       if (batchDetails.processorId.toString() !== processorId.toString()) {
+  //         await connection.rollback();
+  //         return res.status(403).json({
+  //           error: "Bạn không phải processor của lô này",
+  //         });
+  //       }
+
+  //       // Validate treeIds
+  //       const treeIds = products.map((p) => parseInt(p.treeId));
+
+  //       const treeValidations = [];
+  //       for (const treeId of treeIds) {
+  //         const [result] = await connection.query(
+  //           `SELECT tree_id FROM tree_batch_links WHERE batch_id = ? AND tree_id = ?`,
+  //           [batchId, treeId],
+  //         );
+  //         treeValidations.push({
+  //           treeId,
+  //           exists: result.length > 0,
+  //         });
+  //       }
+
+  //       const invalidTrees = treeValidations.filter((t) => !t.exists);
+
+  //       if (invalidTrees.length > 0) {
+  //         await connection.rollback();
+  //         return res.status(400).json({
+  //           error: `Các cây sau không thuộc lô hàng này: ${invalidTrees
+  //             .map((t) => t.treeId)
+  //             .join(", ")}`,
+  //         });
+  //       }
+
+  //       console.log("✅ All trees validated:", treeValidations);
+
+  //       const sourceTreeIds = products.map((p) => BigInt(p.treeId));
+  //       const weights = products.map((p) =>
+  //         BigInt(Math.round(p.weight * 1000)),
+  //       );
+  //       const packageType = products[0].packageType;
+
+  //       // Gọi contract
+  //       const result = await traceabilityContract.methods
+  //         .createProductsInBatch(
+  //           BigInt(batchId),
+  //           sourceTreeIds,
+  //           weights,
+  //           packageType,
+  //         )
+  //         .send({ from: web3.eth.defaultAccount, gas: 5000000 });
+
+  //       console.log("📦 Contract call successful:", result.transactionHash);
+
+  //       // Lấy timestamp
+  //       const receipt = await web3.eth.getTransactionReceipt(
+  //         result.transactionHash,
+  //       );
+  //       const block = await web3.eth.getBlock(receipt.blockNumber);
+  //       const timestamp = Number(block.timestamp);
+  //       const timestampISO = new Date(timestamp * 1000)
+  //         .toISOString()
+  //         .slice(0, 19)
+  //         .replace("T", " ");
+
+  //       // ✅ QUAN TRỌNG: Dùng getPastEvents thay vì result.events
+  //       // Vì result.events có thể chỉ trả về event cuối cùng khi có nhiều events cùng loại
+  //       const productCreatedEvents = await traceabilityContract.getPastEvents(
+  //         "ProductCreated",
+  //         {
+  //           filter: { batchId: batchId },
+  //           fromBlock: receipt.blockNumber,
+  //           toBlock: receipt.blockNumber,
+  //         },
+  //       );
+
+  //       const productTreeLinkedEvents =
+  //         await traceabilityContract.getPastEvents("ProductTreeLinked", {
+  //           fromBlock: receipt.blockNumber,
+  //           toBlock: receipt.blockNumber,
+  //         });
+
+  //       // Filter chỉ lấy events của transaction này
+  //       const relevantProductEvents = productCreatedEvents.filter(
+  //         (e) => e.transactionHash === result.transactionHash,
+  //       );
+
+  //       const relevantLinkEvents = productTreeLinkedEvents.filter(
+  //         (e) => e.transactionHash === result.transactionHash,
+  //       );
+
+  //       console.log(
+  //         `📦 Found ${relevantProductEvents.length} ProductCreated events (getPastEvents)`,
+  //       );
+  //       console.log(
+  //         `🌳 Found ${relevantLinkEvents.length} ProductTreeLinked events (getPastEvents)`,
+  //       );
+
+  //       if (relevantProductEvents.length === 0) {
+  //         await connection.rollback();
+  //         return res.status(500).json({
+  //           error: "Không thể lấy productIds từ blockchain events",
+  //           debug: {
+  //             transactionHash: result.transactionHash,
+  //             blockNumber: receipt.blockNumber,
+  //             totalEventsFound: productCreatedEvents.length,
+  //             relevantEventsFound: relevantProductEvents.length,
+  //           },
+  //         });
+  //       }
+
+  //       // ✅ INSERT products vào blockchain_products
+  //       const createdProducts = [];
+
+  //       for (const event of relevantProductEvents) {
+  //         const productId = Number(event.returnValues.productId);
+  //         const qrCode = event.returnValues.productQRCode;
+  //         const weight = Number(event.returnValues.weight);
+  //         const pkgType = event.returnValues.packageType;
+
+  //         await connection.query(
+  //           `INSERT INTO blockchain_products
+  //         (product_id, batch_id, product_qr_code, packaged_date, packaged_date_iso,
+  //          package_type, weight, is_active, sold_date, blockchain_tx_hash)
+  //         VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, 0, ?)
+  //         ON DUPLICATE KEY UPDATE
+  //           package_type = VALUES(package_type),
+  //           weight = VALUES(weight),
+  //           packaged_date = VALUES(packaged_date),
+  //           packaged_date_iso = VALUES(packaged_date_iso)`,
+  //           [
+  //             productId,
+  //             parseInt(batchId),
+  //             qrCode,
+  //             timestamp,
+  //             timestampISO,
+  //             pkgType,
+  //             weight,
+  //             result.transactionHash,
+  //           ],
+  //         );
+
+  //         createdProducts.push({
+  //           productId,
+  //           qrCode,
+  //           weight: weight / 1000,
+  //           packageType: pkgType,
+  //         });
+
+  //         console.log(`✅ Inserted product ${productId} into DB`);
+  //       }
+
+  //       // ✅ INSERT vào product_source_trees
+  //       for (const linkEvent of relevantLinkEvents) {
+  //         const productId = Number(linkEvent.returnValues.productId);
+  //         const treeId = Number(linkEvent.returnValues.treeId);
+
+  //         await connection.query(
+  //           `INSERT IGNORE INTO product_source_trees (product_id, tree_id)
+  //          VALUES (?, ?)`,
+  //           [productId, treeId],
+  //         );
+  //         console.log(`✅ Linked product ${productId} to tree ${treeId}`);
+  //       }
+
+  //       // ✅ Update total_products
+  //       await connection.query(
+  //         `UPDATE blockchain_batches
+  //        SET total_products = total_products + ?
+  //        WHERE batch_id = ?`,
+  //         [relevantProductEvents.length, parseInt(batchId)],
+  //       );
+
+  //       await connection.commit();
+
+  //       // ✅ Map products với sourceTreeId từ productTreeLinkedEvents
+  //       const productsWithTrees = createdProducts.map((p) => {
+  //         const linkEvent = relevantLinkEvents.find(
+  //           (e) => Number(e.returnValues.productId) === p.productId,
+  //         );
+  //         return {
+  //           ...p,
+  //           sourceTreeId: linkEvent
+  //             ? Number(linkEvent.returnValues.treeId)
+  //             : null,
+  //         };
+  //       });
+
+  //       res.json({
+  //         success: true,
+  //         message: `Đã tạo ${createdProducts.length} sản phẩm đơn lẻ`,
+  //         data: {
+  //           batchId,
+  //           productCount: createdProducts.length,
+  //           products: productsWithTrees,
+  //           transactionHash: result.transactionHash,
+  //         },
+  //       });
+  //     } catch (error) {
+  //       if (connection) await connection.rollback();
+  //       console.error("❌ Lỗi tạo sản phẩm:", error);
+  //       res.status(500).json({
+  //         error: "Không thể tạo sản phẩm: " + error.message,
+  //       });
+  //     } finally {
+  //       if (connection) connection.release();
+  //     }
+  //   },
+  // );
+
   app.post(
     "/api/processor/create-products",
     requireAuth,
@@ -4108,7 +4361,13 @@ function setupRoutes(app, db) {
           });
         }
 
+        // Validate each product has governmentQR
         for (const product of products) {
+          if (!product.governmentQR) {
+            return res.status(400).json({
+              error: "Mỗi sản phẩm phải có mã tem QR Bộ Công An",
+            });
+          }
           if (!product.treeId || !product.weight || !product.packageType) {
             return res.status(400).json({
               error: "Mỗi sản phẩm phải có treeId, weight và packageType",
@@ -4119,6 +4378,7 @@ function setupRoutes(app, db) {
         connection = await db.getConnection();
         await connection.beginTransaction();
 
+        // Validate batch
         const batchDetails = await traceabilityContract.methods
           .getBatchDetails(batchId)
           .call();
@@ -4137,41 +4397,58 @@ function setupRoutes(app, db) {
           });
         }
 
-        // Validate treeIds
-        const treeIds = products.map((p) => parseInt(p.treeId));
+        // Validate all government QR stamps
+        const governmentQRs = products.map((p) => p.governmentQR);
 
-        const treeValidations = [];
-        for (const treeId of treeIds) {
-          const [result] = await connection.query(
-            `SELECT tree_id FROM tree_batch_links WHERE batch_id = ? AND tree_id = ?`,
-            [batchId, treeId],
-          );
-          treeValidations.push({
-            treeId,
-            exists: result.length > 0,
-          });
+        const [stamps] = await connection.query(
+          `SELECT qr_code, status, used_by_user_id 
+         FROM government_qr_stamps 
+         WHERE qr_code IN (?)`,
+          [governmentQRs],
+        );
+
+        // Check if all stamps exist and are available
+        const stampMap = new Map(stamps.map((s) => [s.qr_code, s]));
+
+        for (const qr of governmentQRs) {
+          const stamp = stampMap.get(qr);
+          if (!stamp) {
+            await connection.rollback();
+            return res.status(400).json({
+              error: `Tem QR không tồn tại: ${qr}`,
+            });
+          }
+          if (stamp.status !== "AVAILABLE") {
+            await connection.rollback();
+            return res.status(400).json({
+              error: `Tem QR đã được sử dụng: ${qr}`,
+            });
+          }
         }
 
-        const invalidTrees = treeValidations.filter((t) => !t.exists);
+        // Validate trees
+        const treeIds = products.map((p) => parseInt(p.treeId));
+        const [treeLinks] = await connection.query(
+          `SELECT tree_id FROM tree_batch_links 
+         WHERE batch_id = ? AND tree_id IN (?)`,
+          [batchId, treeIds],
+        );
 
-        if (invalidTrees.length > 0) {
+        if (treeLinks.length !== treeIds.length) {
           await connection.rollback();
           return res.status(400).json({
-            error: `Các cây sau không thuộc lô hàng này: ${invalidTrees
-              .map((t) => t.treeId)
-              .join(", ")}`,
+            error: "Một số cây không thuộc lô hàng này",
           });
         }
 
-        console.log("✅ All trees validated:", treeValidations);
-
+        // Prepare data for blockchain
         const sourceTreeIds = products.map((p) => BigInt(p.treeId));
         const weights = products.map((p) =>
           BigInt(Math.round(p.weight * 1000)),
         );
         const packageType = products[0].packageType;
 
-        // Gọi contract
+        // Call blockchain contract
         const result = await traceabilityContract.methods
           .createProductsInBatch(
             BigInt(batchId),
@@ -4183,7 +4460,7 @@ function setupRoutes(app, db) {
 
         console.log("📦 Contract call successful:", result.transactionHash);
 
-        // Lấy timestamp
+        // Get timestamp
         const receipt = await web3.eth.getTransactionReceipt(
           result.transactionHash,
         );
@@ -4194,8 +4471,7 @@ function setupRoutes(app, db) {
           .slice(0, 19)
           .replace("T", " ");
 
-        // ✅ QUAN TRỌNG: Dùng getPastEvents thay vì result.events
-        // Vì result.events có thể chỉ trả về event cuối cùng khi có nhiều events cùng loại
+        // Get events
         const productCreatedEvents = await traceabilityContract.getPastEvents(
           "ProductCreated",
           {
@@ -4211,7 +4487,6 @@ function setupRoutes(app, db) {
             toBlock: receipt.blockNumber,
           });
 
-        // Filter chỉ lấy events của transaction này
         const relevantProductEvents = productCreatedEvents.filter(
           (e) => e.transactionHash === result.transactionHash,
         );
@@ -4220,45 +4495,51 @@ function setupRoutes(app, db) {
           (e) => e.transactionHash === result.transactionHash,
         );
 
-        console.log(
-          `📦 Found ${relevantProductEvents.length} ProductCreated events (getPastEvents)`,
-        );
-        console.log(
-          `🌳 Found ${relevantLinkEvents.length} ProductTreeLinked events (getPastEvents)`,
-        );
-
         if (relevantProductEvents.length === 0) {
           await connection.rollback();
           return res.status(500).json({
             error: "Không thể lấy productIds từ blockchain events",
-            debug: {
-              transactionHash: result.transactionHash,
-              blockNumber: receipt.blockNumber,
-              totalEventsFound: productCreatedEvents.length,
-              relevantEventsFound: relevantProductEvents.length,
-            },
           });
         }
 
-        // ✅ INSERT products vào blockchain_products
         const createdProducts = [];
 
-        for (const event of relevantProductEvents) {
+        // Insert products và link với government stamps
+        for (let i = 0; i < relevantProductEvents.length; i++) {
+          const event = relevantProductEvents[i];
           const productId = Number(event.returnValues.productId);
           const qrCode = event.returnValues.productQRCode;
           const weight = Number(event.returnValues.weight);
           const pkgType = event.returnValues.packageType;
+          const governmentQR = products[i].governmentQR;
 
+          // Get stamp ID
+          const [stampResult] = await connection.query(
+            `SELECT id FROM government_qr_stamps WHERE qr_code = ?`,
+            [governmentQR],
+          );
+
+          const stampId = stampResult[0]?.id;
+
+          if (!stampId) {
+            await connection.rollback();
+            return res.status(500).json({
+              error: `Không tìm thấy tem QR: ${governmentQR}`,
+            });
+          }
+
+          // Insert product with government_qr_stamp_id
           await connection.query(
             `INSERT INTO blockchain_products
           (product_id, batch_id, product_qr_code, packaged_date, packaged_date_iso,
-           package_type, weight, is_active, sold_date, blockchain_tx_hash)
-          VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, 0, ?)
+           package_type, weight, is_active, sold_date, government_qr_stamp_id, blockchain_tx_hash)
+          VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, 0, ?, ?)
           ON DUPLICATE KEY UPDATE
             package_type = VALUES(package_type),
             weight = VALUES(weight),
             packaged_date = VALUES(packaged_date),
-            packaged_date_iso = VALUES(packaged_date_iso)`,
+            packaged_date_iso = VALUES(packaged_date_iso),
+            government_qr_stamp_id = VALUES(government_qr_stamp_id)`,
             [
               productId,
               parseInt(batchId),
@@ -4267,7 +4548,34 @@ function setupRoutes(app, db) {
               timestampISO,
               pkgType,
               weight,
+              stampId,
               result.transactionHash,
+            ],
+          );
+
+          // Update stamp status to USED
+          const user = await connection.query(
+            `SELECT name FROM users WHERE uid = ?`,
+            [processorId],
+          );
+
+          await connection.query(
+            `UPDATE government_qr_stamps 
+           SET status = 'USED',
+               used_date = NOW(),
+               used_by_user_id = ?,
+               used_by_user_name = ?,
+               used_for_batch_id = ?,
+               used_for_product_id = ?,
+               blockchain_tx_hash = ?
+           WHERE id = ?`,
+            [
+              processorId,
+              user[0][0]?.name || "Processor",
+              parseInt(batchId),
+              productId,
+              result.transactionHash,
+              stampId,
             ],
           );
 
@@ -4276,12 +4584,15 @@ function setupRoutes(app, db) {
             qrCode,
             weight: weight / 1000,
             packageType: pkgType,
+            governmentQR,
           });
 
-          console.log(`✅ Inserted product ${productId} into DB`);
+          console.log(
+            `✅ Inserted product ${productId} with stamp ${governmentQR}`,
+          );
         }
 
-        // ✅ INSERT vào product_source_trees
+        // Link products with source trees
         for (const linkEvent of relevantLinkEvents) {
           const productId = Number(linkEvent.returnValues.productId);
           const treeId = Number(linkEvent.returnValues.treeId);
@@ -4291,10 +4602,9 @@ function setupRoutes(app, db) {
            VALUES (?, ?)`,
             [productId, treeId],
           );
-          console.log(`✅ Linked product ${productId} to tree ${treeId}`);
         }
 
-        // ✅ Update total_products
+        // Update total_products
         await connection.query(
           `UPDATE blockchain_batches 
          SET total_products = total_products + ? 
@@ -4304,7 +4614,7 @@ function setupRoutes(app, db) {
 
         await connection.commit();
 
-        // ✅ Map products với sourceTreeId từ productTreeLinkedEvents
+        // Map products with sourceTreeId
         const productsWithTrees = createdProducts.map((p) => {
           const linkEvent = relevantLinkEvents.find(
             (e) => Number(e.returnValues.productId) === p.productId,
@@ -4329,7 +4639,7 @@ function setupRoutes(app, db) {
         });
       } catch (error) {
         if (connection) await connection.rollback();
-        console.error("❌ Lỗi tạo sản phẩm:", error);
+        console.error("❌ Create products error:", error);
         res.status(500).json({
           error: "Không thể tạo sản phẩm: " + error.message,
         });
@@ -4381,6 +4691,790 @@ function setupRoutes(app, db) {
         console.error("Lỗi khi lấy danh sách sơ chế:", error);
         res.status(500).json({
           error: "Không thể lấy danh sách: " + error.message,
+        });
+      }
+    },
+  );
+
+  // ==========================================
+  // GET /api/processor/stats
+  // Thống kê tổng quan processor
+  // ==========================================
+  app.get(
+    "/api/processor/stats",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const processorId = req.session.userId;
+
+        // Tổng số lô đã sơ chế
+        const [totalProcessed] = await db.query(
+          `SELECT COUNT(DISTINCT batch_id) as count 
+         FROM processing_records 
+         WHERE processor_id = ?`,
+          [processorId],
+        );
+
+        // Tổng sản phẩm đã đóng gói
+        const [totalProducts] = await db.query(
+          `SELECT COUNT(*) as count 
+         FROM blockchain_products bp
+         INNER JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+         WHERE bb.processor_id = ?`,
+          [processorId],
+        );
+
+        // Lô đang chờ sơ chế (đã mua, đã vận chuyển)
+        const [pendingBatches] = await db.query(
+          `SELECT COUNT(*) as count 
+         FROM blockchain_batches 
+         WHERE current_stage IN ('Purchased', 'Transported1')
+           AND transport_status = 'Delivered'
+           AND processor_id = 0
+           AND status = 'Approved'`,
+        );
+
+        // Lô đã sơ chế nhưng chưa đóng gói hết
+        const [needsPackaging] = await db.query(
+          `SELECT COUNT(*) as count 
+         FROM blockchain_batches 
+         WHERE current_stage = 'Processed'
+           AND processor_id = ?`,
+          [processorId],
+        );
+
+        // Hiệu suất sơ chế trung bình
+        const [avgEfficiency] = await db.query(
+          `SELECT AVG((output_weight / input_weight) * 100) as avg_efficiency
+         FROM processing_records
+         WHERE processor_id = ? AND input_weight > 0`,
+          [processorId],
+        );
+
+        // 5 lô mới nhất cần sơ chế
+        const [latestPending] = await db.query(
+          `SELECT 
+          bb.*,
+          u.name as farmer_name,
+          p.product_name,
+          pr.total_quantity,
+          te.timestamp_iso as delivered_at
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN purchase_records pr ON bb.batch_id = pr.batch_id
+        LEFT JOIN (
+          SELECT batch_id, MAX(timestamp_iso) as timestamp_iso
+          FROM transport_events
+          WHERE action LIKE '%Hoàn thành%' OR action LIKE '%Delivered%'
+          GROUP BY batch_id
+        ) te ON bb.batch_id = te.batch_id
+        WHERE bb.current_stage IN ('Purchased', 'Transported1')
+          AND bb.transport_status = 'Delivered'
+          AND bb.processor_id = 0
+          AND bb.status = 'Approved'
+        ORDER BY te.timestamp_iso DESC
+        LIMIT 5`,
+        );
+
+        res.json({
+          success: true,
+          data: {
+            totalProcessed: totalProcessed[0]?.count || 0,
+            totalProducts: totalProducts[0]?.count || 0,
+            pendingBatches: pendingBatches[0]?.count || 0,
+            needsPackaging: needsPackaging[0]?.count || 0,
+            avgEfficiency: parseFloat(
+              avgEfficiency[0]?.avg_efficiency || 0,
+            ).toFixed(2),
+            latestPending: latestPending,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy thống kê processor:", error);
+        res.status(500).json({
+          error: "Không thể lấy thống kê: " + error.message,
+        });
+      }
+    },
+  );
+
+  // ==========================================
+  // GET /api/processor/batch/:id/processing-details
+  // Chi tiết sơ chế của một lô
+  // ==========================================
+  app.get(
+    "/api/processor/batch/:id/processing-details",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        // Thông tin batch
+        const [batches] = await db.query(
+          `SELECT 
+          bb.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          u.email as farmer_email,
+          p.product_name,
+          pr.total_quantity,
+          pr.purchase_date_iso
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN purchase_records pr ON bb.batch_id = pr.batch_id
+        WHERE bb.batch_id = ?`,
+          [id],
+        );
+
+        if (batches.length === 0) {
+          return res.status(404).json({ error: "Không tìm thấy lô hàng" });
+        }
+
+        const batch = batches[0];
+
+        // Processing records
+        const [processingRecords] = await db.query(
+          `SELECT pr.*, u.name as processor_name
+         FROM processing_records pr
+         LEFT JOIN users u ON pr.processor_id = u.uid
+         WHERE pr.batch_id = ?
+         ORDER BY pr.processing_date_iso DESC`,
+          [id],
+        );
+
+        // Processing images
+        const [processingImages] = await db.query(
+          `SELECT pi.* 
+         FROM processing_images pi
+         INNER JOIN processing_records pr ON pi.processing_id = pr.processing_id
+         WHERE pr.batch_id = ?`,
+          [id],
+        );
+
+        // Products created
+        const [products] = await db.query(
+          `SELECT 
+          bp.*,
+          GROUP_CONCAT(pst.tree_id) as source_tree_ids
+         FROM blockchain_products bp
+         LEFT JOIN product_source_trees pst ON bp.product_id = pst.product_id
+         WHERE bp.batch_id = ?
+         GROUP BY bp.product_id
+         ORDER BY bp.packaged_date_iso DESC`,
+          [id],
+        );
+
+        // Purchase images
+        const [purchaseImages] = await db.query(
+          `SELECT pi.*
+         FROM purchase_images pi
+         INNER JOIN purchase_records pr ON pi.purchase_id = pr.purchase_id
+         WHERE pr.batch_id = ?`,
+          [id],
+        );
+
+        // Batch images
+        const [batchImages] = await db.query(
+          `SELECT * FROM batch_product_images WHERE batch_id = ?`,
+          [id],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            batch,
+            processingRecords,
+            processingImages,
+            products,
+            purchaseImages,
+            batchImages,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết sơ chế:", error);
+        res.status(500).json({
+          error: "Không thể lấy chi tiết: " + error.message,
+        });
+      }
+    },
+  );
+
+  // ==========================================
+  // 3. GET /api/processor/processing/:id/images
+  // Lấy ảnh của một processing record
+  // ==========================================
+  app.get(
+    "/api/processor/processing/:id/images",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        const [images] = await db.query(
+          `SELECT * FROM processing_images WHERE processing_id = ?`,
+          [id],
+        );
+
+        res.json({
+          success: true,
+          count: images.length,
+          data: images,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy ảnh sơ chế:", error);
+        res.status(500).json({
+          error: "Không thể lấy ảnh: " + error.message,
+        });
+      }
+    },
+  );
+
+  // ==========================================
+  // GET /api/processor/products/by-batch/:id
+  // Lấy danh sách sản phẩm đã đóng gói từ một lô
+  // ==========================================
+  app.get(
+    "/api/processor/products/by-batch/:id",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const processorId = req.session.userId;
+
+        // Kiểm tra quyền truy cập
+        const [batches] = await db.query(
+          `SELECT processor_id FROM blockchain_batches WHERE batch_id = ?`,
+          [id],
+        );
+
+        if (batches.length === 0) {
+          return res.status(404).json({ error: "Không tìm thấy lô hàng" });
+        }
+
+        if (batches[0].processor_id !== processorId) {
+          return res.status(403).json({
+            error: "Bạn không có quyền xem sản phẩm của lô này",
+          });
+        }
+
+        // Lấy products với source trees
+        const [products] = await db.query(
+          `SELECT 
+          bp.*,
+          GROUP_CONCAT(DISTINCT pst.tree_id) as source_tree_ids,
+          GROUP_CONCAT(DISTINCT t.tree_qr_code) as source_tree_qrs,
+          GROUP_CONCAT(DISTINCT t.tree_type) as tree_types
+         FROM blockchain_products bp
+         LEFT JOIN product_source_trees pst ON bp.product_id = pst.product_id
+         LEFT JOIN trees t ON pst.tree_id = t.tree_id
+         WHERE bp.batch_id = ?
+         GROUP BY bp.product_id
+         ORDER BY bp.packaged_date_iso DESC`,
+          [id],
+        );
+
+        // Thống kê
+        const stats = {
+          total: products.length,
+          active: products.filter((p) => p.is_active).length,
+          sold: products.filter((p) => !p.is_active).length,
+          totalWeight:
+            products.reduce((sum, p) => sum + (p.weight || 0), 0) / 1000,
+        };
+
+        res.json({
+          success: true,
+          count: products.length,
+          stats,
+          data: products,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm:", error);
+        res.status(500).json({
+          error: "Không thể lấy sản phẩm: " + error.message,
+        });
+      }
+    },
+  );
+
+  // ==========================================
+  // GET /api/processor/batch/:id/trees
+  // Lấy danh sách cây nguồn gốc của lô (để chọn khi đóng gói)
+  // ==========================================
+  app.get(
+    "/api/processor/batch/:id/trees",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        const [trees] = await db.query(
+          `SELECT 
+          t.*,
+          tbl.harvest_date_iso,
+          tbl.harvest_notes
+         FROM trees t
+         INNER JOIN tree_batch_links tbl ON t.tree_id = tbl.tree_id
+         WHERE tbl.batch_id = ?
+         ORDER BY t.tree_qr_code ASC`,
+          [id],
+        );
+
+        res.json({
+          success: true,
+          count: trees.length,
+          data: trees,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách cây:", error);
+        res.status(500).json({
+          error: "Không thể lấy danh sách cây: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/processor/my-products
+   * Lấy tất cả sản phẩm của processor
+   */
+  app.get(
+    "/api/processor/my-products",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const processorId = req.session.userId;
+
+        const [products] = await db.query(
+          `SELECT 
+          bp.*,
+          bb.batch_name,
+          bb.sscc,
+          bb.product_type_id,
+          p.product_name,
+          GROUP_CONCAT(DISTINCT pst.tree_id) as source_tree_ids,
+          GROUP_CONCAT(DISTINCT t.tree_qr_code) as source_tree_qrs
+         FROM blockchain_products bp
+         INNER JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+         LEFT JOIN products p ON bb.product_type_id = p.product_id
+         LEFT JOIN product_source_trees pst ON bp.product_id = pst.product_id
+         LEFT JOIN trees t ON pst.tree_id = t.tree_id
+         WHERE bb.processor_id = ?
+         GROUP BY bp.product_id
+         ORDER BY bp.packaged_date_iso DESC`,
+          [processorId],
+        );
+
+        res.json({
+          success: true,
+          count: products.length,
+          data: products,
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách sản phẩm:", error);
+        res.status(500).json({
+          error: "Không thể lấy danh sách sản phẩm: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/processor/product/:id/details
+   * Lấy chi tiết sản phẩm bao gồm cây nguồn gốc
+   */
+  app.get(
+    "/api/processor/product/:id/details",
+    requireAuth,
+    requireRole(ROLES.PROCESSOR),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const processorId = req.session.userId;
+
+        // Get product info
+        const [products] = await db.query(
+          `SELECT 
+          bp.*,
+          bb.batch_name,
+          bb.sscc,
+          bb.processor_id,
+          p.product_name
+         FROM blockchain_products bp
+         INNER JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+         LEFT JOIN products p ON bb.product_type_id = p.product_id
+         WHERE bp.product_id = ?`,
+          [id],
+        );
+
+        if (products.length === 0) {
+          return res.status(404).json({
+            error: "Không tìm thấy sản phẩm",
+          });
+        }
+
+        const product = products[0];
+
+        // Check authorization
+        if (product.processor_id !== processorId) {
+          return res.status(403).json({
+            error: "Bạn không có quyền xem sản phẩm này",
+          });
+        }
+
+        // Get source trees
+        const [sourceTrees] = await db.query(
+          `SELECT 
+          t.*,
+          pst.created_at as linked_at
+         FROM product_source_trees pst
+         INNER JOIN trees t ON pst.tree_id = t.tree_id
+         WHERE pst.product_id = ?`,
+          [id],
+        );
+
+        // Get batch info
+        const [batches] = await db.query(
+          `SELECT * FROM blockchain_batches WHERE batch_id = ?`,
+          [product.batch_id],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            product,
+            batch: batches[0] || null,
+            sourceTrees,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
+        res.status(500).json({
+          error: "Không thể lấy chi tiết sản phẩm: " + error.message,
+        });
+      }
+    },
+  );
+
+  // ==========================================
+  // GOVERNMENT STAMPS API ENDPOINTS
+  // Thêm vào server.js
+  // ==========================================
+
+  /**
+   * POST /api/government-stamps/generate
+   * Tạo tem QR hàng loạt
+   * Role: Admin hoặc có quyền quản lý tem
+   */
+  app.post("/api/government-stamps/generate", requireAuth, async (req, res) => {
+    let connection;
+    try {
+      const {
+        prefix,
+        year,
+        startNumber,
+        quantity,
+        productType,
+        issuedBy,
+        batchNumber,
+      } = req.body;
+
+      // Validate
+      if (!prefix || !year || !startNumber || !quantity) {
+        return res.status(400).json({
+          error: "Thiếu thông tin bắt buộc",
+        });
+      }
+
+      if (quantity > 1000) {
+        return res.status(400).json({
+          error: "Không thể tạo quá 1000 tem cùng lúc",
+        });
+      }
+
+      connection = await db.getConnection();
+      await connection.beginTransaction();
+
+      const stamps = [];
+
+      // Tạo tem hàng loạt
+      for (let i = 0; i < quantity; i++) {
+        const serialNumber = String(startNumber + i).padStart(8, "0");
+        const qrCode = `${prefix}${year}-${serialNumber}`;
+
+        stamps.push([
+          qrCode,
+          prefix,
+          year,
+          serialNumber,
+          productType || "DURIAN",
+          "AVAILABLE",
+          issuedBy || "Bộ Công An",
+          batchNumber || `BATCH-${year}-${Date.now()}`,
+        ]);
+      }
+
+      // Bulk insert
+      await connection.query(
+        `INSERT INTO government_qr_stamps 
+        (qr_code, prefix, issue_year, serial_number, product_type, status, issued_by, batch_number)
+        VALUES ?`,
+        [stamps],
+      );
+
+      await connection.commit();
+
+      res.json({
+        success: true,
+        message: `Đã tạo ${quantity} tem QR thành công`,
+        data: {
+          quantity,
+          firstCode: stamps[0][0],
+          lastCode: stamps[stamps.length - 1][0],
+          batchNumber: stamps[0][7],
+        },
+      });
+    } catch (error) {
+      if (connection) await connection.rollback();
+      console.error("Generate stamps error:", error);
+
+      if (error.code === "ER_DUP_ENTRY") {
+        res.status(400).json({
+          error: "Mã QR đã tồn tại. Vui lòng chọn số bắt đầu khác.",
+        });
+      } else {
+        res.status(500).json({
+          error: "Không thể tạo tem: " + error.message,
+        });
+      }
+    } finally {
+      if (connection) connection.release();
+    }
+  });
+
+  /**
+   * GET /api/government-stamps/list
+   * Lấy danh sách tem QR
+   */
+  app.get("/api/government-stamps/list", requireAuth, async (req, res) => {
+    try {
+      const { status, productType, limit = 100 } = req.query;
+
+      let query = "SELECT * FROM government_qr_stamps WHERE 1=1";
+      const params = [];
+
+      if (status) {
+        query += " AND status = ?";
+        params.push(status);
+      }
+
+      if (productType) {
+        query += " AND product_type = ?";
+        params.push(productType);
+      }
+
+      query += " ORDER BY issued_date DESC, serial_number ASC LIMIT ?";
+      params.push(parseInt(limit));
+
+      const [stamps] = await db.query(query, params);
+
+      res.json({
+        success: true,
+        count: stamps.length,
+        data: stamps,
+      });
+    } catch (error) {
+      console.error("List stamps error:", error);
+      res.status(500).json({
+        error: "Không thể lấy danh sách tem: " + error.message,
+      });
+    }
+  });
+
+  /**
+   * POST /api/government-stamps/validate
+   * Kiểm tra tem QR có hợp lệ không
+   */
+  app.post("/api/government-stamps/validate", requireAuth, async (req, res) => {
+    try {
+      const { qrCode } = req.body;
+
+      if (!qrCode) {
+        return res.status(400).json({
+          error: "Thiếu mã QR",
+        });
+      }
+
+      // Validate format
+      const qrPattern = /^[A-Z]{2,10}\d{4}-\d{8}$/;
+      if (!qrPattern.test(qrCode)) {
+        return res.json({
+          success: true,
+          data: {
+            isValid: false,
+            status: "INVALID_FORMAT",
+            message: "Định dạng mã QR không đúng",
+          },
+        });
+      }
+
+      // Check in database
+      const [stamps] = await db.query(
+        `SELECT * FROM government_qr_stamps WHERE qr_code = ?`,
+        [qrCode],
+      );
+
+      if (stamps.length === 0) {
+        return res.json({
+          success: true,
+          data: {
+            isValid: false,
+            status: "NOT_FOUND",
+            message: "Mã QR không tồn tại trong hệ thống",
+          },
+        });
+      }
+
+      const stamp = stamps[0];
+
+      if (stamp.status === "USED") {
+        return res.json({
+          success: true,
+          data: {
+            isValid: false,
+            status: "USED",
+            message: `Tem đã được sử dụng bởi: ${stamp.used_by_user_name || "N/A"}`,
+            usedDate: stamp.used_date,
+            usedBy: stamp.used_by_user_name,
+          },
+        });
+      }
+
+      if (stamp.status === "EXPIRED") {
+        return res.json({
+          success: true,
+          data: {
+            isValid: false,
+            status: "EXPIRED",
+            message: "Tem đã hết hạn sử dụng",
+          },
+        });
+      }
+
+      if (stamp.status === "REVOKED") {
+        return res.json({
+          success: true,
+          data: {
+            isValid: false,
+            status: "REVOKED",
+            message: "Tem đã bị thu hồi",
+          },
+        });
+      }
+
+      // Valid stamp
+      res.json({
+        success: true,
+        data: {
+          isValid: true,
+          status: "AVAILABLE",
+          message: "Tem hợp lệ và có thể sử dụng",
+          stamp: {
+            id: stamp.id,
+            qrCode: stamp.qr_code,
+            productType: stamp.product_type,
+            issuedDate: stamp.issued_date,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Validate stamp error:", error);
+      res.status(500).json({
+        error: "Không thể kiểm tra tem: " + error.message,
+      });
+    }
+  });
+
+  /**
+   * GET /api/government-stamps/statistics
+   * Thống kê tem QR
+   */
+  app.get(
+    "/api/government-stamps/statistics",
+    requireAuth,
+    async (req, res) => {
+      try {
+        const [stats] = await db.query(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'AVAILABLE' THEN 1 ELSE 0 END) as available,
+        SUM(CASE WHEN status = 'USED' THEN 1 ELSE 0 END) as used,
+        SUM(CASE WHEN status = 'EXPIRED' THEN 1 ELSE 0 END) as expired,
+        SUM(CASE WHEN status = 'REVOKED' THEN 1 ELSE 0 END) as revoked
+      FROM government_qr_stamps
+    `);
+
+        res.json({
+          success: true,
+          data: stats[0],
+        });
+      } catch (error) {
+        console.error("Statistics error:", error);
+        res.status(500).json({
+          error: "Không thể lấy thống kê: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/government-stamps/:qrCode/details
+   * Xem chi tiết tem QR
+   */
+  app.get(
+    "/api/government-stamps/:qrCode/details",
+    requireAuth,
+    async (req, res) => {
+      try {
+        const { qrCode } = req.params;
+
+        const [stamps] = await db.query(
+          `SELECT 
+          gs.*,
+          p.product_qr_code,
+          p.weight,
+          p.package_type,
+          b.batch_name,
+          b.sscc
+        FROM government_qr_stamps gs
+        LEFT JOIN blockchain_products p ON gs.used_for_product_id = p.product_id
+        LEFT JOIN blockchain_batches b ON gs.used_for_batch_id = b.batch_id
+        WHERE gs.qr_code = ?`,
+          [qrCode],
+        );
+
+        if (stamps.length === 0) {
+          return res.status(404).json({
+            error: "Không tìm thấy tem QR",
+          });
+        }
+
+        res.json({
+          success: true,
+          data: stamps[0],
+        });
+      } catch (error) {
+        console.error("Details error:", error);
+        res.status(500).json({
+          error: "Không thể lấy chi tiết: " + error.message,
         });
       }
     },

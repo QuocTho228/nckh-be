@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Ghi Nhận Sơ Chế - Processor</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-industry text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Sơ Chế
+            </span>
+          </div>
+
+          <!-- Breadcrumb -->
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/processor/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <a
+              href="/processor/danh-sach-lo-can-so-che.html"
+              class="hover:text-green-600"
+            >
+              Danh sách lô
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Ghi nhận sơ chế</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Processor&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Processor</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/processor/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="processingForm()"
+      x-init="init()"
+    >
+      <!-- Loading -->
+      <div x-show="loading" x-cloak class="flex justify-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Error State -->
+      <div x-show="error && !loading" x-cloak class="text-center py-12">
+        <i class="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
+        <p class="text-gray-700 mb-4" x-text="error"></p>
+        <a href="/processor/danh-sach-lo-can-so-che.html" class="btn-primary">
+          <i class="fas fa-arrow-left mr-2"></i> Quay lại danh sách
+        </a>
+      </div>
+
+      <!-- Content -->
+      <template x-if="!loading && !error && batchData">
+        <div>
+          <!-- Header -->
+          <div
+            class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8"
+          >
+            <h1
+              class="text-3xl font-bold mb-2"
+              x-text="'Ghi nhận sơ chế: ' + batchData.batch.batch_name"
+            ></h1>
+            <div class="flex flex-wrap gap-3 text-sm opacity-90">
+              <div>
+                <i class="fas fa-barcode mr-2"></i>
+                <span>SSCC: </span>
+                <button
+                  @click="Utils.copyToClipboard(batchData.batch.sscc)"
+                  class="font-mono hover:underline"
+                  x-text="batchData.batch.sscc"
+                ></button>
+              </div>
+              <div>
+                <i class="fas fa-weight mr-2"></i>
+                <span>Khối lượng thu mua: </span>
+                <span x-text="(batchData.purchaseQuantity || 0) + ' kg'"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Form -->
+            <div class="lg:col-span-2">
+              <form @submit.prevent="submitProcessing" class="space-y-6">
+                <!-- Thông tin sơ chế -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-cogs text-green-600"></i>
+                    Thông tin sơ chế
+                  </h2>
+
+                  <div class="space-y-4">
+                    <!-- Phương pháp sơ chế -->
+                    <div>
+                      <label class="block text-sm font-semibold mb-2">
+                        Phương pháp sơ chế <span class="text-red-500">*</span>
+                      </label>
+                      <select
+                        x-model="formData.method"
+                        class="input-gradient"
+                        required
+                      >
+                        <option value="">-- Chọn phương pháp --</option>
+                        <option value="0">Rửa (Washing)</option>
+                        <option value="1">Cắt (Cutting)</option>
+                        <option value="2">Sấy khô (Drying)</option>
+                        <option value="3">Đông lạnh (Freezing)</option>
+                        <option value="4">Đóng gói (Packaging)</option>
+                      </select>
+                    </div>
+
+                    <!-- Mô tả chi tiết -->
+                    <div>
+                      <label class="block text-sm font-semibold mb-2">
+                        Mô tả chi tiết phương pháp
+                      </label>
+                      <textarea
+                        x-model="formData.methodDescription"
+                        rows="3"
+                        class="input-gradient"
+                        placeholder="VD: Sử dụng máy rửa tự động, nhiệt độ 25°C..."
+                      ></textarea>
+                    </div>
+
+                    <!-- Input Weight -->
+                    <div>
+                      <label class="block text-sm font-semibold mb-2">
+                        Khối lượng đầu vào (kg)
+                        <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        x-model="formData.inputWeight"
+                        step="0.01"
+                        min="0.01"
+                        class="input-gradient"
+                        placeholder="VD: 100.5"
+                        required
+                        @input="calculateEfficiency()"
+                      />
+                      <p class="text-xs text-gray-500 mt-1">
+                        Khối lượng nguyên liệu trước khi sơ chế
+                      </p>
+                    </div>
+
+                    <!-- Output Weight -->
+                    <div>
+                      <label class="block text-sm font-semibold mb-2">
+                        Khối lượng đầu ra (kg)
+                        <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        x-model="formData.outputWeight"
+                        step="0.01"
+                        min="0.01"
+                        class="input-gradient"
+                        placeholder="VD: 85.3"
+                        required
+                        @input="calculateEfficiency()"
+                      />
+                      <p class="text-xs text-gray-500 mt-1">
+                        Khối lượng sản phẩm sau khi sơ chế
+                      </p>
+                    </div>
+
+                    <!-- Hiệu suất -->
+                    <div
+                      x-show="efficiency"
+                      class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded"
+                    >
+                      <div class="flex items-center gap-2">
+                        <i class="fas fa-chart-line text-blue-600"></i>
+                        <span class="font-semibold text-blue-900">
+                          Hiệu suất sơ chế:
+                          <span
+                            class="text-2xl"
+                            x-text="efficiency + '%'"
+                          ></span>
+                        </span>
+                      </div>
+                      <p class="text-sm text-blue-700 mt-1">
+                        Tỷ lệ sản phẩm còn lại sau sơ chế
+                      </p>
+                    </div>
+
+                    <!-- Ghi chú -->
+                    <div>
+                      <label class="block text-sm font-semibold mb-2">
+                        Ghi chú thêm
+                      </label>
+                      <textarea
+                        x-model="formData.notes"
+                        rows="3"
+                        class="input-gradient"
+                        placeholder="Các thông tin bổ sung về quy trình sơ chế..."
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Ảnh minh chứng -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-images text-green-600"></i>
+                    Ảnh minh chứng sơ chế
+                  </h2>
+
+                  <div class="mb-4">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      @change="handleImageUpload"
+                      class="hidden"
+                      id="imageUpload"
+                    />
+                    <label
+                      for="imageUpload"
+                      class="btn-secondary cursor-pointer inline-block"
+                    >
+                      <i class="fas fa-upload mr-2"></i>
+                      Chọn ảnh (tối đa 10)
+                    </label>
+                    <p class="text-sm text-gray-500 mt-2">
+                      Ảnh quy trình sơ chế, thiết bị, sản phẩm sau sơ chế...
+                    </p>
+                  </div>
+
+                  <!-- Image Preview -->
+                  <div
+                    x-show="imagePreviews.length > 0"
+                    class="grid grid-cols-2 md:grid-cols-4 gap-3"
+                  >
+                    <template
+                      x-for="(img, index) in imagePreviews"
+                      :key="index"
+                    >
+                      <div class="relative group">
+                        <img
+                          :src="img"
+                          class="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          @click="removeImage(index)"
+                          class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <i class="fas fa-times text-xs"></i>
+                        </button>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex gap-4">
+                  <button
+                    type="submit"
+                    class="btn-primary flex-1"
+                    :disabled="submitting"
+                  >
+                    <i class="fas fa-save mr-2"></i>
+                    <span
+                      x-text="submitting ? 'Đang xử lý...' : 'Ghi nhận sơ chế'"
+                    ></span>
+                  </button>
+                  <a
+                    href="/processor/danh-sach-lo-can-so-che.html"
+                    class="btn-secondary"
+                  >
+                    <i class="fas fa-arrow-left mr-2"></i> Quay lại
+                  </a>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right: Batch Info -->
+            <div class="space-y-6">
+              <!-- Thông tin lô hàng -->
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-info-circle text-blue-500"></i>
+                  Thông tin lô hàng
+                </h3>
+                <div class="space-y-3 text-sm">
+                  <div>
+                    <p class="text-gray-600 mb-1">Nông dân</p>
+                    <p
+                      class="font-semibold"
+                      x-text="batchData.batch.farmer_name || 'N/A'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Sản phẩm</p>
+                    <p
+                      class="font-semibold"
+                      x-text="batchData.batch.product_name || 'N/A'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Khối lượng thu mua</p>
+                    <p
+                      class="font-semibold text-green-600"
+                      x-text="(batchData.purchaseQuantity || 0) + ' kg'"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Ngày thu mua</p>
+                    <p
+                      class="font-semibold"
+                      x-text="Utils.formatDate(batchData.purchaseDate)"
+                    ></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">Cấp độ chất lượng</p>
+                    <p
+                      class="font-semibold"
+                      x-text="batchData.qualityGrade || 'N/A'"
+                    ></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ảnh thu mua -->
+              <div
+                x-show="batchData.purchaseImages && batchData.purchaseImages.length > 0"
+                class="bg-white rounded-xl shadow-md p-6"
+              >
+                <h3 class="font-bold mb-4 flex items-center gap-2">
+                  <i class="fas fa-images text-purple-500"></i>
+                  Ảnh thu mua
+                </h3>
+                <div class="grid grid-cols-2 gap-2">
+                  <template x-for="img in batchData.purchaseImages" :key="img">
+                    <img
+                      :src="img"
+                      class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition"
+                      @click="viewImage(img)"
+                    />
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/processing-form.js"></script>
+  </body>
+</html>

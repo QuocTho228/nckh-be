@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Dashboard - Processor</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-industry text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Sơ Chế
+            </span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Processor&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Processor</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Welcome Banner -->
+      <div
+        x-data="processorDashboard()"
+        x-init="init()"
+        class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8"
+      >
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fas fa-industry mr-2"></i>
+          Xin chào, <span id="welcomeName">Processor</span>!
+        </h1>
+        <p class="opacity-90">Quản lý sơ chế và đóng gói sản phẩm</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div
+        x-data="statsData()"
+        x-init="init()"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+      >
+        <!-- Chờ sơ chế -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition cursor-pointer"
+          @click="window.location.href='/processor/danh-sach-lo-can-so-che.html'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Chờ sơ chế</p>
+              <p
+                class="text-3xl font-bold text-yellow-600"
+                x-text="stats.pendingBatches"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center"
+            >
+              <i class="fas fa-clock text-3xl text-yellow-600"></i>
+            </div>
+          </div>
+          <a
+            href="/processor/danh-sach-lo-can-so-che.html"
+            class="text-sm text-yellow-600 hover:text-yellow-700 mt-4 inline-block"
+          >
+            Xem ngay <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Đã sơ chế -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Đã sơ chế</p>
+              <p
+                class="text-3xl font-bold text-green-600"
+                x-text="stats.totalProcessed"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-check-circle text-3xl text-green-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sản phẩm đóng gói -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Sản phẩm</p>
+              <p
+                class="text-3xl font-bold text-blue-600"
+                x-text="stats.totalProducts"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <i class="fas fa-box text-3xl text-blue-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hiệu suất -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Hiệu suất TB</p>
+              <p
+                class="text-3xl font-bold text-purple-600"
+                x-text="stats.avgEfficiency + '%'"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center"
+            >
+              <i class="fas fa-chart-line text-3xl text-purple-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <template x-if="loading">
+          <div class="col-span-4 flex justify-center py-8">
+            <div class="spinner"></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-yellow-500"></i> Thao tác nhanh
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <a
+            href="/processor/danh-sach-lo-can-so-che.html"
+            class="btn-primary text-center"
+          >
+            <i class="fas fa-list mr-2"></i> Lô cần sơ chế
+          </a>
+          <a
+            href="/processor/lich-su-so-che.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-history mr-2"></i> Lịch sử sơ chế
+          </a>
+          <a
+            href="/processor/danh-sach-san-pham.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-box mr-2"></i> Sản phẩm đã đóng gói
+          </a>
+          <button onclick="location.reload()" class="btn-secondary text-center">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Lô mới nhất cần sơ chế -->
+      <div
+        x-data="latestBatches()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-clock text-yellow-500"></i> Lô mới nhất cần sơ chế
+          </h2>
+          <a
+            href="/processor/danh-sach-lo-can-so-che.html"
+            class="text-sm text-green-600 hover:text-green-700"
+          >
+            Xem tất cả <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" x-cloak class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && batches.length === 0"
+          x-cloak
+          class="text-center py-12"
+        >
+          <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Không có lô hàng nào cần sơ chế</p>
+        </div>
+
+        <!-- Batches List -->
+        <div x-show="!loading && batches.length > 0" x-cloak class="space-y-4">
+          <template x-for="batch in batches" :key="batch.batch_id">
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3
+                      class="font-bold text-lg"
+                      x-text="batch.batch_name"
+                    ></h3>
+                    <span class="badge badge-warning">Chờ sơ chế</span>
+                  </div>
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3"
+                  >
+                    <div>
+                      <i class="fas fa-user mr-2"></i>
+                      <span x-text="batch.farmer_name || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-leaf mr-2"></i>
+                      <span x-text="batch.product_name || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-weight mr-2"></i>
+                      <span x-text="batch.total_quantity + ' kg'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-truck mr-2"></i>
+                      <span
+                        x-text="'Đến: ' + Utils.formatDate(batch.delivered_at)"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  :href="`/processor/ghi-nhan-so-che.html?id=${batch.batch_id}`"
+                  class="btn-primary text-sm ml-4"
+                >
+                  <i class="fas fa-cogs mr-1"></i> Sơ chế ngay
+                </a>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>
