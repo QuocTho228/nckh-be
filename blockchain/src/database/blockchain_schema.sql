@@ -1161,6 +1161,9 @@ SELECT
 FROM government_qr_stamps
 GROUP BY product_type, issue_year;
 
+-- Xóa circular FK
+ALTER TABLE government_qr_stamps
+DROP FOREIGN KEY government_qr_stamps_ibfk_3;
 -- =====================================================
 -- DATABASE CLEANUP SCRIPT
 -- =====================================================

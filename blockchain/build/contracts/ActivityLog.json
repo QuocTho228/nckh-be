@@ -40816,10 +40816,370 @@
       "links": {},
       "address": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
       "transactionHash": "0xdc0fcc9a951f6d1075300243ee7031fa72d4f1ab853037bdf60948c6ab0c8b56"
+    },
+    "1768813169158": {
+      "events": {
+        "0x7a1105376d5a0044ab812b943408ed5f779778310b65a618521293a675f2dec0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string[]",
+              "name": "imageUrls",
+              "type": "string[]"
+            }
+          ],
+          "name": "ActivityImagesStored",
+          "type": "event"
+        },
+        "0xd35df7104306862a1551bd6c87eb886369c0a1bab3b4fabe98031e9aa654db46": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "batchId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "participantId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum ActivityLog.ActivityCategory",
+              "name": "category",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "isSystemGenerated",
+              "type": "bool"
+            }
+          ],
+          "name": "ActivityLogAdded",
+          "type": "event"
+        },
+        "0x57d2fc7dc77de2bad5d183c62aadd9477a4ee039a4af22db56c43a69ff7f9173": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "activityName",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            }
+          ],
+          "name": "ActivityLogDetailsStored",
+          "type": "event"
+        },
+        "0x7f3fb3d605ba053211e048a151f2ca2215a1cd72108f460e878188398c0930db": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fertilizer",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "pesticide",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "quantity",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "unit",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "int8",
+              "name": "temperature",
+              "type": "int8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "humidity",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "weather",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "healthStatus",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "notes",
+              "type": "string"
+            }
+          ],
+          "name": "ActivityMetadataStored",
+          "type": "event"
+        },
+        "0xd8fc280cebd958295c04bcc58f45e3d66cbac07aab5db7b5bd15a37de99726b9": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256[]",
+              "name": "productIds",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "ActivityProductsLinked",
+          "type": "event"
+        },
+        "0x31a0af62870f997c8e64776545c124a224683d91cf02db94821b661486740b59": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "activityName",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            }
+          ],
+          "name": "TreeActivityDetailsStored",
+          "type": "event"
+        },
+        "0x316d4a9d91369b6bc642d18247c3642b27603be2a886b1cdae995cba3bcfbf64": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "treeId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "logId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum ActivityLog.ActivityCategory",
+              "name": "category",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            }
+          ],
+          "name": "TreeActivityRecorded",
+          "type": "event"
+        },
+        "0x5ff0745a587e8512811a0a31728c8b802a60cb145a8cbedbdb76b6bb239d14c8": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "treeId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "farmerId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "reason",
+              "type": "string"
+            }
+          ],
+          "name": "TreeDeactivated",
+          "type": "event"
+        },
+        "0xc2187321b4b91ad216d468e6272a74ca5ac50445d9bba9ca932d99b82f2ae9cc": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "treeId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "variety",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "coordinates",
+              "type": "string"
+            }
+          ],
+          "name": "TreeDetailsStored",
+          "type": "event"
+        },
+        "0x51da26d467087aae05a7c4ef11344d6f4d6b06ad614f836e013bba27daef8b54": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "treeId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "batchId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "harvestDate",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "notes",
+              "type": "string"
+            }
+          ],
+          "name": "TreeLinkedToBatch",
+          "type": "event"
+        },
+        "0xb2c06837e88783b4c4efadd4746390d854cd3a168cb0be8fe64d061dae69d893": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "treeId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "treeQRCode",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "farmerId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "regionId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "treeType",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "plantedDate",
+              "type": "uint256"
+            }
+          ],
+          "name": "TreeRegistered",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
+      "transactionHash": "0xdc0fcc9a951f6d1075300243ee7031fa72d4f1ab853037bdf60948c6ab0c8b56"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-01-13T07:17:51.631Z",
+  "updatedAt": "2026-01-19T08:59:39.433Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Contract tối ưu: Chỉ lưu dữ liệu cốt lõi Chi tiết mở rộng được emit qua events để backend sync vào MySQL Gas cost giảm 70-80%",

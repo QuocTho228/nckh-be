@@ -79,6 +79,13 @@ const Auth = {
   },
 
   /**
+   * Kiểm tra có phải government không
+   */
+  isGovernment() {
+    return this.hasRole(CONFIG.ROLES.GOVERNMENT);
+  },
+
+  /**
    * Đăng xuất
    */
   async logout() {
@@ -212,6 +219,25 @@ const Auth = {
   },
 
   /**
+   * Require government role (ROLE 10 - Bộ Công An)
+   */
+  async requireGovernment() {
+    const isLoggedIn = await this.requireAuth();
+    if (!isLoggedIn) return false;
+
+    if (!this.isGovernment()) {
+      Utils.toast.error(
+        "Bạn không có quyền truy cập trang này. Chỉ dành cho Bộ Công An.",
+      );
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+      return false;
+    }
+    return true;
+  },
+
+  /**
    * Initialize auth on page load
    */
   async init() {
@@ -234,7 +260,7 @@ const Auth = {
     const userEmailEl = document.getElementById("userEmail");
 
     if (userNameEl) {
-      userNameEl.textContent = this.currentUser.name || "Nông dân";
+      userNameEl.textContent = this.currentUser.name || "Bộ Công An";
     }
 
     if (userAvatarEl && this.currentUser.avatar) {

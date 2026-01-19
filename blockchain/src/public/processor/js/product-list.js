@@ -125,12 +125,9 @@ function productList() {
         return;
       }
 
-      // QR code data - URL to trace page
-      const traceUrl = `${window.location.origin}/tieu-dung/truyxuatnguongoc.html?qr=${product.product_qr_code}`;
-
       QRCode.toCanvas(
         canvas,
-        traceUrl,
+        product.product_qr_code,
         {
           width: 192,
           margin: 1,
@@ -297,9 +294,7 @@ function productList() {
               const canvas = document.createElement("canvas");
               container.appendChild(canvas);
 
-              const traceUrl = `${window.location.origin}/tieu-dung/truyxuatnguongoc.html?qr=${product.product_qr_code}`;
-
-              QRCode.toCanvas(canvas, traceUrl, {
+              QRCode.toCanvas(canvas, product.product_qr_code, {
                 width: 200,
                 margin: 1,
               });

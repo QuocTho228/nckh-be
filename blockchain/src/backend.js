@@ -4340,6 +4340,11 @@ function setupRoutes(app, db) {
   //   },
   // );
 
+  /**
+   * POST /api/processor/create-products
+   * Đóng gói sản phẩm đơn lẻ (sau khi sơ chế)
+   * Role: Processor
+   */
   app.post(
     "/api/processor/create-products",
     requireAuth,
@@ -4401,7 +4406,7 @@ function setupRoutes(app, db) {
         const governmentQRs = products.map((p) => p.governmentQR);
 
         const [stamps] = await connection.query(
-          `SELECT qr_code, status, used_by_user_id 
+          `SELECT qr_code, status, used_by_user_id, used_for_product_id
          FROM government_qr_stamps 
          WHERE qr_code IN (?)`,
           [governmentQRs],
@@ -4420,6 +4425,14 @@ function setupRoutes(app, db) {
           }
           if (stamp.status !== "AVAILABLE") {
             await connection.rollback();
+
+            // ✅ Thông báo chi tiết nếu đã dùng
+            if (stamp.status === "USED" && stamp.used_for_product_id) {
+              return res.status(400).json({
+                error: `Tem QR đã được sử dụng cho sản phẩm #${stamp.used_for_product_id}: ${qr}`,
+              });
+            }
+
             return res.status(400).json({
               error: `Tem QR đã được sử dụng: ${qr}`,
             });
@@ -4441,17 +4454,40 @@ function setupRoutes(app, db) {
           });
         }
 
-        // Prepare data for blockchain
+        // ✅ BƯỚC 1: Lock stamps TRƯỚC (set status = USED, nhưng chưa set product_id)
+        const [user] = await connection.query(
+          `SELECT name FROM users WHERE uid = ?`,
+          [processorId],
+        );
+        const userName = user[0]?.name || "Processor";
+
+        for (const qr of governmentQRs) {
+          await connection.query(
+            `UPDATE government_qr_stamps 
+           SET status = 'USED',
+               used_date = NOW(),
+               used_by_user_id = ?,
+               used_by_user_name = ?,
+               used_for_batch_id = ?
+           WHERE qr_code = ? AND status = 'AVAILABLE'`,
+            [processorId, userName, parseInt(batchId), qr],
+          );
+        }
+
+        console.log("✅ Stamps locked (status = USED)");
+
+        // ✅ BƯỚC 2: Call blockchain
+        const governmentQRCodes = products.map((p) => p.governmentQR);
         const sourceTreeIds = products.map((p) => BigInt(p.treeId));
         const weights = products.map((p) =>
           BigInt(Math.round(p.weight * 1000)),
         );
         const packageType = products[0].packageType;
 
-        // Call blockchain contract
         const result = await traceabilityContract.methods
           .createProductsInBatch(
             BigInt(batchId),
+            governmentQRCodes,
             sourceTreeIds,
             weights,
             packageType,
@@ -4502,16 +4538,18 @@ function setupRoutes(app, db) {
           });
         }
 
-        const createdProducts = [];
+        console.log(`📦 Found ${relevantProductEvents.length} product events`);
 
-        // Insert products và link với government stamps
+        // ✅ BƯỚC 3: Insert products vào DB - Government QR chính là product QR
+        const createdProducts = [];
+        const productStampMap = []; // Map [productId, stampId] để update sau
+
         for (let i = 0; i < relevantProductEvents.length; i++) {
           const event = relevantProductEvents[i];
           const productId = Number(event.returnValues.productId);
-          const qrCode = event.returnValues.productQRCode;
+          const governmentQR = event.returnValues.governmentQRCode; // ✅ Lấy government QR từ event
           const weight = Number(event.returnValues.weight);
           const pkgType = event.returnValues.packageType;
-          const governmentQR = products[i].governmentQR;
 
           // Get stamp ID
           const [stampResult] = await connection.query(
@@ -4528,69 +4566,64 @@ function setupRoutes(app, db) {
             });
           }
 
-          // Insert product with government_qr_stamp_id
+          // ✅ Insert product - product_qr_code CHÍNH LÀ government QR
           await connection.query(
             `INSERT INTO blockchain_products
           (product_id, batch_id, product_qr_code, packaged_date, packaged_date_iso,
-           package_type, weight, is_active, sold_date, government_qr_stamp_id, blockchain_tx_hash)
-          VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, 0, ?, ?)
-          ON DUPLICATE KEY UPDATE
-            package_type = VALUES(package_type),
-            weight = VALUES(weight),
-            packaged_date = VALUES(packaged_date),
-            packaged_date_iso = VALUES(packaged_date_iso),
-            government_qr_stamp_id = VALUES(government_qr_stamp_id)`,
+           package_type, weight, is_active, sold_date, blockchain_tx_hash)
+          VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, 0, ?)`,
             [
               productId,
               parseInt(batchId),
-              qrCode,
+              governmentQR, // ✅ Dùng government QR làm product_qr_code
               timestamp,
               timestampISO,
               pkgType,
               weight,
-              stampId,
               result.transactionHash,
             ],
           );
 
-          // Update stamp status to USED
-          const user = await connection.query(
-            `SELECT name FROM users WHERE uid = ?`,
-            [processorId],
+          console.log(
+            `✅ Inserted product ${productId} with QR: ${governmentQR}`,
           );
 
-          await connection.query(
-            `UPDATE government_qr_stamps 
-           SET status = 'USED',
-               used_date = NOW(),
-               used_by_user_id = ?,
-               used_by_user_name = ?,
-               used_for_batch_id = ?,
-               used_for_product_id = ?,
-               blockchain_tx_hash = ?
-           WHERE id = ?`,
-            [
-              processorId,
-              user[0][0]?.name || "Processor",
-              parseInt(batchId),
-              productId,
-              result.transactionHash,
-              stampId,
-            ],
-          );
+          // Save mapping để update sau
+          productStampMap.push({ productId, stampId, governmentQR });
 
           createdProducts.push({
             productId,
-            qrCode,
+            qrCode: governmentQR, // ✅ Government QR chính là QR code
             weight: weight / 1000,
             packageType: pkgType,
             governmentQR,
           });
+        }
 
-          console.log(
-            `✅ Inserted product ${productId} with stamp ${governmentQR}`,
+        // ✅ BƯỚC 4: Update products với government_qr_stamp_id (SAU KHI products đã tồn tại)
+        for (const { productId, stampId } of productStampMap) {
+          await connection.query(
+            `UPDATE blockchain_products 
+           SET government_qr_stamp_id = ?
+           WHERE product_id = ?`,
+            [stampId, productId],
           );
         }
+
+        console.log("✅ Updated products with stamp foreign keys");
+
+        // ✅ BƯỚC 5: Update stamps với used_for_product_id (BÂY GIỜ MỚI SAFE)
+        for (const { productId, stampId, governmentQR } of productStampMap) {
+          await connection.query(
+            `UPDATE government_qr_stamps 
+           SET used_for_product_id = ?,
+               blockchain_tx_hash = ?
+           WHERE id = ?`,
+            [productId, result.transactionHash, stampId],
+          );
+        }
+
+        console.log("✅ Updated stamps with product_id references");
 
         // Link products with source trees
         for (const linkEvent of relevantLinkEvents) {
@@ -5165,7 +5198,7 @@ function setupRoutes(app, db) {
   );
 
   // ==========================================
-  // GOVERNMENT STAMPS API ENDPOINTS
+  // BƯỚC 0: GOVERNMENT STAMPS API ENDPOINTS
   // Thêm vào server.js
   // ==========================================
 

@@ -112,9 +112,9 @@ contract TraceabilityContract {
     struct Product {
         uint256 productId;
         uint256 batchId;
-        string productQRCode;        // ~30 chars
+        string governmentQRCode;
         uint256 packagedDate;
-        uint256 weight;              // gram
+        uint256 weight;
         bool isActive;
     }
 
@@ -180,7 +180,7 @@ contract TraceabilityContract {
     mapping(uint256 => bool) private _approvedBatches;
 
     mapping(uint256 => Product) private _products;
-    mapping(string => uint256) private _productQRCodeToId;
+    mapping(string => uint256) private _governmentQRToProductId;
 
     mapping(uint256 => PurchaseRecord) private _purchaseRecords;
     mapping(uint256 => ProcessingRecord) private _processingRecords;
@@ -212,7 +212,7 @@ contract TraceabilityContract {
 
     event ProductCreated(
         uint256 indexed productId,
-        string productQRCode,
+        string governmentQRCode,
         uint256 indexed batchId,
         uint256 weight,
         string packageType
@@ -357,15 +357,6 @@ contract TraceabilityContract {
         return string(abi.encodePacked(ssccWithoutCheck, uint2str(uint256(checkDigit))));
     }
 
-    function generateProductQR(uint256 _batchId, uint256 _productSequence) private view returns (string memory) {
-        return string(abi.encodePacked(
-            "P-",
-            _batches[_batchId].sscc,
-            "-",
-            padLeft(uint2str(_productSequence), 4)
-        ));
-    }
-
     function padLeft(string memory str, uint256 length) private pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         if (strBytes.length >= length) return str;
@@ -479,15 +470,17 @@ contract TraceabilityContract {
     // ===================================
     
     /**
-     * @dev Tạo sản phẩm đơn lẻ
-     * Emit events để backend lưu chi tiết vào MySQL
-     */
+    * @dev Tạo sản phẩm đơn lẻ với Government QR Codes
+    * Thêm parameter governmentQRCodes
+    */
     function createProductsInBatch(
         uint256 _batchId,
+        string[] memory _governmentQRCodes,
         uint256[] memory _sourceTreeIds,
         uint256[] memory _weights,
         string memory _packageType
     ) public batchExists(_batchId) returns (uint256[] memory) {
+        require(_governmentQRCodes.length == _sourceTreeIds.length, "Length mismatch");
         require(_sourceTreeIds.length == _weights.length, "Length mismatch");
         require(_batches[_batchId].currentStage >= SupplyChainStage.Processed, "Must be processed");
 
@@ -496,10 +489,10 @@ contract TraceabilityContract {
         for (uint256 i = 0; i < _weights.length; i++) {
             newProductIds[i] = _createSingleProduct(
                 _batchId,
+                _governmentQRCodes[i],
                 _sourceTreeIds[i],
                 _weights[i],
-                _packageType,
-                i + 1
+                _packageType
             );
         }
 
@@ -508,29 +501,31 @@ contract TraceabilityContract {
 
     function _createSingleProduct(
         uint256 _batchId,
+        string memory _governmentQRCode,
         uint256 _sourceTreeId,
         uint256 _weight,
-        string memory _packageType,
-        uint256 _sequence
+        string memory _packageType
     ) private returns (uint256) {
+        // Kiểm tra government QR chưa được sử dụng
+        require(_governmentQRToProductId[_governmentQRCode] == 0, "Government QR already used");
+        
         _productIdCounter++;
         uint256 newProductId = _productIdCounter;
-        string memory productQR = generateProductQR(_batchId, _sequence);
 
         // Lưu on-chain (minimal)
         Product storage newProduct = _products[newProductId];
         newProduct.productId = newProductId;
         newProduct.batchId = _batchId;
-        newProduct.productQRCode = productQR;
+        newProduct.governmentQRCode = _governmentQRCode;
         newProduct.packagedDate = block.timestamp;
         newProduct.weight = _weight;
         newProduct.isActive = true;
 
-        _productQRCodeToId[productQR] = newProductId;
+        _governmentQRToProductId[_governmentQRCode] = newProductId;
         _batches[_batchId].totalProducts++;
 
         // Emit events
-        emit ProductCreated(newProductId, productQR, _batchId, _weight, _packageType);
+        emit ProductCreated(newProductId, _governmentQRCode, _batchId, _weight, _packageType);
         emit ProductTreeLinked(newProductId, _sourceTreeId);
 
         // Link tree to batch
@@ -538,7 +533,7 @@ contract TraceabilityContract {
             _sourceTreeId,
             _batchId,
             _batches[_batchId].producerId,
-            string(abi.encodePacked("Harvested to product ", productQR))
+            string(abi.encodePacked("Harvested to product ", _governmentQRCode))
         );
 
         return newProductId;
@@ -899,8 +894,8 @@ contract TraceabilityContract {
     // GETTERS - PRODUCT
     // ===================================
     
-    function getProductByQR(string memory _productQR) public view returns (Product memory) {
-        uint256 productId = _productQRCodeToId[_productQR];
+    function getProductByGovernmentQR(string memory _governmentQR) public view returns (Product memory) {
+        uint256 productId = _governmentQRToProductId[_governmentQR];
         require(productId != 0, "Product not found");
         return _products[productId];
     }
@@ -1072,8 +1067,8 @@ contract TraceabilityContract {
         return _ssccToBatchId[_sscc] != 0;
     }
 
-    function productQRExists(string memory _productQR) public view returns (bool) {
-        return _productQRCodeToId[_productQR] != 0;
+    function governmentQRExists(string memory _governmentQR) public view returns (bool) {
+        return _governmentQRToProductId[_governmentQR] != 0;
     }
 
     function isProducerOfBatch(uint256 _batchId, uint256 _producerId) public view returns (bool) {

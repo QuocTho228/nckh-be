@@ -15,7 +15,8 @@ INSERT INTO roles (role_id, role_name, description) VALUES
 (6, 'Transporter', 'Người vận chuyển - Vận chuyển sản phẩm'),
 (7, 'Distributor', 'Nhà phân phối - Phân phối sản phẩm'),
 (8, 'Warehouse', 'Nhà kho - Bảo quản và lưu trữ sản phẩm'),
-(9, 'Admin', 'Quản trị viên hệ thống');
+(9, 'Admin', 'Quản trị viên hệ thống'),
+(10, 'Government', 'Bộ Công An - Quản lý tem QR truy xuất nguồn gốc');
 
 -- =====================================================
 -- 2. NOTIFICATION TYPES
@@ -61,6 +62,10 @@ INSERT INTO admin (admin_email, admin_name, admin_pass, role_id, province_id) VA
 -- 6. USERS - CÁC BÊN THAM GIA CHUỖI CUNG ỨNG
 -- =====================================================
 -- Mật khẩu tất cả: 12345678
+
+-- 6.0. BỘ CÔNG AN (Government)
+INSERT INTO users (name, email, passwd, phone, address, avatar, dob, gender, role_id, region_id, province_id, district_id, ward_id, is_approved) VALUES
+('Nguyễn Hùng Dũng', 'nhdung.government@nckh.vn', '$2b$10$kNWD.gIKARLvubCVyhWKIeClf2it6oQl2oYnyxbI8P5BntaO4QMa2', '0901111001', 'Ấp 1, Xã Vĩnh Kim, Châu Thành, Tiền Giang', 'government1.jpg', '1980-03-15', 'male', 10, '82822001', 82, 822, 82201, TRUE);
 
 -- 6.1. NÔNG DÂN (Farmers)
 INSERT INTO users (name, email, passwd, phone, address, avatar, dob, gender, role_id, region_id, province_id, district_id, ward_id, is_approved) VALUES

@@ -86,6 +86,7 @@ const CONFIG = {
     DISTRIBUTOR: 7,
     WAREHOUSE: 8,
     ADMIN: 9,
+    GOVERNMENT: 10,
   },
 
   // Tree care categories (map với ActivityLog.sol)
