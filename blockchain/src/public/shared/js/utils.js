@@ -246,6 +246,51 @@ const Utils = {
   },
 
   /**
+   * Get processing method text
+   */
+  getProcessingMethodText: (method) => {
+    const texts = {
+      Washing: "Rửa sạch",
+      Cutting: "Cắt/Xẻ",
+      Drying: "Sấy khô",
+      Freezing: "Đông lạnh",
+      Packaging: "Đóng gói",
+    };
+    return texts[method] || method;
+  },
+
+  /**
+   * Get batch stage text
+   */
+  getBatchStageText: (stage) => {
+    const texts = {
+      Created: "Mới tạo",
+      Purchased: "Đã thu mua",
+      Transported1: "Vận chuyển đến sơ chế",
+      Processed: "Đã sơ chế",
+      QualityInspected: "Đã kiểm nghiệm",
+      Transported2: "Vận chuyển đến kho",
+      Warehoused: "Nhập kho",
+      DeliveredToConsumer: "Đã giao khách hàng",
+    };
+    return texts[stage] || stage;
+  },
+
+  /**
+   * Get test result badge
+   */
+  getTestResultBadge: (passed) => {
+    return passed ? "badge-success" : "badge-error";
+  },
+
+  /**
+   * Get test result text
+   */
+  getTestResultText: (passed) => {
+    return passed ? "ĐẠT" : "KHÔNG ĐẠT";
+  },
+
+  /**
    * Loading overlay
    */
   loading: {

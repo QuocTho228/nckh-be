@@ -86,6 +86,13 @@ const Auth = {
   },
 
   /**
+   * Kiểm tra có phải quality inspector không
+   */
+  isQualityInspector() {
+    return this.hasRole(CONFIG.ROLES.QUALITY_INSPECTOR);
+  },
+
+  /**
    * Đăng xuất
    */
   async logout() {
@@ -219,7 +226,7 @@ const Auth = {
   },
 
   /**
-   * Require government role (ROLE 10 - Bộ Công An)
+   * Require government role
    */
   async requireGovernment() {
     const isLoggedIn = await this.requireAuth();
@@ -229,6 +236,23 @@ const Auth = {
       Utils.toast.error(
         "Bạn không có quyền truy cập trang này. Chỉ dành cho Bộ Công An.",
       );
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * Require quality inspector role
+   */
+  async requireQualityInspector() {
+    const isLoggedIn = await this.requireAuth();
+    if (!isLoggedIn) return false;
+
+    if (!this.isQualityInspector()) {
+      Utils.toast.error("Bạn không có quyền truy cập trang này");
       setTimeout(() => {
         window.location.href = "/";
       }, 1500);

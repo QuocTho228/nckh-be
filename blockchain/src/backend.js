@@ -5783,6 +5783,141 @@ function setupRoutes(app, db) {
     },
   );
 
+  /**
+   * GET /api/quality-inspector/stats
+   * Thống kê cho Quality Inspector
+   */
+  app.get(
+    "/api/quality-inspector/stats",
+    requireAuth,
+    requireRole(ROLES.QUALITY_INSPECTOR),
+    async (req, res) => {
+      try {
+        const inspectorId = req.session.userId;
+
+        // Total tests
+        const [tests] = await db.query(
+          "SELECT COUNT(*) as total FROM quality_tests WHERE inspector_id = ?",
+          [inspectorId],
+        );
+
+        // Passed/Failed
+        const [passed] = await db.query(
+          "SELECT COUNT(*) as total FROM quality_tests WHERE inspector_id = ? AND passed = TRUE",
+          [inspectorId],
+        );
+
+        const [failed] = await db.query(
+          "SELECT COUNT(*) as total FROM quality_tests WHERE inspector_id = ? AND passed = FALSE",
+          [inspectorId],
+        );
+
+        // Pending batches
+        const [pending] = await db.query(`
+        SELECT COUNT(*) as total 
+        FROM blockchain_batches 
+        WHERE current_stage = 'Processed' AND quality_inspector_id = 0
+      `);
+
+        res.json({
+          success: true,
+          data: {
+            totalTests: tests[0].total,
+            passedTests: passed[0].total,
+            failedTests: failed[0].total,
+            pendingBatches: pending[0].total,
+            passRate:
+              tests[0].total > 0
+                ? Math.round((passed[0].total / tests[0].total) * 100)
+                : 0,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi stats:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
+  /**
+   * GET /api/quality-inspector/batch/:id/processing-info
+   * Lấy thông tin sơ chế của lô
+   */
+  app.get(
+    "/api/quality-inspector/batch/:id/processing-info",
+    requireAuth,
+    requireRole(ROLES.QUALITY_INSPECTOR),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        const [batches] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          p.product_name,
+          pr.processing_id,
+          pr.method,
+          pr.input_weight,
+          pr.output_weight,
+          pr.processing_date_iso,
+          pr.notes as processing_notes
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN processing_records pr ON bb.batch_id = pr.batch_id
+        WHERE bb.batch_id = ? AND bb.current_stage = 'Processed'
+      `,
+          [batchId],
+        );
+
+        if (batches.length === 0) {
+          return res.status(404).json({
+            error: "Không tìm thấy lô hàng hoặc chưa được sơ chế",
+          });
+        }
+
+        res.json({
+          success: true,
+          data: batches[0],
+        });
+      } catch (error) {
+        console.error("Lỗi:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
+  /**
+   * GET /api/quality-inspector/test/:id/images
+   * Lấy ảnh của test
+   */
+  app.get(
+    "/api/quality-inspector/test/:id/images",
+    requireAuth,
+    requireRole(ROLES.QUALITY_INSPECTOR),
+    async (req, res) => {
+      try {
+        const testId = req.params.id;
+
+        const [images] = await db.query(
+          "SELECT * FROM quality_test_images WHERE test_id = ?",
+          [testId],
+        );
+
+        res.json({
+          success: true,
+          count: images.length,
+          data: images,
+        });
+      } catch (error) {
+        console.error("Lỗi:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
   // ==========================================
   // BƯỚC 7: TRANSPORTER - VẬN CHUYỂN LẦN 2
   // (Đã xử lý ở trên - sử dụng chung API)

@@ -67,6 +67,15 @@ const CONFIG = {
     PROCESSOR_MY_PRODUCTS: "/api/processor/my-products",
     PROCESSOR_PRODUCT_DETAILS: "/api/processor/product/:id/details",
 
+    // Quality Inspector (ROLE 5) ✅ MỚI THÊM
+    QUALITY_INSPECTOR_STATS: "/api/quality-inspector/stats",
+    QUALITY_INSPECTOR_PENDING_BATCHES: "/api/quality-inspector/pending-batches",
+    QUALITY_INSPECTOR_MY_TESTS: "/api/quality-inspector/my-tests",
+    QUALITY_INSPECTOR_RECORD_TEST: "/api/quality-inspector/record-test",
+    QUALITY_INSPECTOR_BATCH_PROCESSING_INFO:
+      "/api/quality-inspector/batch/:id/processing-info",
+    QUALITY_INSPECTOR_TEST_IMAGES: "/api/quality-inspector/test/:id/images",
+
     // Government Stamps (Tem QR Bộ Công An)
     STAMPS_GENERATE: "/api/government-stamps/generate",
     STAMPS_LIST: "/api/government-stamps/list",
@@ -89,7 +98,7 @@ const CONFIG = {
     GOVERNMENT: 10,
   },
 
-  // Tree care categories (map với ActivityLog.sol)
+  // Tree care categories
   TREE_CARE_CATEGORIES: {
     TREE_MANAGEMENT: 0,
     FARMING: 1,
@@ -108,6 +117,37 @@ const CONFIG = {
     PENDING: "PendingApproval",
     APPROVED: "Approved",
     REJECTED: "Rejected",
+  },
+
+  // Batch stage
+  BATCH_STAGE: {
+    CREATED: "Created",
+    PURCHASED: "Purchased",
+    TRANSPORTED1: "Transported1",
+    PROCESSED: "Processed",
+    QUALITY_INSPECTED: "QualityInspected",
+    TRANSPORTED2: "Transported2",
+    WAREHOUSED: "Warehoused",
+    DELIVERED: "DeliveredToConsumer",
+  },
+
+  // Processing methods
+  PROCESSING_METHODS: {
+    WASHING: "Washing",
+    CUTTING: "Cutting",
+    DRYING: "Drying",
+    FREEZING: "Freezing",
+    PACKAGING: "Packaging",
+  },
+
+  // Quality test types
+  QUALITY_TEST_TYPES: {
+    VISUAL: "Kiểm tra cảm quan",
+    CHEMICAL: "Phân tích hóa học",
+    MICROBIOLOGICAL: "Vi sinh vật",
+    PHYSICAL: "Tính chất vật lý",
+    PESTICIDE: "Dư lượng thuốc BVTV",
+    HEAVY_METAL: "Kim loại nặng",
   },
 
   // Government Stamp Status

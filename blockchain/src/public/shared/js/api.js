@@ -333,6 +333,55 @@ const API = {
     return this.get(url);
   },
 
+  // === QUALITY INSPECTOR APIs ===
+
+  /**
+   * Lấy thống kê cho Quality Inspector
+   */
+  async getQualityInspectorStats() {
+    return this.get(CONFIG.API.QUALITY_INSPECTOR_STATS);
+  },
+
+  /**
+   * Lấy danh sách lô cần kiểm nghiệm (đã sơ chế xong)
+   */
+  async getQualityInspectorPendingBatches() {
+    return this.get(CONFIG.API.QUALITY_INSPECTOR_PENDING_BATCHES);
+  },
+
+  /**
+   * Lấy danh sách các test đã thực hiện
+   */
+  async getQualityInspectorMyTests() {
+    return this.get(CONFIG.API.QUALITY_INSPECTOR_MY_TESTS);
+  },
+
+  /**
+   * Ghi nhận kết quả kiểm nghiệm
+   */
+  async recordQualityTest(formData) {
+    return this.upload(CONFIG.API.QUALITY_INSPECTOR_RECORD_TEST, formData);
+  },
+
+  /**
+   * Lấy thông tin sơ chế của lô hàng
+   */
+  async getQualityInspectorBatchProcessingInfo(batchId) {
+    const url = CONFIG.API.QUALITY_INSPECTOR_BATCH_PROCESSING_INFO.replace(
+      ":id",
+      batchId,
+    );
+    return this.get(url);
+  },
+
+  /**
+   * Lấy ảnh của test
+   */
+  async getQualityInspectorTestImages(testId) {
+    const url = CONFIG.API.QUALITY_INSPECTOR_TEST_IMAGES.replace(":id", testId);
+    return this.get(url);
+  },
+
   // === MASTER DATA APIs ===
 
   async getProducts() {
