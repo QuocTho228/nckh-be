@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Xác Nhận Nhận Hàng - Kho Bãi</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/warehouse/lo-dang-den.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-check-double text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Xác Nhận Nhận Hàng
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div
+        x-data="confirmReceiptData()"
+        x-init="init()"
+        class="max-w-4xl mx-auto"
+      >
+        <!-- Loading Batch Info -->
+        <div
+          x-show="loadingBatch"
+          class="bg-white rounded-xl shadow-md p-6 mb-6"
+        >
+          <div class="flex justify-center py-8">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <!-- Batch Info Card - ✅ CHỈ HIỆN KHI CÓ DATA -->
+        <div
+          x-show="!loadingBatch && batchInfo"
+          x-cloak
+          class="bg-white rounded-xl shadow-md p-6 mb-6"
+        >
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-info-circle text-blue-600"></i>
+            Thông Tin Lô Hàng
+          </h3>
+
+          <!-- Basic Info - ✅ THÊM x-show và optional chaining -->
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
+            <div x-show="batchInfo">
+              <span class="text-gray-500">Mã lô:</span>
+              <span
+                class="font-medium ml-2"
+                x-text="batchInfo?.batch_id"
+              ></span>
+            </div>
+            <div x-show="batchInfo">
+              <span class="text-gray-500">Tên lô:</span>
+              <span
+                class="font-medium ml-2"
+                x-text="batchInfo?.batch_name"
+              ></span>
+            </div>
+            <div x-show="batchInfo">
+              <span class="text-gray-500">SSCC:</span>
+              <span
+                class="font-medium ml-2"
+                x-text="batchInfo?.sscc || 'N/A'"
+              ></span>
+            </div>
+            <div x-show="batchInfo">
+              <span class="text-gray-500">Nông dân:</span>
+              <span
+                class="font-medium ml-2"
+                x-text="batchInfo?.farmer_name"
+              ></span>
+            </div>
+            <div x-show="batchInfo">
+              <span class="text-gray-500">Sản phẩm:</span>
+              <span
+                class="font-medium ml-2"
+                x-text="batchInfo?.product_name"
+              ></span>
+            </div>
+            <div x-show="batchInfo">
+              <span class="text-gray-500">Số lượng:</span>
+              <span
+                class="font-medium ml-2"
+                x-text="batchInfo?.quantity || 'N/A'"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Transport Status -->
+          <div class="bg-blue-50 rounded-lg p-4 mb-4">
+            <h4 class="font-semibold mb-2 flex items-center gap-2">
+              <i class="fas fa-truck text-blue-600"></i>
+              Trạng Thái Vận Chuyển
+            </h4>
+            <div class="flex items-center gap-2">
+              <span class="badge badge-success">
+                <i class="fas fa-check-circle mr-1"></i> Đã giao hàng
+              </span>
+              <span
+                class="text-sm text-gray-600"
+                x-show="batchInfo?.last_transport_update"
+              >
+                Cập nhật:
+                <span
+                  x-text="Utils.formatDateTime(batchInfo?.last_transport_update)"
+                ></span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Quality Status -->
+          <div class="bg-green-50 rounded-lg p-4">
+            <h4 class="font-semibold mb-2 flex items-center gap-2">
+              <i class="fas fa-certificate text-green-600"></i>
+              Kiểm Nghiệm Chất Lượng
+            </h4>
+            <div class="flex items-center gap-2">
+              <span class="badge badge-success">
+                <i class="fas fa-check-double mr-1"></i> Đạt tiêu chuẩn
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transport History - ✅ CHỈ HIỆN KHI CÓ DATA -->
+        <div
+          x-show="!loadingBatch && transportHistory.length > 0"
+          x-cloak
+          class="bg-white rounded-xl shadow-md p-6 mb-6"
+        >
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-route text-purple-600"></i>
+            Lịch Sử Vận Chuyển
+          </h3>
+
+          <div class="space-y-3">
+            <template x-for="(event, index) in transportHistory" :key="index">
+              <div class="flex items-start gap-4 pb-3 border-b last:border-0">
+                <div
+                  class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"
+                >
+                  <i class="fas fa-map-marker-alt text-blue-600"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium" x-text="event.action"></p>
+                  <div class="text-sm text-gray-600">
+                    <span x-show="event.location" class="mr-4">
+                      <i class="fas fa-location-dot mr-1"></i>
+                      <span x-text="event.location"></span>
+                    </span>
+                    <span>
+                      <i class="fas fa-clock mr-1"></i>
+                      <span
+                        x-text="Utils.formatDateTime(event.timestamp_iso)"
+                      ></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Confirmation Form - ✅ CHỈ HIỆN KHI CÓ DATA -->
+        <div
+          x-show="!loadingBatch && batchInfo"
+          x-cloak
+          class="bg-white rounded-xl shadow-md p-6"
+        >
+          <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+            <i class="fas fa-clipboard-check text-green-600"></i>
+            Xác Nhận Nhận Hàng
+          </h3>
+
+          <form @submit.prevent="submitConfirmation">
+            <!-- Confirmation Note -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <div class="flex">
+                <i
+                  class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"
+                ></i>
+                <div>
+                  <p class="font-medium text-yellow-800">Lưu ý quan trọng</p>
+                  <p class="text-sm text-yellow-700 mt-1">
+                    Vui lòng kiểm tra kỹ hàng hóa trước khi xác nhận. Sau khi
+                    xác nhận, lô hàng sẽ được ghi nhận vào kho và không thể hoàn
+                    tác.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="space-y-3 mb-6">
+              <h4 class="font-semibold text-gray-700">Danh sách kiểm tra:</h4>
+
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  x-model="checklist.quantityMatch"
+                  class="mt-1 w-5 h-5 text-green-600"
+                  required
+                />
+                <span class="text-sm">
+                  <strong>Số lượng khớp:</strong> Xác nhận số lượng hàng nhận
+                  được khớp với thông tin trên giấy tờ
+                </span>
+              </label>
+
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  x-model="checklist.qualityGood"
+                  class="mt-1 w-5 h-5 text-green-600"
+                  required
+                />
+                <span class="text-sm">
+                  <strong>Chất lượng tốt:</strong> Hàng hóa không bị hư hỏng
+                  trong quá trình vận chuyển
+                </span>
+              </label>
+
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  x-model="checklist.packagingIntact"
+                  class="mt-1 w-5 h-5 text-green-600"
+                  required
+                />
+                <span class="text-sm">
+                  <strong>Bao bì nguyên vẹn:</strong> Kiện hàng được đóng gói
+                  tốt, không bị rách hoặc móp méo
+                </span>
+              </label>
+
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  x-model="checklist.documentsComplete"
+                  class="mt-1 w-5 h-5 text-green-600"
+                  required
+                />
+                <span class="text-sm">
+                  <strong>Giấy tờ đầy đủ:</strong> Giấy kiểm nghiệm và các chứng
+                  từ cần thiết đầy đủ
+                </span>
+              </label>
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Ghi chú thêm (nếu có)
+              </label>
+              <textarea
+                x-model="notes"
+                rows="3"
+                placeholder="Ghi chú về tình trạng hàng hóa, vấn đề cần lưu ý..."
+                class="input-gradient"
+              ></textarea>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex gap-4">
+              <button
+                type="submit"
+                :disabled="submitting || !allChecklistPassed"
+                class="btn-primary flex-1"
+              >
+                <i class="fas fa-check-double mr-2"></i>
+                <span
+                  x-text="submitting ? 'Đang xử lý...' : 'Xác nhận nhận hàng'"
+                ></span>
+              </button>
+              <a href="/warehouse/lo-dang-den.html" class="btn-secondary">
+                <i class="fas fa-times mr-2"></i> Hủy
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/confirm-receipt.js"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </body>
+</html>

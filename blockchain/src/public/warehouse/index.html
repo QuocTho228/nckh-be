@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Dashboard - Quản Lý Kho</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-warehouse text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Quản Lý Kho
+            </span>
+          </div>
+
+          <!-- User Menu -->
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Warehouse"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">
+                  Nhân viên kho
+                </div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/warehouse/ton-kho.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-boxes mr-2"></i> Hàng tồn kho
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8">
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fas fa-hand-wave mr-2"></i>
+          Xin chào, <span id="welcomeName">Nhân viên kho</span>!
+        </h1>
+        <p class="opacity-90">Quản lý nhập kho và tồn kho nông sản</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div
+        x-data="dashboardData()"
+        x-init="init()"
+        class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+      >
+        <!-- Tổng lô đã nhận -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng lô đã nhận</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.totalReceived"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <i class="fas fa-box-open text-3xl text-blue-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lô đang đến -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Đang trên đường</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.incomingBatches"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center"
+            >
+              <i class="fas fa-truck text-3xl text-yellow-600"></i>
+            </div>
+          </div>
+          <a
+            href="/warehouse/lo-dang-den.html"
+            class="text-sm text-yellow-600 hover:text-yellow-700 mt-4 inline-block"
+          >
+            Xem danh sách <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Tồn kho hiện tại -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tồn kho hiện tại</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.currentInventory"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-boxes text-3xl text-green-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sản phẩm có sẵn -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Sản phẩm có sẵn</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.availableProducts"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center"
+            >
+              <i class="fas fa-cubes text-3xl text-purple-600"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-yellow-500"></i> Thao tác nhanh
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a href="/warehouse/lo-dang-den.html" class="btn-primary text-center">
+            <i class="fas fa-truck-loading mr-2"></i> Lô hàng đang đến
+          </a>
+          <a href="/warehouse/ton-kho.html" class="btn-secondary text-center">
+            <i class="fas fa-boxes mr-2"></i> Xem tồn kho
+          </a>
+          <button onclick="location.reload()" class="btn-secondary text-center">
+            <i class="fas fa-sync mr-2"></i> Làm mới dữ liệu
+          </button>
+        </div>
+      </div>
+
+      <!-- Incoming Batches -->
+      <div
+        x-data="incomingBatchesData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-shipping-fast text-yellow-600"></i> Lô Hàng Đang
+            Đến
+          </h2>
+          <a
+            href="/warehouse/lo-dang-den.html"
+            class="text-sm text-blue-600 hover:text-blue-700"
+          >
+            Xem tất cả <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && batches.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
+          <p class="text-gray-500">Không có lô hàng nào đang trên đường</p>
+        </div>
+
+        <!-- Batches List -->
+        <div x-show="!loading && batches.length > 0" class="space-y-4">
+          <template x-for="batch in batches.slice(0, 5)" :key="batch.batch_id">
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3
+                      class="font-bold text-lg"
+                      x-text="batch.batch_name"
+                    ></h3>
+                    <span class="badge badge-success">
+                      <i class="fas fa-check-circle mr-1"></i> Đã kiểm nghiệm
+                    </span>
+                  </div>
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600"
+                  >
+                    <div>
+                      <i class="fas fa-hashtag mr-2"></i>
+                      Lô: <span x-text="batch.batch_id"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-user mr-2"></i>
+                      <span x-text="batch.farmer_name || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-leaf mr-2"></i>
+                      <span x-text="batch.product_name || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-clock mr-2"></i>
+                      <span
+                        x-text="Utils.formatDate(batch.last_transport_update)"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  :href="`/warehouse/xac-nhan-nhan-hang.html?batchId=${batch.batch_id}`"
+                  class="btn-primary text-sm ml-4"
+                >
+                  <i class="fas fa-check mr-1"></i> Xác nhận
+                </a>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

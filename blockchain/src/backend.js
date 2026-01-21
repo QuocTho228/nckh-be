@@ -6141,6 +6141,199 @@ function setupRoutes(app, db) {
     },
   );
 
+  /**
+   * GET /api/warehouse/stats
+   * Thống kê cho Warehouse
+   */
+  app.get(
+    "/api/warehouse/stats",
+    requireAuth,
+    requireRole(ROLES.WAREHOUSE),
+    async (req, res) => {
+      try {
+        const warehouseId = req.session.userId;
+
+        // Total received
+        const [received] = await db.query(
+          "SELECT COUNT(*) as total FROM warehouse_confirmations WHERE warehouse_id = ?",
+          [warehouseId],
+        );
+
+        // Incoming batches (đang trên đường đến)
+        const [incoming] = await db.query(`
+        SELECT COUNT(*) as total
+        FROM blockchain_batches bb
+        LEFT JOIN quality_tests qt ON bb.batch_id = qt.batch_id
+        WHERE bb.current_stage = 'QualityInspected'
+          AND bb.transport_status = 'Delivered'
+          AND qt.passed = TRUE
+          AND NOT EXISTS (
+            SELECT 1 FROM warehouse_confirmations wc 
+            WHERE wc.batch_id = bb.batch_id
+          )
+      `);
+
+        // Current inventory (lô đang trong kho)
+        const [inventory] = await db.query(
+          `SELECT COUNT(*) as total 
+         FROM warehouse_confirmations 
+         WHERE warehouse_id = ?`,
+          [warehouseId],
+        );
+
+        // Available products
+        const [products] = await db.query(
+          `
+        SELECT COUNT(*) as total
+        FROM blockchain_products bp
+        INNER JOIN warehouse_confirmations wc ON bp.batch_id = wc.batch_id
+        WHERE wc.warehouse_id = ? AND bp.is_active = TRUE
+      `,
+          [warehouseId],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            totalReceived: received[0].total,
+            incomingBatches: incoming[0].total,
+            currentInventory: inventory[0].total,
+            availableProducts: products[0].total,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi stats:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
+  /**
+   * GET /api/warehouse/batch/:id/transport-info
+   * Lấy thông tin vận chuyển của lô
+   */
+  app.get(
+    "/api/warehouse/batch/:id/transport-info",
+    requireAuth,
+    requireRole(ROLES.WAREHOUSE),
+    async (req, res) => {
+      try {
+        const batchId = req.params.id;
+
+        console.log("[DEBUG] Getting batch info for:", batchId); // Debug log
+
+        // Validate batchId
+        if (!batchId || isNaN(batchId)) {
+          return res.status(400).json({
+            success: false,
+            error: "Mã lô hàng không hợp lệ",
+          });
+        }
+
+        // Get batch info
+        const [batches] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as farmer_name,
+          p.product_name,
+          qt.passed as quality_passed
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN (
+          SELECT batch_id, MAX(passed) as passed
+          FROM quality_tests
+          GROUP BY batch_id
+        ) qt ON bb.batch_id = qt.batch_id
+        WHERE bb.batch_id = ?
+      `,
+          [parseInt(batchId)],
+        );
+
+        console.log("[DEBUG] Query result:", batches); // Debug log
+
+        if (batches.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: "Không tìm thấy lô hàng",
+          });
+        }
+
+        // Get transport history
+        const [transportHistory] = await db.query(
+          `SELECT * FROM transport_events 
+         WHERE batch_id = ? 
+         ORDER BY timestamp_iso DESC`,
+          [parseInt(batchId)],
+        );
+
+        console.log(
+          "[DEBUG] Transport history count:",
+          transportHistory.length,
+        ); // Debug log
+
+        res.json({
+          success: true,
+          data: {
+            batch: batches[0],
+            transportHistory: transportHistory,
+          },
+        });
+      } catch (error) {
+        console.error("[ERROR] Get batch transport info:", error);
+        res.status(500).json({
+          success: false,
+          error: "Lỗi server: " + error.message,
+        });
+      }
+    },
+  );
+
+  /**
+   * GET /api/warehouse/products/available
+   * Lấy sản phẩm có sẵn trong kho
+   */
+  app.get(
+    "/api/warehouse/products/available",
+    requireAuth,
+    requireRole(ROLES.WAREHOUSE),
+    async (req, res) => {
+      try {
+        const warehouseId = req.session.userId;
+
+        const [products] = await db.query(
+          `
+        SELECT 
+          bp.*,
+          bb.batch_name,
+          bb.sscc,
+          p.product_name,
+          u.name as farmer_name
+        FROM blockchain_products bp
+        INNER JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+        INNER JOIN warehouse_confirmations wc ON bb.batch_id = wc.batch_id
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        WHERE wc.warehouse_id = ? 
+          AND bp.is_active = TRUE
+        ORDER BY bp.packaged_date_iso DESC
+      `,
+          [warehouseId],
+        );
+
+        res.json({
+          success: true,
+          count: products.length,
+          data: products,
+        });
+      } catch (error) {
+        console.error("Lỗi:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
   // ==========================================
   // BƯỚC 9: DISTRIBUTOR - PHÂN PHỐI VÀ BÁN HÀNG
   // ==========================================

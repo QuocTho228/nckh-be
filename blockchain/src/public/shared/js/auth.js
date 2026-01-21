@@ -93,6 +93,13 @@ const Auth = {
   },
 
   /**
+   * Kiểm tra có phải warehouse không
+   */
+  isWarehouse() {
+    return this.hasRole(CONFIG.ROLES.WAREHOUSE);
+  },
+
+  /**
    * Đăng xuất
    */
   async logout() {
@@ -252,6 +259,23 @@ const Auth = {
     if (!isLoggedIn) return false;
 
     if (!this.isQualityInspector()) {
+      Utils.toast.error("Bạn không có quyền truy cập trang này");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * Require warehouse role
+   */
+  async requireWarehouse() {
+    const isLoggedIn = await this.requireAuth();
+    if (!isLoggedIn) return false;
+
+    if (!this.isWarehouse()) {
       Utils.toast.error("Bạn không có quyền truy cập trang này");
       setTimeout(() => {
         window.location.href = "/";

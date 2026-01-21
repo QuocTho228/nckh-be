@@ -67,7 +67,7 @@ const CONFIG = {
     PROCESSOR_MY_PRODUCTS: "/api/processor/my-products",
     PROCESSOR_PRODUCT_DETAILS: "/api/processor/product/:id/details",
 
-    // Quality Inspector (ROLE 5) ✅ MỚI THÊM
+    // Quality Inspector
     QUALITY_INSPECTOR_STATS: "/api/quality-inspector/stats",
     QUALITY_INSPECTOR_PENDING_BATCHES: "/api/quality-inspector/pending-batches",
     QUALITY_INSPECTOR_MY_TESTS: "/api/quality-inspector/my-tests",
@@ -75,6 +75,14 @@ const CONFIG = {
     QUALITY_INSPECTOR_BATCH_PROCESSING_INFO:
       "/api/quality-inspector/batch/:id/processing-info",
     QUALITY_INSPECTOR_TEST_IMAGES: "/api/quality-inspector/test/:id/images",
+
+    // Warehouse
+    WAREHOUSE_STATS: "/api/warehouse/stats",
+    WAREHOUSE_INCOMING_BATCHES: "/api/warehouse/incoming-batches",
+    WAREHOUSE_MY_INVENTORY: "/api/warehouse/my-inventory",
+    WAREHOUSE_CONFIRM_RECEIPT: "/api/warehouse/confirm-receipt",
+    WAREHOUSE_BATCH_TRANSPORT_INFO: "/api/warehouse/batch/:id/transport-info",
+    WAREHOUSE_PRODUCTS_AVAILABLE: "/api/warehouse/products/available",
 
     // Government Stamps (Tem QR Bộ Công An)
     STAMPS_GENERATE: "/api/government-stamps/generate",

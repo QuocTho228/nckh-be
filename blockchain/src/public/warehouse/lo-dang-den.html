@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Lô Đang Đến - Kho Bãi</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/warehouse/index.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-truck text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Lô Hàng Đang Đến
+              </span>
+            </div>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Warehouse"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/warehouse/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div
+        x-data="incomingListData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fas fa-shipping-fast text-yellow-600"></i>
+              Lô Hàng Đang Trên Đường
+            </h2>
+            <p class="text-gray-500 text-sm mt-1">
+              Các lô đã kiểm nghiệm ĐẠT, đang được vận chuyển đến kho
+            </p>
+          </div>
+          <button @click="loadBatches()" class="btn-secondary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-yellow-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-yellow-600 font-medium">
+                  Đang trên đường
+                </p>
+                <p
+                  class="text-2xl font-bold text-yellow-700"
+                  x-text="batches.length"
+                ></p>
+              </div>
+              <i class="fas fa-truck text-3xl text-yellow-300"></i>
+            </div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-green-600 font-medium">Đã kiểm nghiệm</p>
+                <p
+                  class="text-2xl font-bold text-green-700"
+                  x-text="qualityPassedCount"
+                ></p>
+              </div>
+              <i class="fas fa-check-circle text-3xl text-green-300"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && batches.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
+          <p class="text-gray-500 mb-2">Không có lô hàng nào đang trên đường</p>
+          <a
+            href="/warehouse/index.html"
+            class="btn-secondary inline-block mt-4"
+          >
+            <i class="fas fa-arrow-left mr-2"></i> Về Dashboard
+          </a>
+        </div>
+
+        <!-- Batches List -->
+        <div x-show="!loading && batches.length > 0" class="space-y-4">
+          <template x-for="batch in batches" :key="batch.batch_id">
+            <div
+              class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
+            >
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3
+                      class="font-bold text-xl"
+                      x-text="batch.batch_name"
+                    ></h3>
+                    <span class="badge badge-success">
+                      <i class="fas fa-check-circle mr-1"></i> ĐẠT kiểm nghiệm
+                    </span>
+                  </div>
+
+                  <!-- Basic Info Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-hashtag"></i>
+                      <span
+                        >Lô:
+                        <span
+                          class="font-semibold"
+                          x-text="batch.batch_id"
+                        ></span
+                      ></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-barcode"></i>
+                      <span x-text="batch.sscc || 'N/A'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-user"></i>
+                      <span x-text="batch.farmer_name || 'N/A'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-leaf"></i>
+                      <span x-text="batch.product_name || 'N/A'"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transport Info -->
+              <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <i class="fas fa-truck text-blue-600"></i>
+                  Thông tin vận chuyển
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span class="text-gray-500">Trạng thái:</span>
+                    <span class="font-medium ml-2 text-green-600">
+                      <i class="fas fa-check-circle mr-1"></i> Đã giao
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Cập nhật cuối:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="Utils.formatDateTime(batch.last_transport_update)"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quality Info -->
+              <div class="bg-green-50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <i class="fas fa-certificate text-green-600"></i>
+                  Kiểm nghiệm chất lượng
+                </h4>
+                <div class="text-sm">
+                  <span class="text-gray-500">Kết quả:</span>
+                  <span class="font-medium ml-2 text-green-600">
+                    <i class="fas fa-check-double mr-1"></i> ĐẠT tiêu chuẩn
+                  </span>
+                </div>
+              </div>
+
+              <!-- Action Button -->
+              <div class="flex justify-end">
+                <a
+                  :href="`/warehouse/xac-nhan-nhan-hang.html?batchId=${batch.batch_id}`"
+                  class="btn-primary"
+                >
+                  <i class="fas fa-check-double mr-2"></i> Xác nhận nhận hàng
+                </a>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/incoming-list.js"></script>
+  </body>
+</html>

@@ -64,7 +64,7 @@ const Utils = {
   confirm: async (title, text, confirmText = "Xác nhận") => {
     const result = await Swal.fire({
       title: title,
-      text: text,
+      html: text,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: confirmText,
@@ -91,16 +91,46 @@ const Utils = {
   /**
    * Format datetime
    */
+  // formatDateTime: (dateString) => {
+  //   if (!dateString) return "";
+  //   const date = new Date(dateString);
+  //   return date.toLocaleString("vi-VN", {
+  //     day: "2-digit",
+  //     month: "2-digit",
+  //     year: "numeric",
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //   });
+  // },
   formatDateTime: (dateString) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+
+    try {
+      const date = new Date(dateString);
+
+      // Kiểm tra valid date
+      if (isNaN(date.getTime())) return "";
+
+      // Lấy thời gian theo múi giờ Việt Nam (UTC+7)
+      const vnTime = new Date(
+        date.toLocaleString("en-US", {
+          timeZone: "Asia/Ho_Chi_Minh",
+        }),
+      );
+
+      // Format thủ công để đảm bảo đúng format
+      const day = String(vnTime.getDate()).padStart(2, "0");
+      const month = String(vnTime.getMonth() + 1).padStart(2, "0");
+      const year = vnTime.getFullYear();
+      const hour = String(vnTime.getHours()).padStart(2, "0");
+      const minute = String(vnTime.getMinutes()).padStart(2, "0");
+
+      // Format: HH:mm DD/MM/YYYY
+      return `${hour}:${minute} ${day}/${month}/${year}`;
+    } catch (error) {
+      console.error("Format datetime error:", error);
+      return "";
+    }
   },
 
   /**

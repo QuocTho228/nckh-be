@@ -382,6 +382,124 @@ const API = {
     return this.get(url);
   },
 
+  // === QUALITY INSPECTOR APIs ===
+
+  /**
+   * Lấy thống kê cho Quality Inspector
+   */
+  async getQualityInspectorStats() {
+    return this.get(CONFIG.API.QUALITY_INSPECTOR_STATS);
+  },
+
+  /**
+   * Lấy danh sách lô cần kiểm nghiệm (đã sơ chế xong)
+   */
+  async getQualityInspectorPendingBatches() {
+    return this.get(CONFIG.API.QUALITY_INSPECTOR_PENDING_BATCHES);
+  },
+
+  /**
+   * Lấy danh sách các test đã thực hiện
+   */
+  async getQualityInspectorMyTests() {
+    return this.get(CONFIG.API.QUALITY_INSPECTOR_MY_TESTS);
+  },
+
+  /**
+   * Ghi nhận kết quả kiểm nghiệm
+   */
+  async recordQualityTest(formData) {
+    return this.upload(CONFIG.API.QUALITY_INSPECTOR_RECORD_TEST, formData);
+  },
+
+  /**
+   * Lấy thông tin sơ chế của lô hàng
+   */
+  async getQualityInspectorBatchProcessingInfo(batchId) {
+    const url = CONFIG.API.QUALITY_INSPECTOR_BATCH_PROCESSING_INFO.replace(
+      ":id",
+      batchId,
+    );
+    return this.get(url);
+  },
+
+  /**
+   * Lấy ảnh của test
+   */
+  async getQualityInspectorTestImages(testId) {
+    const url = CONFIG.API.QUALITY_INSPECTOR_TEST_IMAGES.replace(":id", testId);
+    return this.get(url);
+  },
+
+  // === WAREHOUSE APIs ===
+
+  /**
+   * Lấy thống kê cho Warehouse
+   */
+  async getWarehouseStats() {
+    return this.get(CONFIG.API.WAREHOUSE_STATS);
+  },
+
+  /**
+   * Lấy danh sách lô đang trên đường đến kho
+   */
+  async getWarehouseIncomingBatches() {
+    return this.get(CONFIG.API.WAREHOUSE_INCOMING_BATCHES);
+  },
+
+  /**
+   * Lấy hàng tồn kho
+   */
+  async getWarehouseMyInventory() {
+    return this.get(CONFIG.API.WAREHOUSE_MY_INVENTORY);
+  },
+
+  /**
+   * Xác nhận nhận hàng
+   */
+  async confirmWarehouseReceipt(batchId) {
+    return this.post(CONFIG.API.WAREHOUSE_CONFIRM_RECEIPT, { batchId });
+  },
+
+  /**
+   * Lấy thông tin vận chuyển của lô
+   */
+  async getWarehouseBatchTransportInfo(batchId) {
+    try {
+      const url = CONFIG.API.WAREHOUSE_BATCH_TRANSPORT_INFO.replace(
+        ":id",
+        batchId,
+      );
+
+      // ✅ Gọi trực tiếp this.client.get() thay vì this.get()
+      // Để tránh wrap thêm layer { success: true, data: ... }
+      const response = await this.client.get(url);
+
+      // response.data đã là: { success: true, data: { batch, transportHistory } }
+      return response.data;
+    } catch (error) {
+      console.error("[API] Get warehouse batch transport info error:", error);
+
+      if (error.response && error.response.data) {
+        // Server trả về error response
+        return error.response.data;
+      }
+
+      // Network error
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
+
+  /**
+   * Lấy sản phẩm có sẵn trong kho
+   */
+  async getWarehouseProductsAvailable() {
+    return this.get(CONFIG.API.WAREHOUSE_PRODUCTS_AVAILABLE);
+  },
+
   // === MASTER DATA APIs ===
 
   async getProducts() {

@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Hàng Tồn Kho - Kho Bãi</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/warehouse/index.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-boxes text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Hàng Tồn Kho
+              </span>
+            </div>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Warehouse"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/warehouse/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div
+        x-data="inventoryData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fas fa-warehouse text-green-600"></i>
+              Hàng Tồn Kho
+            </h2>
+            <p class="text-gray-500 text-sm mt-1">
+              Danh sách lô hàng đã nhập kho
+            </p>
+          </div>
+          <button @click="loadInventory()" class="btn-secondary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-blue-600 font-medium">Tổng lô hàng</p>
+                <p
+                  class="text-2xl font-bold text-blue-700"
+                  x-text="inventory.length"
+                ></p>
+              </div>
+              <i class="fas fa-boxes text-3xl text-blue-300"></i>
+            </div>
+          </div>
+
+          <div class="bg-green-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-green-600 font-medium">Tổng sản phẩm</p>
+                <p
+                  class="text-2xl font-bold text-green-700"
+                  x-text="totalProducts"
+                ></p>
+              </div>
+              <i class="fas fa-cubes text-3xl text-green-300"></i>
+            </div>
+          </div>
+
+          <div class="bg-purple-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-purple-600 font-medium">Sẵn sàng xuất</p>
+                <p
+                  class="text-2xl font-bold text-purple-700"
+                  x-text="availableProducts"
+                ></p>
+              </div>
+              <i class="fas fa-check-circle text-3xl text-purple-300"></i>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-orange-600 font-medium">Đã bán</p>
+                <p
+                  class="text-2xl font-bold text-orange-700"
+                  x-text="soldProducts"
+                ></p>
+              </div>
+              <i class="fas fa-shopping-cart text-3xl text-orange-300"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && inventory.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500 mb-2">Kho trống, chưa có hàng nào</p>
+          <a
+            href="/warehouse/lo-dang-den.html"
+            class="btn-primary inline-block mt-4"
+          >
+            <i class="fas fa-truck mr-2"></i> Xem lô đang đến
+          </a>
+        </div>
+
+        <!-- Inventory List -->
+        <div x-show="!loading && inventory.length > 0" class="space-y-4">
+          <template x-for="item in inventory" :key="item.batch_id">
+            <div
+              class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
+            >
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="font-bold text-xl" x-text="item.batch_name"></h3>
+                    <span class="badge badge-success">
+                      <i class="fas fa-warehouse mr-1"></i> Trong kho
+                    </span>
+                  </div>
+
+                  <!-- Basic Info Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-hashtag"></i>
+                      <span
+                        >Lô:
+                        <span
+                          class="font-semibold"
+                          x-text="item.batch_id"
+                        ></span
+                      ></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-barcode"></i>
+                      <span x-text="item.sscc || 'N/A'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-user"></i>
+                      <span x-text="item.farmer_name || 'N/A'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-leaf"></i>
+                      <span x-text="item.product_name || 'N/A'"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Warehouse Info -->
+              <div class="bg-green-50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <i class="fas fa-clipboard-check text-green-600"></i>
+                  Thông tin nhập kho
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span class="text-gray-500">Ngày nhập:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="Utils.formatDateTime(item.confirmed_at)"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Tổng sản phẩm:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="item.total_products || 0"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Còn lại:</span>
+                    <span
+                      class="font-medium ml-2 text-green-600"
+                      x-text="item.available_products || 0"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Product Status -->
+              <div
+                x-show="item.total_products > 0"
+                class="flex items-center gap-4 text-sm"
+              >
+                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-green-600 h-2 rounded-full transition-all"
+                    :style="`width: ${(item.available_products / item.total_products * 100)}%`"
+                  ></div>
+                </div>
+                <span class="text-gray-600">
+                  <span
+                    class="font-semibold text-green-600"
+                    x-text="item.available_products"
+                  ></span>
+                  /
+                  <span x-text="item.total_products"></span> sản phẩm
+                </span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Pagination Info -->
+        <div
+          x-show="!loading && inventory.length > 0"
+          class="mt-6 text-center text-sm text-gray-500"
+        >
+          Hiển thị
+          <span class="font-semibold" x-text="inventory.length"></span> lô hàng
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script>
+      function inventoryData() {
+        return {
+          inventory: [],
+          loading: true,
+
+          get totalProducts() {
+            return this.inventory.reduce((sum, item) => {
+              return sum + (parseInt(item.total_products) || 0);
+            }, 0);
+          },
+
+          get availableProducts() {
+            return this.inventory.reduce((sum, item) => {
+              return sum + (parseInt(item.available_products) || 0);
+            }, 0);
+          },
+
+          get soldProducts() {
+            return this.totalProducts - this.availableProducts;
+          },
+
+          async init() {
+            const isAuthorized = await Auth.requireWarehouse();
+            if (!isAuthorized) return;
+            await this.loadInventory();
+          },
+
+          async loadInventory() {
+            this.loading = true;
+
+            try {
+              const result = await API.getWarehouseMyInventory();
+
+              if (result.success) {
+                this.inventory = result.data.data || [];
+
+                // Sort by confirmed date (newest first)
+                this.inventory.sort((a, b) => {
+                  const dateA = new Date(a.confirmed_at);
+                  const dateB = new Date(b.confirmed_at);
+                  return dateB - dateA;
+                });
+              } else {
+                Utils.toast.error(result.error || "Lỗi khi tải tồn kho");
+              }
+            } catch (error) {
+              console.error("Load inventory error:", error);
+              Utils.toast.error("Lỗi khi tải tồn kho");
+            } finally {
+              this.loading = false;
+            }
+          },
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await Auth.init();
+      });
+    </script>
+  </body>
+</html>
