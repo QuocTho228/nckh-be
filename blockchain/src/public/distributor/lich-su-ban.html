@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Lịch Sử Bán Hàng - Phân Phối</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/distributor/index.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-history text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Lịch Sử Bán Hàng
+              </span>
+            </div>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Distributor"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/distributor/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div
+        x-data="salesHistoryData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fas fa-receipt text-green-600"></i>
+              Lịch Sử Bán Hàng
+            </h2>
+            <p class="text-gray-500 text-sm mt-1">Tất cả sản phẩm đã bán</p>
+          </div>
+          <button @click="loadSales()" class="btn-secondary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 mb-6 flex-wrap">
+          <button
+            @click="filterPeriod = 'all'"
+            :class="filterPeriod === 'all' ? 'badge-info' : 'badge'"
+            class="badge cursor-pointer"
+          >
+            Tất cả (<span x-text="sales.length"></span>)
+          </button>
+          <button
+            @click="filterPeriod = 'today'"
+            :class="filterPeriod === 'today' ? 'badge-success' : 'badge'"
+            class="badge cursor-pointer"
+          >
+            Hôm nay (<span x-text="todayCount"></span>)
+          </button>
+          <button
+            @click="filterPeriod = 'week'"
+            :class="filterPeriod === 'week' ? 'badge-warning' : 'badge'"
+            class="badge cursor-pointer"
+          >
+            Tuần này (<span x-text="weekCount"></span>)
+          </button>
+          <button
+            @click="filterPeriod = 'month'"
+            :class="filterPeriod === 'month' ? 'badge-secondary' : 'badge'"
+            class="badge cursor-pointer"
+          >
+            Tháng này (<span x-text="monthCount"></span>)
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-green-50 rounded-lg p-4">
+            <p class="text-sm text-green-600 font-medium">Tổng đã bán</p>
+            <p
+              class="text-2xl font-bold text-green-700"
+              x-text="sales.length"
+            ></p>
+          </div>
+          <div class="bg-blue-50 rounded-lg p-4">
+            <p class="text-sm text-blue-600 font-medium">Hôm nay</p>
+            <p class="text-2xl font-bold text-blue-700" x-text="todayCount"></p>
+          </div>
+          <div class="bg-yellow-50 rounded-lg p-4">
+            <p class="text-sm text-yellow-600 font-medium">Tuần này</p>
+            <p
+              class="text-2xl font-bold text-yellow-700"
+              x-text="weekCount"
+            ></p>
+          </div>
+          <div class="bg-purple-50 rounded-lg p-4">
+            <p class="text-sm text-purple-600 font-medium">Tháng này</p>
+            <p
+              class="text-2xl font-bold text-purple-700"
+              x-text="monthCount"
+            ></p>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-6">
+          <input
+            type="text"
+            x-model="searchQuery"
+            placeholder="Tìm kiếm theo QR code, lô hàng, sản phẩm..."
+            class="input-gradient"
+          />
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!loading && sales.length === 0" class="text-center py-12">
+          <i class="fas fa-shopping-bag text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500 mb-2">Chưa có giao dịch nào</p>
+          <a
+            href="/distributor/scan-ban-hang.html"
+            class="btn-primary inline-block mt-4"
+          >
+            <i class="fas fa-qrcode mr-2"></i> Bắt đầu bán hàng
+          </a>
+        </div>
+
+        <!-- Sales List -->
+        <div x-show="!loading && filteredSales.length > 0" class="space-y-4">
+          <template x-for="sale in filteredSales" :key="sale.id">
+            <div
+              class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
+            >
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3
+                      class="font-bold text-lg"
+                      x-text="sale.product_qr_code"
+                    ></h3>
+                    <span class="badge badge-success">
+                      <i class="fas fa-check-circle mr-1"></i> Đã bán
+                    </span>
+                  </div>
+
+                  <!-- Basic Info Grid -->
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-600"
+                  >
+                    <!-- Lô hàng -->
+                    <div class="flex items-center gap-2">
+                      <i class="fas fa-box text-gray-400"></i>
+                      <div>
+                        <span class="text-xs text-gray-500 block">Lô:</span>
+                        <span
+                          class="font-medium"
+                          x-text="sale.batch_name || 'N/A'"
+                        ></span>
+                      </div>
+                    </div>
+
+                    <!-- SSCC -->
+                    <div class="flex items-center gap-2">
+                      <i class="fas fa-barcode text-gray-400"></i>
+                      <div>
+                        <span class="text-xs text-gray-500 block">SSCC:</span>
+                        <span
+                          class="font-medium"
+                          x-text="sale.sscc || 'N/A'"
+                        ></span>
+                      </div>
+                    </div>
+
+                    <!-- Sản phẩm -->
+                    <div class="flex items-center gap-2">
+                      <i class="fas fa-leaf text-gray-400"></i>
+                      <div>
+                        <span class="text-xs text-gray-500 block"
+                          >Sản phẩm:</span
+                        >
+                        <span
+                          class="font-medium"
+                          x-text="sale.product_name || 'N/A'"
+                        ></span>
+                      </div>
+                    </div>
+
+                    <!-- Nông dân -->
+                    <div class="flex items-center gap-2">
+                      <i class="fas fa-user text-gray-400"></i>
+                      <div>
+                        <span class="text-xs text-gray-500 block"
+                          >Nông dân:</span
+                        >
+                        <span
+                          class="font-medium"
+                          x-text="sale.farmer_name || 'N/A'"
+                        ></span>
+                      </div>
+                    </div>
+
+                    <!-- Trọng lượng -->
+                    <div
+                      x-show="sale.weight_kg"
+                      class="flex items-center gap-2"
+                    >
+                      <i class="fas fa-weight text-gray-400"></i>
+                      <div>
+                        <span class="text-xs text-gray-500 block"
+                          >Trọng lượng:</span
+                        >
+                        <span
+                          class="font-medium"
+                          x-text="parseFloat(sale.weight_kg).toFixed(2) + ' kg'"
+                        ></span>
+                      </div>
+                    </div>
+
+                    <!-- Loại gói -->
+                    <div
+                      x-show="sale.package_type"
+                      class="flex items-center gap-2"
+                    >
+                      <i class="fas fa-box-open text-gray-400"></i>
+                      <div>
+                        <span class="text-xs text-gray-500 block"
+                          >Loại gói:</span
+                        >
+                        <span
+                          class="font-medium"
+                          x-text="sale.package_type"
+                        ></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sale Info -->
+              <div class="bg-green-50 rounded-lg p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-clock text-green-600"></i>
+                    <div>
+                      <span class="text-gray-600">Thời gian bán:</span>
+                      <span
+                        class="font-medium ml-2"
+                        x-text="Utils.formatDateTime(sale.sold_date_iso)"
+                      ></span>
+                    </div>
+                  </div>
+                  <div x-show="sale.notes" class="flex items-center gap-2">
+                    <i class="fas fa-sticky-note text-green-600"></i>
+                    <div>
+                      <span class="text-gray-600">Ghi chú:</span>
+                      <span class="font-medium ml-2" x-text="sale.notes"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- No Results -->
+        <div
+          x-show="!loading && sales.length > 0 && filteredSales.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Không tìm thấy giao dịch phù hợp</p>
+        </div>
+
+        <!-- Pagination Info -->
+        <div
+          x-show="!loading && filteredSales.length > 0"
+          class="mt-6 text-center text-sm text-gray-500"
+        >
+          Hiển thị
+          <span class="font-semibold" x-text="filteredSales.length"></span> giao
+          dịch
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/sales-history.js"></script>
+  </body>
+</html>

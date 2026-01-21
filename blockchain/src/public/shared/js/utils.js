@@ -1,6 +1,6 @@
 /**
  * ========================================
- * UTILS.JS - Utility Functions
+ * UTILS.JS - Utility Functions (FIXED TIMEZONE)
  * ========================================
  */
 
@@ -89,48 +89,83 @@ const Utils = {
   },
 
   /**
-   * Format datetime
+   * Format datetime - FIXED để hiển thị đúng múi giờ Việt Nam
    */
-  // formatDateTime: (dateString) => {
-  //   if (!dateString) return "";
-  //   const date = new Date(dateString);
-  //   return date.toLocaleString("vi-VN", {
-  //     day: "2-digit",
-  //     month: "2-digit",
-  //     year: "numeric",
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   });
-  // },
   formatDateTime: (dateString) => {
     if (!dateString) return "";
 
     try {
+      // Parse date string
       const date = new Date(dateString);
 
       // Kiểm tra valid date
       if (isNaN(date.getTime())) return "";
 
-      // Lấy thời gian theo múi giờ Việt Nam (UTC+7)
-      const vnTime = new Date(
-        date.toLocaleString("en-US", {
-          timeZone: "Asia/Ho_Chi_Minh",
-        }),
-      );
+      // ✅ FIX: Chuyển sang múi giờ Việt Nam (UTC+7)
+      // Nếu dateString đã có timezone, giữ nguyên
+      // Nếu không, coi như UTC và chuyển sang VN time
+      const options = {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      };
 
-      // Format thủ công để đảm bảo đúng format
-      const day = String(vnTime.getDate()).padStart(2, "0");
-      const month = String(vnTime.getMonth() + 1).padStart(2, "0");
-      const year = vnTime.getFullYear();
-      const hour = String(vnTime.getHours()).padStart(2, "0");
-      const minute = String(vnTime.getMinutes()).padStart(2, "0");
+      // Format theo locale Vietnam
+      const formatter = new Intl.DateTimeFormat("vi-VN", options);
+      const parts = formatter.formatToParts(date);
+
+      // Extract parts
+      const partsMap = {};
+      parts.forEach((part) => {
+        partsMap[part.type] = part.value;
+      });
 
       // Format: HH:mm DD/MM/YYYY
-      return `${hour}:${minute} ${day}/${month}/${year}`;
+      return `${partsMap.hour}:${partsMap.minute} ${partsMap.day}/${partsMap.month}/${partsMap.year}`;
     } catch (error) {
       console.error("Format datetime error:", error);
       return "";
     }
+  },
+
+  /**
+   * Get date in Vietnam timezone (for comparison)
+   * Returns YYYY-MM-DD string in Vietnam time
+   */
+  getVietnamDate: (dateString) => {
+    if (!dateString) return "";
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+
+      // Get Vietnam date string
+      const vnDateStr = date.toLocaleString("en-US", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      // Convert MM/DD/YYYY to YYYY-MM-DD
+      const [month, day, year] = vnDateStr.split("/");
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error("Get Vietnam date error:", error);
+      return "";
+    }
+  },
+
+  /**
+   * Get today's date in Vietnam timezone (YYYY-MM-DD)
+   */
+  getTodayVietnam: () => {
+    const now = new Date();
+    return Utils.getVietnamDate(now.toISOString());
   },
 
   /**

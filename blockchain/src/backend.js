@@ -6356,13 +6356,18 @@ function setupRoutes(app, db) {
           p.product_id,
           p.product_qr_code,
           p.batch_id,
-          p.weight / 1000 as weight_kg,
+          p.weight,
           p.package_type,
           p.packaged_date_iso,
           b.batch_name,
-          b.sscc
+          b.sscc,
+          prod.product_name,
+          u.name as farmer_name
         FROM blockchain_products p
         JOIN blockchain_batches b ON p.batch_id = b.batch_id
+        INNER JOIN warehouse_confirmations wc ON b.batch_id = wc.batch_id
+        LEFT JOIN products prod ON b.product_type_id = prod.product_id
+        LEFT JOIN users u ON b.producer_id = u.uid
         WHERE p.is_active = TRUE
       `;
 
@@ -6518,13 +6523,18 @@ function setupRoutes(app, db) {
           ps.product_qr_code,
           ps.sold_date_iso,
           ps.notes,
+          p.weight,
           p.weight / 1000 as weight_kg,
           p.package_type,
           b.batch_name,
-          b.sscc
+          b.sscc,
+          prod.product_name,
+          u.name as farmer_name
         FROM product_sales ps
         JOIN blockchain_products p ON ps.product_id = p.product_id
         JOIN blockchain_batches b ON ps.batch_id = b.batch_id
+        LEFT JOIN products prod ON b.product_type_id = prod.product_id
+        LEFT JOIN users u ON b.producer_id = u.uid
         WHERE ps.distributor_id = ?
         ORDER BY ps.sold_date_iso DESC
         LIMIT 100`,
@@ -6543,6 +6553,294 @@ function setupRoutes(app, db) {
         res.status(500).json({
           error: "Không thể lấy lịch sử bán hàng: " + error.message,
         });
+      }
+    },
+  );
+
+  /**
+   * GET /api/distributor/stats
+   * Thống kê cho Distributor
+   */
+  app.get(
+    "/api/distributor/stats",
+    requireAuth,
+    requireRole(ROLES.DISTRIBUTOR),
+    async (req, res) => {
+      try {
+        const distributorId = req.session.userId;
+
+        // Total sold
+        const [sold] = await db.query(
+          "SELECT COUNT(*) as total FROM product_sales WHERE distributor_id = ?",
+          [distributorId],
+        );
+
+        // Available products (from warehouse, still active)
+        const [available] = await db.query(
+          `SELECT COUNT(*) as total 
+         FROM blockchain_products bp
+         INNER JOIN warehouse_confirmations wc ON bp.batch_id = wc.batch_id
+         WHERE bp.is_active = TRUE`,
+        );
+
+        // Today's sales
+        const today = new Date().toISOString().split("T")[0];
+        const [todaySales] = await db.query(
+          `SELECT COUNT(*) as total 
+         FROM product_sales 
+         WHERE distributor_id = ? 
+         AND DATE(sold_date_iso) = ?`,
+          [distributorId, today],
+        );
+
+        // This week's sales
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const [weekSales] = await db.query(
+          `SELECT COUNT(*) as total 
+         FROM product_sales 
+         WHERE distributor_id = ? 
+         AND sold_date_iso >= ?`,
+          [distributorId, weekAgo.toISOString().split("T")[0]],
+        );
+
+        res.json({
+          success: true,
+          data: {
+            totalSold: sold[0].total,
+            availableProducts: available[0].total,
+            soldToday: todaySales[0].total,
+            soldThisWeek: weekSales[0].total,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi stats:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
+  /**
+   * POST /api/distributor/scan-product
+   * Scan QR code sản phẩm để load thông tin
+   */
+  app.post(
+    "/api/distributor/scan-product",
+    requireAuth,
+    requireRole(ROLES.DISTRIBUTOR),
+    async (req, res) => {
+      try {
+        const { qrCode } = req.body;
+
+        if (!qrCode) {
+          return res.status(400).json({
+            error: "Thiếu mã QR",
+          });
+        }
+
+        // Find product
+        const [products] = await db.query(
+          `
+        SELECT 
+          bp.*,
+          bb.batch_name,
+          bb.sscc,
+          p.product_name,
+          u.name as farmer_name
+        FROM blockchain_products bp
+        INNER JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        WHERE bp.product_qr_code = ?
+      `,
+          [qrCode],
+        );
+
+        if (products.length === 0) {
+          return res.status(404).json({
+            error: "Không tìm thấy sản phẩm với mã QR này",
+          });
+        }
+
+        const product = products[0];
+
+        // Check if already sold
+        if (!product.is_active) {
+          return res.status(400).json({
+            error: "Sản phẩm này đã được bán",
+            product: product,
+          });
+        }
+
+        res.json({
+          success: true,
+          data: {
+            product: product,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi scan:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
+  /**
+   * GET /api/distributor/product/:qr/full-info
+   * Lấy thông tin đầy đủ sản phẩm qua QR
+   */
+  app.get(
+    "/api/distributor/product/:qr/full-info",
+    requireAuth,
+    requireRole(ROLES.DISTRIBUTOR),
+    async (req, res) => {
+      try {
+        const qrCode = decodeURIComponent(req.params.qr);
+
+        // Get product info
+        const [products] = await db.query(
+          `
+        SELECT 
+          bp.*,
+          bb.batch_name,
+          bb.sscc,
+          bb.current_stage,
+          p.product_name,
+          u.name as farmer_name
+        FROM blockchain_products bp
+        INNER JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        WHERE bp.product_qr_code = ?
+      `,
+          [qrCode],
+        );
+
+        if (products.length === 0) {
+          return res.status(404).json({
+            error: "Không tìm thấy sản phẩm",
+          });
+        }
+
+        const product = products[0];
+
+        res.json({
+          success: true,
+          data: {
+            product: product,
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi:", error);
+        res.status(500).json({ error: error.message });
+      }
+    },
+  );
+
+  /**
+   * POST /api/distributor/mark-sold
+   * Đánh dấu sản phẩm đã bán
+   */
+  app.post(
+    "/api/distributor/mark-sold",
+    requireAuth,
+    requireRole(ROLES.DISTRIBUTOR),
+    async (req, res) => {
+      let connection;
+      try {
+        const distributorId = req.session.userId;
+        const { productQrCode, notes } = req.body;
+
+        if (!productQrCode) {
+          return res.status(400).json({
+            error: "Thiếu mã QR sản phẩm",
+          });
+        }
+
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // Get product
+        const [products] = await connection.query(
+          "SELECT * FROM blockchain_products WHERE product_qr_code = ?",
+          [productQrCode],
+        );
+
+        if (products.length === 0) {
+          await connection.rollback();
+          return res.status(404).json({
+            error: "Không tìm thấy sản phẩm",
+          });
+        }
+
+        const product = products[0];
+
+        if (!product.is_active) {
+          await connection.rollback();
+          return res.status(400).json({
+            error: "Sản phẩm này đã được bán",
+          });
+        }
+
+        // Call blockchain
+        const result = await traceabilityContract.methods
+          .markProductSold(BigInt(product.product_id), BigInt(distributorId))
+          .send({ from: web3.eth.defaultAccount, gas: 2000000 });
+
+        // Get timestamp
+        const receipt = await web3.eth.getTransactionReceipt(
+          result.transactionHash,
+        );
+        const block = await web3.eth.getBlock(receipt.blockNumber);
+        const timestamp = Number(block.timestamp);
+        const timestampISO = new Date(timestamp * 1000)
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+
+        // Update blockchain_products
+        await connection.query(
+          `UPDATE blockchain_products 
+         SET is_active = FALSE, sold_date = ?, sold_date_iso = ?
+         WHERE product_id = ?`,
+          [timestamp, timestampISO, product.product_id],
+        );
+
+        // Insert into product_sales
+        await connection.query(
+          `INSERT INTO product_sales 
+        (product_id, product_qr_code, batch_id, distributor_id, sold_date, sold_date_iso, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            product.product_id,
+            productQrCode,
+            product.batch_id,
+            distributorId,
+            timestamp,
+            timestampISO,
+            notes || null,
+          ],
+        );
+
+        await connection.commit();
+
+        res.json({
+          success: true,
+          message: "Đã đánh dấu sản phẩm đã bán",
+          data: {
+            productId: product.product_id,
+            soldDate: timestampISO,
+            transactionHash: result.transactionHash,
+          },
+        });
+      } catch (error) {
+        if (connection) await connection.rollback();
+        console.error("Lỗi mark sold:", error);
+        res.status(500).json({
+          error: "Không thể đánh dấu: " + error.message,
+        });
+      } finally {
+        if (connection) connection.release();
       }
     },
   );

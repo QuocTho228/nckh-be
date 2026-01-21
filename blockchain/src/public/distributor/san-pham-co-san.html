@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Sản Phẩm Có Sẵn - Phân Phối</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/distributor/index.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-boxes text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Sản Phẩm Có Sẵn
+              </span>
+            </div>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Distributor"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/distributor/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div
+        x-data="productListData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fas fa-box-open text-blue-600"></i>
+              Sản Phẩm Có Sẵn
+            </h2>
+            <p class="text-gray-500 text-sm mt-1">
+              Các sản phẩm đã qua kiểm nghiệm, sẵn sàng phân phối
+            </p>
+          </div>
+          <button @click="loadProducts()" class="btn-secondary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="mb-6 flex gap-4">
+          <div class="flex-1">
+            <input
+              type="text"
+              x-model="searchQuery"
+              @input="filterProducts()"
+              placeholder="Tìm kiếm theo QR code, tên lô, sản phẩm..."
+              class="input-gradient"
+            />
+          </div>
+          <select
+            x-model="filterBatch"
+            @change="filterProducts()"
+            class="input-gradient w-64"
+          >
+            <option value="">Tất cả lô hàng</option>
+            <template x-for="batch in uniqueBatches" :key="batch.batch_id">
+              <option
+                :value="batch.batch_id"
+                x-text="batch.batch_name"
+              ></option>
+            </template>
+          </select>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-blue-600 font-medium">Tổng sản phẩm</p>
+                <p
+                  class="text-2xl font-bold text-blue-700"
+                  x-text="products.length"
+                ></p>
+              </div>
+              <i class="fas fa-cubes text-3xl text-blue-300"></i>
+            </div>
+          </div>
+
+          <div class="bg-green-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-green-600 font-medium">Đang hiển thị</p>
+                <p
+                  class="text-2xl font-bold text-green-700"
+                  x-text="filteredProducts.length"
+                ></p>
+              </div>
+              <i class="fas fa-filter text-3xl text-green-300"></i>
+            </div>
+          </div>
+
+          <div class="bg-purple-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-purple-600 font-medium">Số lô hàng</p>
+                <p
+                  class="text-2xl font-bold text-purple-700"
+                  x-text="uniqueBatches.length"
+                ></p>
+              </div>
+              <i class="fas fa-boxes text-3xl text-purple-300"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && products.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Chưa có sản phẩm nào</p>
+        </div>
+
+        <!-- No Results -->
+        <div
+          x-show="!loading && products.length > 0 && filteredProducts.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Không tìm thấy sản phẩm phù hợp</p>
+          <button
+            @click="searchQuery = ''; filterBatch = ''; filterProducts()"
+            class="btn-secondary mt-4"
+          >
+            <i class="fas fa-times mr-2"></i> Xóa bộ lọc
+          </button>
+        </div>
+
+        <!-- Products Grid -->
+        <div
+          x-show="!loading && filteredProducts.length > 0"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          <template
+            x-for="product in filteredProducts"
+            :key="product.product_id"
+          >
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition"
+            >
+              <!-- QR Code Badge -->
+              <div class="flex items-center justify-between mb-3">
+                <span class="badge badge-info text-xs">
+                  <i class="fas fa-qrcode mr-1"></i>
+                  <span x-text="product.product_qr_code"></span>
+                </span>
+                <span class="badge badge-success text-xs">Sẵn sàng</span>
+              </div>
+
+              <!-- Product Info -->
+              <div class="space-y-2 text-sm mb-4">
+                <div>
+                  <span class="text-gray-500">Lô hàng:</span>
+                  <span
+                    class="font-medium ml-2"
+                    x-text="product.batch_name"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-500">SSCC:</span>
+                  <span
+                    class="font-medium ml-2"
+                    x-text="product.sscc || 'N/A'"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Sản phẩm:</span>
+                  <span
+                    class="font-medium ml-2"
+                    x-text="product.product_name || 'N/A'"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Nông dân:</span>
+                  <span
+                    class="font-medium ml-2"
+                    x-text="product.farmer_name || 'N/A'"
+                  ></span>
+                </div>
+                <div x-show="product.weight">
+                  <span class="text-gray-500">Trọng lượng:</span>
+                  <span
+                    class="font-medium ml-2"
+                    x-text="(product.weight / 1000) + ' kg'"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Đóng gói:</span>
+                  <span
+                    class="font-medium ml-2"
+                    x-text="Utils.formatDate(product.packaged_date_iso)"
+                  ></span>
+                </div>
+              </div>
+
+              <!-- Action Button -->
+              <button
+                @click="quickSell(product)"
+                class="btn-primary w-full text-sm"
+              >
+                <i class="fas fa-shopping-cart mr-2"></i> Bán ngay
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <!-- Pagination Info -->
+        <div
+          x-show="!loading && filteredProducts.length > 0"
+          class="mt-6 text-center text-sm text-gray-500"
+        >
+          Hiển thị
+          <span class="font-semibold" x-text="filteredProducts.length"></span>
+          sản phẩm
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/product-list.js"></script>
+  </body>
+</html>

@@ -21,16 +21,14 @@ const CONFIG = {
     REGIONS: "/api/region",
     ADDRESS_DATA: "/api/address-data",
 
-    // Farmer - Trees
+    // Farmer (ROLE 1)
     FARMER_TREES: "/api/farmer/my-trees",
     REGISTER_TREE: "/api/farmer/register-tree",
     ADD_TREE_CARE: "/api/farmer/add-tree-care",
-
-    // Farmer - Batches
     FARMER_BATCHES: "/api/farmer/my-batches",
     CREATE_BATCH: "/api/farmer/create-batch",
 
-    // Inspector
+    // Inspector (ROLE 2)
     INSPECTOR_STATS: "/api/inspector/stats",
     INSPECTOR_PENDING_BATCHES: "/api/inspector/pending-batches",
     INSPECTOR_BATCH_FULL_INFO: "/api/inspector/batch/:id/full-info",
@@ -38,7 +36,7 @@ const CONFIG = {
     INSPECTOR_APPROVE_BATCH: "/api/inspector/approve-batch/:id",
     INSPECTOR_REJECT_BATCH: "/api/inspector/reject-batch/:id",
 
-    // Purchaser
+    // Purchaser (ROLE 3)
     PURCHASER_STATS: "/api/purchaser/stats",
     PURCHASER_APPROVED_BATCHES: "/api/purchaser/approved-batches",
     PURCHASER_BATCH_DETAILS: "/api/purchaser/batch/:id/details",
@@ -46,16 +44,7 @@ const CONFIG = {
     PURCHASER_RECORD_PURCHASE: "/api/purchaser/record-purchase",
     PURCHASER_PURCHASE_IMAGES: "/api/purchaser/purchase/:id/images",
 
-    // Transporter
-    TRANSPORTER_STATS: "/api/transporter/stats",
-    TRANSPORTER_BATCHES: "/api/transporter/batches-to-transport",
-    TRANSPORTER_BATCH_DETAILS: "/api/transporter/batch/:id/details",
-    TRANSPORTER_CURRENT_STATUS: "/api/transporter/batch/:id/current-status",
-    TRANSPORTER_UPDATE_STATUS: "/api/transporter/update-status",
-    TRANSPORTER_MY_TRANSPORTS: "/api/transporter/my-transports",
-    TRANSPORTER_BATCH_HISTORY: "/api/transporter/batch/:id/transport-history",
-
-    // Processor
+    // Processor (ROLE 4)
     PROCESSOR_STATS: "/api/processor/stats",
     PROCESSOR_PENDING_BATCHES: "/api/processor/pending-batches",
     PROCESSOR_BATCH_DETAILS: "/api/processor/batch/:id/processing-details",
@@ -67,7 +56,7 @@ const CONFIG = {
     PROCESSOR_MY_PRODUCTS: "/api/processor/my-products",
     PROCESSOR_PRODUCT_DETAILS: "/api/processor/product/:id/details",
 
-    // Quality Inspector
+    // Quality Inspector (ROLE 5)
     QUALITY_INSPECTOR_STATS: "/api/quality-inspector/stats",
     QUALITY_INSPECTOR_PENDING_BATCHES: "/api/quality-inspector/pending-batches",
     QUALITY_INSPECTOR_MY_TESTS: "/api/quality-inspector/my-tests",
@@ -76,7 +65,24 @@ const CONFIG = {
       "/api/quality-inspector/batch/:id/processing-info",
     QUALITY_INSPECTOR_TEST_IMAGES: "/api/quality-inspector/test/:id/images",
 
-    // Warehouse
+    // Transporter (ROLE 6)
+    TRANSPORTER_STATS: "/api/transporter/stats",
+    TRANSPORTER_BATCHES: "/api/transporter/batches-to-transport",
+    TRANSPORTER_BATCH_DETAILS: "/api/transporter/batch/:id/details",
+    TRANSPORTER_CURRENT_STATUS: "/api/transporter/batch/:id/current-status",
+    TRANSPORTER_UPDATE_STATUS: "/api/transporter/update-status",
+    TRANSPORTER_MY_TRANSPORTS: "/api/transporter/my-transports",
+    TRANSPORTER_BATCH_HISTORY: "/api/transporter/batch/:id/transport-history",
+
+    // Distributor (ROLE 7)
+    DISTRIBUTOR_STATS: "/api/distributor/stats",
+    DISTRIBUTOR_AVAILABLE_PRODUCTS: "/api/distributor/available-products",
+    DISTRIBUTOR_SALES_HISTORY: "/api/distributor/sales-history",
+    DISTRIBUTOR_MARK_SOLD: "/api/distributor/mark-sold",
+    DISTRIBUTOR_SCAN_PRODUCT: "/api/distributor/scan-product",
+    DISTRIBUTOR_PRODUCT_FULL_INFO: "/api/distributor/product/:qr/full-info",
+
+    // Warehouse (ROLE 8)
     WAREHOUSE_STATS: "/api/warehouse/stats",
     WAREHOUSE_INCOMING_BATCHES: "/api/warehouse/incoming-batches",
     WAREHOUSE_MY_INVENTORY: "/api/warehouse/my-inventory",
@@ -84,7 +90,7 @@ const CONFIG = {
     WAREHOUSE_BATCH_TRANSPORT_INFO: "/api/warehouse/batch/:id/transport-info",
     WAREHOUSE_PRODUCTS_AVAILABLE: "/api/warehouse/products/available",
 
-    // Government Stamps (Tem QR Bộ Công An)
+    // Government Stamps (ROLE 10) (Tem QR Bộ Công An)
     STAMPS_GENERATE: "/api/government-stamps/generate",
     STAMPS_LIST: "/api/government-stamps/list",
     STAMPS_VALIDATE: "/api/government-stamps/validate",

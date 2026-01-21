@@ -500,6 +500,134 @@ const API = {
     return this.get(CONFIG.API.WAREHOUSE_PRODUCTS_AVAILABLE);
   },
 
+  // === DISTRIBUTOR APIs ===
+  /**
+   * Lấy thống kê cho Distributor
+   */
+  async getDistributorStats() {
+    try {
+      const response = await this.client.get(CONFIG.API.DISTRIBUTOR_STATS);
+      return response.data;
+    } catch (error) {
+      console.error("[API] Get distributor stats error:", error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
+
+  /**
+   * Lấy danh sách sản phẩm có sẵn để bán
+   */
+  async getDistributorAvailableProducts() {
+    try {
+      const response = await this.client.get(
+        CONFIG.API.DISTRIBUTOR_AVAILABLE_PRODUCTS,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("[API] Get distributor available products error:", error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
+
+  /**
+   * Lấy lịch sử bán hàng
+   */
+  async getDistributorSalesHistory() {
+    try {
+      const response = await this.client.get(
+        CONFIG.API.DISTRIBUTOR_SALES_HISTORY,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("[API] Get distributor sales history error:", error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
+
+  /**
+   * Đánh dấu sản phẩm đã bán
+   */
+  async markProductSold(data) {
+    try {
+      const response = await this.client.post(
+        CONFIG.API.DISTRIBUTOR_MARK_SOLD,
+        data,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("[API] Mark product sold error:", error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
+
+  /**
+   * Scan sản phẩm bằng mã QR
+   */
+  async scanProduct(data) {
+    try {
+      const response = await this.client.post(
+        CONFIG.API.DISTRIBUTOR_SCAN_PRODUCT,
+        data,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("[API] Scan product error:", error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
+
+  /**
+   * Lấy thông tin đầy đủ sản phẩm bằng mã QR
+   */
+  async getProductFullInfo(qrCode) {
+    try {
+      const url = CONFIG.API.DISTRIBUTOR_PRODUCT_FULL_INFO.replace(
+        ":qr",
+        qrCode,
+      );
+      const response = await this.client.get(url);
+      return response.data;
+    } catch (error) {
+      console.error("[API] Get product full info error:", error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      return {
+        success: false,
+        error: error.message || "Lỗi kết nối API",
+      };
+    }
+  },
   // === MASTER DATA APIs ===
 
   async getProducts() {
