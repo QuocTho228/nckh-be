@@ -82,7 +82,7 @@ app.use(
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 giờ
     },
-  })
+  }),
 );
 
 // ============================================
@@ -116,7 +116,7 @@ const diskStorage = multer.diskStorage({
     const uploadPath = path.join(
       uploadDir,
       today.getFullYear().toString(),
-      (today.getMonth() + 1).toString()
+      (today.getMonth() + 1).toString(),
     );
 
     if (!fs.existsSync(uploadPath)) {
@@ -210,7 +210,7 @@ app.get("/api/check-login", (req, res) => {
 app.get("/api/products", async (req, res) => {
   try {
     const [products] = await db.query(
-      "SELECT product_id, product_name FROM products"
+      "SELECT product_id, product_name FROM products",
     );
     res.json(products);
   } catch (error) {
@@ -222,7 +222,7 @@ app.get("/api/products", async (req, res) => {
 app.get("/api/nhasanxuat", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM users join roles on users.role_id = roles.role_id left join regions on users.region_id = regions.region_id WHERE users.role_id = 1"
+      "SELECT * FROM users join roles on users.role_id = roles.role_id left join regions on users.region_id = regions.region_id WHERE users.role_id = 1",
     );
     res.json(rows);
   } catch (err) {
@@ -234,7 +234,7 @@ app.get("/api/nhasanxuat", async (req, res) => {
 app.get("/api/nhakiemduyet", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM users join roles on users.role_id = roles.role_id left join regions on users.region_id = regions.region_id WHERE users.role_id = 2"
+      "SELECT * FROM users join roles on users.role_id = roles.role_id left join regions on users.region_id = regions.region_id WHERE users.role_id = 2",
     );
     res.json(rows);
   } catch (err) {
@@ -247,7 +247,7 @@ app.get("/api/address-data", async (req, res) => {
   try {
     const data = await fs.promises.readFile(
       path.join(__dirname, "components/user/data.json"),
-      "utf8"
+      "utf8",
     );
     const jsonData = JSON.parse(data);
     res.json(jsonData);
@@ -289,7 +289,7 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
         // Xóa avatar cũ
         const [oldUser] = await connection.query(
           "SELECT avatar FROM users WHERE uid = ?",
-          [userId]
+          [userId],
         );
 
         if (oldUser[0]?.avatar) {
@@ -299,7 +299,7 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
               "public",
               "uploads",
               "avatars",
-              path.basename(oldUser[0].avatar)
+              path.basename(oldUser[0].avatar),
             );
             if (fs.existsSync(oldAvatarPath)) {
               fs.unlinkSync(oldAvatarPath);
@@ -350,7 +350,7 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
 
     if (updateFields.length > 0) {
       const updateQuery = `UPDATE users SET ${updateFields.join(
-        ", "
+        ", ",
       )} WHERE uid = ?`;
       updateValues.push(userId);
 
@@ -375,7 +375,7 @@ app.put("/api/capnhatthongtin", upload.single("avatar"), async (req, res) => {
       if (region_id) {
         const [regionResult] = await connection.query(
           "SELECT region_name FROM regions WHERE region_id = ?",
-          [region_id]
+          [region_id],
         );
         if (regionResult[0]) {
           req.session.region = regionResult[0].region_name;
@@ -475,7 +475,7 @@ app.post("/api/notifications/:id/read", async (req, res) => {
     console.log("Đang xóa thông báo với ID:", notificationId);
     const [result] = await db.query(
       "DELETE FROM notification WHERE id = ? AND user_id = ?",
-      [notificationId, userId]
+      [notificationId, userId],
     );
     console.log("Kết quả xóa:", result);
     if (result.affectedRows > 0) {
@@ -497,7 +497,7 @@ app.post("/api/notifications/:id/admin-read", async (req, res) => {
     console.log("Đang xóa thông báo với ID:", notificationId);
     const [result] = await db.query(
       "DELETE FROM notification WHERE id = ? AND admin_id = ?",
-      [notificationId, adminId]
+      [notificationId, adminId],
     );
     console.log("Kết quả xóa:", result);
     if (result.affectedRows > 0) {
@@ -547,7 +547,7 @@ app.get("/api/notifications", async (req, res) => {
         WHERE n.recipient_type = 'admin' AND n.admin_id = ?
         ORDER BY r.created_on DESC
       `,
-      [req.session.adminId]
+      [req.session.adminId],
     );
 
     res.json(notifications);
@@ -571,7 +571,7 @@ app.get("/nha-kho/nha-kho.html", requireAuth, (req, res) => {
 app.get("/van-chuyen/van-chuyen.html", requireAuth, (req, res) => {
   if (req.session.roleId === 6) {
     res.sendFile(
-      path.join(__dirname, "public", "van-chuyen", "van-chuyen.html")
+      path.join(__dirname, "public", "van-chuyen", "van-chuyen.html"),
     );
   } else {
     res.status(403).send("Forbidden");
@@ -589,7 +589,7 @@ app.get("/san-xuat/sanxuat.html", requireAuth, (req, res) => {
 app.get("/nhakiemduyet.html", requireAuth, (req, res) => {
   if (req.session.roleId === 2) {
     res.sendFile(
-      path.join(__dirname, "public", "kiem-duyet", "nhakiemduyet.html")
+      path.join(__dirname, "public", "kiem-duyet", "nhakiemduyet.html"),
     );
   } else {
     res.status(403).send("Forbidden");
@@ -599,7 +599,7 @@ app.get("/nhakiemduyet.html", requireAuth, (req, res) => {
 app.get("/kiem-duyet/nhakiemduyet.html", requireAuth, (req, res) => {
   if (req.session.roleId === 2) {
     res.sendFile(
-      path.join(__dirname, "public", "kiem-duyet", "nhakiemduyet.html")
+      path.join(__dirname, "public", "kiem-duyet", "nhakiemduyet.html"),
     );
   } else {
     res.status(403).send("Forbidden");
@@ -613,8 +613,12 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/batch/:sscc", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "public", "tieu-dung", "batch-redirect.html")
+    path.join(__dirname, "public", "tieu-dung", "batch-redirect.html"),
   );
+});
+
+app.get("/truy-xuat.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tieu-dung", "truy-xuat.html"));
 });
 
 app.get("/", (req, res) => {
@@ -647,7 +651,7 @@ app.get("/allnongdan.html", (req, res) => {
 
 app.get("/allnhakiemduyet.html", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "public", "tieu-dung", "allnhakiemduyet.html")
+    path.join(__dirname, "public", "tieu-dung", "allnhakiemduyet.html"),
   );
 });
 
@@ -691,7 +695,7 @@ io.on("connection", (socket) => {
     const admins = users.filter((x) => x.roleId === 3 && x.online);
     admins.forEach((admin) => {
       console.log(
-        `Sending updateUnreadCount (${count}) to admin: ${admin.name}`
+        `Sending updateUnreadCount (${count}) to admin: ${admin.name}`,
       );
       io.to(admin.socketId).emit("updateUnreadCount", count);
     });
@@ -716,7 +720,7 @@ io.on("connection", (socket) => {
     admins.forEach((admin) => {
       io.to(admin.socketId).emit(
         "updateUserList",
-        users.filter((u) => u.roleId !== 3 && u.messages.length > 0)
+        users.filter((u) => u.roleId !== 3 && u.messages.length > 0),
       );
     });
   });
@@ -763,7 +767,7 @@ io.on("connection", (socket) => {
           io.to(admin.socketId).emit("message", message);
           io.to(admin.socketId).emit(
             "updateUserList",
-            users.filter((u) => u.roleId !== 3 && u.messages.length > 0)
+            users.filter((u) => u.roleId !== 3 && u.messages.length > 0),
           );
         });
       } else {
@@ -799,7 +803,7 @@ io.on("connection", (socket) => {
       admins.forEach((admin) => {
         io.to(admin.socketId).emit(
           "updateUserList",
-          users.filter((u) => u.roleId !== 3 && u.messages.length > 0)
+          users.filter((u) => u.roleId !== 3 && u.messages.length > 0),
         );
       });
     }

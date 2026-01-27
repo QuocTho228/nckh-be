@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -452,7 +452,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="./js_giaodien/sanpham.js"></script>
+    <script src="./tieu-dung/js/sanpham.js"></script>
     <script type="module" src="./js_giaodien/profile.js"></script>
     <script src="./chatbox/chatbox.js"></script>
 
@@ -512,7 +512,7 @@
               loadProvinces();
             })
             .catch((error) =>
-              console.error("Error fetching user info:", error)
+              console.error("Error fetching user info:", error),
             );
         }
 
@@ -537,7 +537,7 @@
               }
             })
             .catch((error) =>
-              console.error("Error fetching provinces:", error)
+              console.error("Error fetching provinces:", error),
             );
         }
 
@@ -564,7 +564,7 @@
               }
             })
             .catch((error) =>
-              console.error("Error fetching districts:", error)
+              console.error("Error fetching districts:", error),
             );
         }
 
@@ -607,7 +607,7 @@
               part &&
               part !== "Chọn Xã/Phường" &&
               part !== "Chọn Quận/Huyện" &&
-              part !== "Chọn Tỉnh/Thành phố"
+              part !== "Chọn Tỉnh/Thành phố",
           );
           fullAddressInput.value = addressParts.join(", ");
         }
@@ -674,7 +674,7 @@
           // Thông báo
           showNotification(
             "Địa chỉ đã được cập nhật. Nhấn nút Lưu để hoàn tất.",
-            "info"
+            "info",
           );
         });
 
@@ -735,12 +735,10 @@
               const avatarImage = document.getElementById("avatarImage");
 
               document.getElementById("userName").textContent = data.name;
-              document.getElementById(
-                "userRole"
-              ).textContent = `Vai trò: ${getRoleName(data.roleId)}`;
-              document.getElementById(
-                "userRegion"
-              ).textContent = `Khu vực: ${data.region}`;
+              document.getElementById("userRole").textContent =
+                `Vai trò: ${getRoleName(data.roleId)}`;
+              document.getElementById("userRegion").textContent =
+                `Khu vực: ${data.region}`;
               document.getElementById("userNameInput").value = data.name;
               document.getElementById("phoneInput").value = data.phone;
               document.getElementById("emailInput").value = data.email;
@@ -756,13 +754,13 @@
           } else {
             const errorData = await response.json();
             throw new Error(
-              errorData.error || "Không thể lấy thông tin người dùng"
+              errorData.error || "Không thể lấy thông tin người dùng",
             );
           }
         } catch (error) {
           console.error("Lỗi:", error.message);
           alert(
-            "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại."
+            "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.",
           );
           window.location.href = "../account/dangnhap.html";
         }
@@ -914,7 +912,7 @@
           console.log("Có thay đổi, chuẩn bị xử lý");
 
           const formData = new FormData(
-            document.getElementById("profile-form")
+            document.getElementById("profile-form"),
           );
 
           // Gọi hàm để gửi dữ liệu đến server
@@ -923,16 +921,16 @@
 
         function hasDataChanged() {
           const inputs = document.querySelectorAll(
-            "#profile-form input, #profile-form select, #profile-form textarea"
+            "#profile-form input, #profile-form select, #profile-form textarea",
           );
           return Array.from(inputs).some(
-            (input) => input.value !== input.defaultValue
+            (input) => input.value !== input.defaultValue,
           );
         }
 
         function updateDefaultValues() {
           const inputs = document.querySelectorAll(
-            "#profile-form input, #profile-form select, #profile-form textarea"
+            "#profile-form input, #profile-form select, #profile-form textarea",
           );
           inputs.forEach((input) => {
             input.defaultValue = input.value;
@@ -966,7 +964,7 @@
               userNameElement.textContent = userInfo.name || "Chưa cập nhật";
             if (userRoleElement)
               userRoleElement.textContent = `Vai trò: ${getRoleName(
-                userInfo.roleId
+                userInfo.roleId,
               )}`;
             if (userRegionElement)
               userRegionElement.textContent = `Khu vực: ${
@@ -1061,7 +1059,7 @@
                 JSON.stringify({
                   ...userInfo,
                   ...newData,
-                })
+                }),
               );
 
               // Xóa sessionStorage sau khi lưu thành công
@@ -1094,11 +1092,11 @@
             console.error("Chi tiết lỗi:", error);
             showNotification(
               error.message || "Có lỗi xảy ra khi cập nhật thông tin",
-              "error"
+              "error",
             );
             alert(
               "✗ Lỗi: " +
-                (error.message || "Có lỗi xảy ra khi cập nhật thông tin")
+                (error.message || "Có lỗi xảy ra khi cập nhật thông tin"),
             );
           }
         }
@@ -1124,7 +1122,7 @@
           if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
             showNotification(
               "Chỉ chấp nhận file ảnh định dạng JPG, JPEG hoặc PNG",
-              "warning"
+              "warning",
             );
             return;
           }
@@ -1147,14 +1145,14 @@
             } else {
               showNotification(
                 result.message || "Không thể cập nhật ảnh đại diện",
-                "error"
+                "error",
               );
             }
           } catch (error) {
             console.error("Lỗi khi upload ảnh:", error);
             showNotification(
               "Có lỗi xảy ra khi cập nhật ảnh đại diện",
-              "error"
+              "error",
             );
           }
         });

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -52,21 +52,31 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
+          <li class></li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Trang chủ</a>
+            <a class="nav-link" href="./truy-xuat.html"
+              ><i class="fas fa-qrcode mr-1"></i>Truy xuất nguồn gốc</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="./allsanpham.html">Sản phẩm</a>
+            <a class="nav-link" href="./allsanpham.html"
+              ><i class="fas fa-tree mr-1"></i>Sản phẩm</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="./allnongdan.html">Nhà sản xuất</a>
+            <a class="nav-link" href="./allnongdan.html"
+              ><i class="fas fa-leaf mr-1"></i>Nhà sản xuất</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="./allnhakiemduyet.html">Nhà kiểm duyệt</a>
+            <a class="nav-link" href="./allnhakiemduyet.html"
+              ><i class="fas fa-check-circle mr-1"></i>Nhà kiểm duyệt</a
+            >
           </li>
-
           <li class="nav-item">
-            <a class="nav-link" href="./account/dangnhap.html">Đăng nhập</a>
+            <a class="nav-link" href="./account/dangnhap.html"
+              ><i class="fas fa-sign-in-alt mr-1"></i>Đăng nhập</a
+            >
           </li>
         </ul>
       </div>
@@ -77,7 +87,7 @@
           <div class="carousel-inner">
             <div class="carousel-item active">
               <img
-                src=".\hinhanh\banner-1.jpg"
+                src="../hinhanh/banner-1.jpg"
                 class="img-fluid custom-img"
                 alt="Banner 1"
               />
@@ -346,7 +356,7 @@
     <script src="https://cdn.jsdelivr.net/npm/babel-standalone/babel.min.js"></script>
     <script src="../../components/tieu-dung/trang-chu.js"></script>
     <script src="../chatbox/chatbox.js"></script>
-    <script src="../js_giaodien/loaditem.js"></script>
+    <script src="../tieu-dung/js/loaditem.js"></script>
 
     <script>
       function toggleChat() {
@@ -373,7 +383,7 @@
           "/api/products-home",
           ".sanpham .row",
           8,
-          createProductCard
+          createProductCard,
         );
 
         // Load người dùng
@@ -381,7 +391,7 @@
           "/api/users-home",
           ".thanhvien .row",
           8,
-          createUserCard
+          createUserCard,
         );
 
         // Thêm sự kiện click cho user cards
@@ -406,7 +416,7 @@
       $(document).ready(function () {
         $("#bannerCarousel").carousel({
           interval: 2000, // Thời gian chuyển đổi (3 giây)
-          ride: "carousel" // Tự động chạy
+          ride: "carousel", // Tự động chạy
         });
       });
     </script>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -277,7 +277,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script src="../js_giaodien/sanpham.js"></script>
+    <script src="../tieu-dung/js/sanpham.js"></script>
     <script src="../chatbox/chatbox.js"></script>
 
     <script>
@@ -303,7 +303,7 @@
       // Hàm để cập nhật breadcrumb
       function updateBreadcrumb(productName) {
         const breadcrumbItem = document.querySelector(
-          ".breadcrumb-item.active"
+          ".breadcrumb-item.active",
         );
         if (breadcrumbItem) {
           breadcrumbItem.textContent = productName;
@@ -346,7 +346,7 @@
               const productPrice = document.querySelector(".product-price");
               if (productPrice) {
                 productPrice.textContent = `${new Intl.NumberFormat(
-                  "vi-VN"
+                  "vi-VN",
                 ).format(product.price)}đ/kg`;
               }
 
@@ -384,7 +384,7 @@
             console.error("Lỗi khi gọi API:", error);
             // Hiển thị thông báo lỗi cho người dùng
             alert(
-              "Đã xảy ra lỗi khi tải thông tin sản phẩm. Vui lòng thử lại sau."
+              "Đã xảy ra lỗi khi tải thông tin sản phẩm. Vui lòng thử lại sau.",
             );
           }
         }

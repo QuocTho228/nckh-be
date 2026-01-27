@@ -7961,13 +7961,356 @@ function setupRoutes(app, db) {
   });
 
   /**
+   * POST /api/public/scan-government-stamp
+   * Scan QR tem chính phủ để truy xuất nguồn gốc
+   * Body: { qrCode: "SRCA2026-00000001" } hoặc upload qrImage
+   */
+  app.post(
+    "/api/public/scan-government-stamp",
+    uploadQR.single("qrImage"),
+    async (req, res) => {
+      try {
+        let stampQRCode;
+
+        // Xử lý QR từ image hoặc text
+        if (req.file) {
+          // Decode QR from image
+          const sharp = require("sharp");
+          const QrCode = require("qrcode-reader");
+
+          const image = sharp(req.file.buffer);
+          const metadata = await image.metadata();
+          const buffer = await image.raw().toBuffer();
+
+          const qr = new QrCode();
+          const value = await new Promise((resolve, reject) => {
+            qr.callback = (err, v) => (err != null ? reject(err) : resolve(v));
+            qr.decode({
+              width: metadata.width,
+              height: metadata.height,
+              data: buffer,
+            });
+          });
+
+          if (!value.result) {
+            return res.status(400).json({
+              success: false,
+              error: "Không thể đọc mã QR từ ảnh",
+            });
+          }
+
+          stampQRCode = value.result.includes(":")
+            ? value.result.split(":")[1]
+            : value.result;
+        } else if (req.body.qrCode) {
+          stampQRCode = req.body.qrCode.trim();
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: "Thiếu mã QR hoặc ảnh QR",
+          });
+        }
+
+        // Validate QR code format (SRCA2026-00000001)
+        const qrPattern = /^[A-Z]{2,10}\d{4}-\d{8}$/;
+        if (!qrPattern.test(stampQRCode)) {
+          return res.status(400).json({
+            success: false,
+            error: "Mã QR không hợp lệ. Định dạng: SRCA2026-00000001",
+          });
+        }
+
+        // Tìm tem trong database
+        const [stamps] = await db.query(
+          `SELECT * FROM government_qr_stamps WHERE qr_code = ?`,
+          [stampQRCode],
+        );
+
+        if (stamps.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: "Không tìm thấy tem chính phủ này trong hệ thống",
+          });
+        }
+
+        const stamp = stamps[0];
+
+        // Kiểm tra trạng thái tem
+        if (stamp.status === "EXPIRED") {
+          return res.status(400).json({
+            success: false,
+            error: "Tem đã hết hạn sử dụng",
+          });
+        }
+
+        if (stamp.status === "REVOKED") {
+          return res.status(400).json({
+            success: false,
+            error: "Tem đã bị thu hồi",
+          });
+        }
+
+        if (stamp.status === "AVAILABLE") {
+          return res.status(400).json({
+            success: false,
+            error: "Tem chưa được sử dụng trên sản phẩm nào",
+          });
+        }
+
+        // Lấy sản phẩm đã dán tem này
+        const [products] = await db.query(
+          `
+        SELECT 
+          bp.*,
+          bb.batch_id,
+          bb.batch_name,
+          bb.sscc,
+          bb.status as batch_status,
+          bb.current_stage,
+          bb.production_date_iso,
+          bb.product_type_id,
+          p.product_name,
+          p.img as product_image,
+          p.description,
+          p.price
+        FROM blockchain_products bp
+        JOIN blockchain_batches bb ON bp.batch_id = bb.batch_id
+        LEFT JOIN products p ON bb.product_type_id = p.product_id
+        WHERE bp.government_qr_stamp_id = ?
+        `,
+          [stamp.id],
+        );
+
+        if (products.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: "Không tìm thấy sản phẩm liên kết với tem này",
+          });
+        }
+
+        const product = products[0];
+        const batchId = product.batch_id;
+
+        // Lấy thông tin nhà sản xuất
+        const [batches] = await db.query(
+          `
+        SELECT 
+          bb.*,
+          u.name as producer_name,
+          u.phone as producer_phone,
+          u.email as producer_email,
+          u.address as producer_address,
+          r.region_name,
+          prov.province_name,
+          dist.district_name,
+          w.ward_name
+        FROM blockchain_batches bb
+        LEFT JOIN users u ON bb.producer_id = u.uid
+        LEFT JOIN regions r ON u.region_id = r.region_id
+        LEFT JOIN provinces prov ON u.province_id = prov.province_id
+        LEFT JOIN districts dist ON u.district_id = dist.district_id
+        LEFT JOIN wards w ON u.ward_id = w.ward_id
+        WHERE bb.batch_id = ?
+        `,
+          [batchId],
+        );
+
+        const batch = batches[0];
+
+        // Lấy cây nguồn gốc
+        const [sourceTrees] = await db.query(
+          `
+        SELECT 
+          t.*,
+          u.name as farmer_name,
+          u.phone as farmer_phone,
+          COUNT(DISTINCT tal.log_id) as total_activities
+        FROM product_source_trees pst
+        INNER JOIN trees t ON pst.tree_id = t.tree_id
+        LEFT JOIN users u ON t.farmer_id = u.uid
+        LEFT JOIN tree_activity_logs tal ON t.tree_id = tal.tree_id
+        WHERE pst.product_id = ?
+        GROUP BY t.tree_id
+        `,
+          [product.product_id],
+        );
+
+        // Lấy thông tin thu mua
+        const [purchases] = await db.query(
+          `
+        SELECT pr.*, purchaser.name as purchaser_name
+        FROM purchase_records pr
+        LEFT JOIN users purchaser ON pr.purchaser_id = purchaser.uid
+        WHERE pr.batch_id = ?
+        ORDER BY pr.purchase_date_iso DESC
+        LIMIT 1
+        `,
+          [batchId],
+        );
+
+        // Lấy thông tin sơ chế
+        const [processings] = await db.query(
+          `
+        SELECT proc.*, processor.name as processor_name
+        FROM processing_records proc
+        LEFT JOIN users processor ON proc.processor_id = processor.uid
+        WHERE proc.batch_id = ?
+        ORDER BY proc.processing_date_iso DESC
+        LIMIT 1
+        `,
+          [batchId],
+        );
+
+        // Lấy kết quả kiểm định
+        const [qualityTests] = await db.query(
+          `
+        SELECT 
+          qt.*,
+          inspector.name as inspector_name,
+          inspector.phone as inspector_phone
+        FROM quality_tests qt
+        LEFT JOIN users inspector ON qt.inspector_id = inspector.uid
+        WHERE qt.batch_id = ?
+        ORDER BY qt.test_date_iso DESC
+        `,
+          [batchId],
+        );
+
+        // Lấy lịch sử vận chuyển
+        const [transportEvents] = await db.query(
+          `
+        SELECT te.*, u.name as participant_name
+        FROM transport_events te
+        LEFT JOIN users u ON te.participant_id = u.uid
+        WHERE te.batch_id = ?
+        ORDER BY te.timestamp_iso ASC
+        `,
+          [batchId],
+        );
+
+        // Lấy warehouse confirmations
+        const [warehouses] = await db.query(
+          `
+        SELECT 
+          wc.*,
+          warehouse.name as warehouse_name
+        FROM warehouse_confirmations wc
+        LEFT JOIN users warehouse ON wc.warehouse_id = warehouse.uid
+        WHERE wc.batch_id = ?
+        `,
+          [batchId],
+        );
+
+        // ✅ Tạo timeline bằng function đã fix
+        // Truyền null cho data không có, function sẽ handle
+        const timeline = _generateTimeline(
+          batch,
+          purchases.length > 0 ? purchases[0] : null,
+          processings.length > 0 ? processings[0] : null,
+          qualityTests, // Array (có thể rỗng)
+          transportEvents, // Array (có thể rỗng)
+          warehouses, // Array (có thể rỗng)
+        );
+
+        // Response
+        res.json({
+          success: true,
+          data: {
+            // Thông tin tem
+            stamp: {
+              id: stamp.id,
+              qrCode: stamp.qr_code,
+              status: stamp.status,
+              issuedDate: stamp.issued_date,
+              issuedBy: stamp.issued_by,
+              usedDate: stamp.used_date,
+            },
+
+            // Thông tin sản phẩm
+            product: {
+              productId: product.product_id,
+              productQRCode: product.product_qr_code,
+              productName: product.product_name,
+              productImage: product.product_image,
+              description: product.description,
+              price: product.price,
+              weight: product.weight,
+              packageType: product.package_type,
+              packagedDate: product.packaged_date_iso,
+              soldDate: product.sold_date_iso,
+            },
+
+            // Thông tin lô hàng
+            batch: {
+              batchId: batch.batch_id,
+              batchName: batch.batch_name,
+              sscc: batch.sscc,
+              status: batch.status,
+              currentStage: batch.current_stage,
+              productionDate: batch.production_date_iso,
+              quantity: batch.quantity,
+              totalProducts: batch.total_products,
+            },
+
+            // Thông tin nhà sản xuất
+            producer: {
+              name: batch.producer_name,
+              phone: batch.producer_phone,
+              email: batch.producer_email,
+              address: batch.producer_address,
+              region: batch.region_name,
+              province: batch.province_name,
+              district: batch.district_name,
+              ward: batch.ward_name,
+            },
+
+            // Cây nguồn gốc
+            sourceTrees: sourceTrees.map((tree) => ({
+              treeId: tree.tree_id,
+              treeQRCode: tree.tree_qr_code,
+              treeType: tree.tree_type,
+              variety: tree.variety,
+              plantedDate: tree.planted_date_iso,
+              coordinates: tree.coordinates,
+              farmerName: tree.farmer_name,
+              farmerPhone: tree.farmer_phone,
+              totalActivities: tree.total_activities || 0,
+            })),
+
+            // Timeline (đã được generate bởi function đã fix)
+            timeline: timeline,
+
+            // Kết quả kiểm định
+            qualityTests: qualityTests.map((test) => ({
+              testType: test.test_type,
+              testMethod: test.test_method,
+              testDate: test.test_date_iso,
+              result: test.result,
+              passed: test.passed,
+              standard: test.standard,
+              inspectorName: test.inspector_name,
+              inspectorPhone: test.inspector_phone,
+              notes: test.notes,
+            })),
+          },
+        });
+      } catch (error) {
+        console.error("Lỗi khi scan tem chính phủ:", error);
+        res.status(500).json({
+          success: false,
+          error: "Không thể xử lý yêu cầu: " + error.message,
+        });
+      }
+    },
+  );
+  /**
    * =================================================================
    * HELPER FUNCTIONS
    * =================================================================
    */
 
   /**
-   * Tạo timeline từ các sự kiện
+   * Tạo timeline từ các sự kiện (FIXED - Handle null/undefined arrays)
    */
   function _generateTimeline(
     batch,
@@ -8012,42 +8355,51 @@ function setupRoutes(app, db) {
       });
     }
 
+    // ✅ FIX: Check null/undefined trước khi forEach
     // 4. Kiểm định chất lượng
-    qualityTests.forEach((test) => {
-      timeline.push({
-        timestamp: test.test_date_iso,
-        stage: "QualityInspected",
-        title: "Kiểm định chất lượng",
-        description: `${test.test_type} - ${test.passed ? "Đạt" : "Không đạt"}`,
-        actor: test.inspector_name,
-        passed: test.passed,
+    if (qualityTests && Array.isArray(qualityTests)) {
+      qualityTests.forEach((test) => {
+        timeline.push({
+          timestamp: test.test_date_iso,
+          stage: "QualityInspected",
+          title: "Kiểm định chất lượng",
+          description: `${test.test_type} - ${test.passed ? "Đạt" : "Không đạt"}`,
+          actor: test.inspector_name,
+          passed: test.passed,
+        });
       });
-    });
+    }
 
+    // ✅ FIX: Check null/undefined trước khi forEach
     // 5. Vận chuyển
-    transportEvents.forEach((event) => {
-      timeline.push({
-        timestamp: event.timestamp_iso,
-        stage: "Transport",
-        title: "Vận chuyển",
-        description: event.action,
-        actor: event.participant_name,
-        location: event.location,
-        temperature: event.temperature,
-        humidity: event.humidity,
+    if (transportEvents && Array.isArray(transportEvents)) {
+      transportEvents.forEach((event) => {
+        timeline.push({
+          timestamp: event.timestamp_iso,
+          stage: "Transport",
+          title: "Vận chuyển",
+          description: event.action,
+          actor: event.participant_name,
+          location: event.location,
+          temperature: event.temperature,
+          humidity: event.humidity,
+        });
       });
-    });
+    }
 
+    // ✅ FIX: Check null/undefined trước khi forEach
     // 6. Nhập kho
-    warehouses.forEach((wh) => {
-      timeline.push({
-        timestamp: wh.confirmed_at,
-        stage: "Warehoused",
-        title: "Nhập kho",
-        description: `Nhập kho tại ${wh.warehouse_name}`,
-        actor: wh.warehouse_name,
+    if (warehouses && Array.isArray(warehouses)) {
+      warehouses.forEach((wh) => {
+        timeline.push({
+          timestamp: wh.confirmed_at,
+          stage: "Warehoused",
+          title: "Nhập kho",
+          description: `Nhập kho tại ${wh.warehouse_name}`,
+          actor: wh.warehouse_name,
+        });
       });
-    });
+    }
 
     // Sắp xếp theo thời gian
     return timeline.sort(
@@ -8056,7 +8408,7 @@ function setupRoutes(app, db) {
   }
 
   /**
-   * Tạo timeline chi tiết hơn với activity logs
+   * Tạo timeline chi tiết hơn với activity logs (FIXED)
    */
   function _generateDetailedTimeline(
     batch,
@@ -8076,19 +8428,22 @@ function setupRoutes(app, db) {
       warehouses,
     );
 
+    // ✅ FIX: Check null/undefined trước khi forEach
     // Thêm activity logs vào timeline
-    activityLogs.forEach((log) => {
-      if (!log.is_system_activity) {
-        timeline.push({
-          timestamp: log.timestamp_iso,
-          stage: log.category,
-          title: log.activity_name,
-          description: log.description,
-          actor: log.participant_name,
-          isCustomActivity: true,
-        });
-      }
-    });
+    if (activityLogs && Array.isArray(activityLogs)) {
+      activityLogs.forEach((log) => {
+        if (!log.is_system_activity) {
+          timeline.push({
+            timestamp: log.timestamp_iso,
+            stage: log.category,
+            title: log.activity_name,
+            description: log.description,
+            actor: log.participant_name,
+            isCustomActivity: true,
+          });
+        }
+      });
+    }
 
     // Sắp xếp lại
     return timeline.sort(

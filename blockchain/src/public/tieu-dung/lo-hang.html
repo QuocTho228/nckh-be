@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -241,7 +241,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="../js_giaodien/sanpham.js"></script>
+    <script src="../tieu-dung/js/sanpham.js"></script>
 
     <script src="../chatbox/chatbox.js"></script>
 
@@ -271,7 +271,7 @@
         if (sscc) {
           try {
             const response = await fetch(
-              `/api/batch-info-by-sscc-for-consumer/${sscc}`
+              `/api/batch-info-by-sscc-for-consumer/${sscc}`,
             );
             const batchInfo = await response.json();
             if (response.ok) {
@@ -298,12 +298,11 @@
             document.querySelector(".ten_sanpham h3").textContent =
               productInfo.product_name;
             document.querySelector(".custom-img").src = productInfo.img || "";
-            document.querySelector(
-              ".price h3"
-            ).innerHTML = `Giá: <span>${new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND"
-            }).format(productInfo.price)}</span>`;
+            document.querySelector(".price h3").innerHTML =
+              `Giá: <span>${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(productInfo.price)}</span>`;
           } else {
             console.error("Không thể lấy thông tin sản phẩm");
           }
@@ -383,7 +382,7 @@
         // Phần còn lại của hàm giữ nguyên
         try {
           const response = await fetch(
-            `/api/system-activity-logs/${batchInfo.sscc}`
+            `/api/system-activity-logs/${batchInfo.sscc}`,
           );
           if (response.ok) {
             const data = await response.json();
@@ -464,8 +463,8 @@
                          class="participant-avatar">
                     <div class="participant-details">
                         <a href="${BASE_URL}/trangcanhan.html?uid=${
-                    participant.id
-                  }" 
+                          participant.id
+                        }" 
                            class="participant-link">
                             <p class="participant-name">${participant.name}</p>
                             <p class="participant-role">${participant.role}</p>
@@ -477,16 +476,16 @@
 
               return `
             <div class="activity-log ${roleClass} ${getActivityClass(
-                log.activityName
-              )}">
+              log.activityName,
+            )}">
                 <p class="timestamp">
                     <strong>Thời gian:</strong> ${new Date(
-                      log.timestamp
+                      log.timestamp,
                     ).toLocaleString("vi-VN")}
                 </p>
                 <p class="activity-name">
                     <strong>Hoạt động:</strong> ${getActivityIcon(
-                      log.activityName
+                      log.activityName,
                     )} 
                     ${translateActivityName(log.activityName)}
                 </p>
@@ -496,7 +495,7 @@
                     ? `
                     <p class="description">
                         <strong>Mô tả:</strong> ${decodeAndTranslateDescription(
-                          log.description
+                          log.description,
                         )}
                     </p>
                 `
@@ -584,7 +583,7 @@
           "Batch has been approved": "Lô hàng đã được phê duyệt",
           "Create new production batch": "Tạo lô sản xuất mới",
           "Update batch information": "Cập nhật thông tin lô hàng",
-          "Production completed": "Hoàn thành sản xuất"
+          "Production completed": "Hoàn thành sản xuất",
         };
 
         // Tìm và thay thế các phần của mô tả
@@ -624,7 +623,7 @@
           "Batch Created": "Đã tạo lô hàng",
           "Update Product Info": "Cập nhật thông tin sản phẩm",
           "Production Started": "Bắt đầu sản xuất",
-          "Production Completed": "Hoàn thành sản xuất"
+          "Production Completed": "Hoàn thành sản xuất",
         };
 
         return translations[activityName] || activityName;
@@ -662,7 +661,7 @@
             <tr>
                 <th>Ngày tạo lô hàng</th>
                 <td>${new Date(batchInfo.productionDate).toLocaleDateString(
-                  "vi-VN"
+                  "vi-VN",
                 )}</td>
             </tr>
             <tr>
@@ -677,7 +676,7 @@
                 <th>Hình ảnh lô hàng</th>
                 <td>
                     <button class="btn-view-image" onclick="showProductImages(${JSON.stringify(
-                      batchInfo.productImageUrls
+                      batchInfo.productImageUrls,
                     ).replace(/"/g, "&quot;")})">
                         <i class="fas fa-images mr-2"></i> Xem ảnh lô hàng
                     </button>
@@ -836,7 +835,7 @@
           const encodedAddress = encodeURIComponent(address);
           window.open(
             `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
-            "_blank"
+            "_blank",
           );
         } else {
           alert("Không có thông tin địa chỉ để hiển thị trên bản đồ.");
@@ -879,17 +878,17 @@
         try {
           console.log(
             "Sending verification request for SSCC:",
-            currentBatchData.sscc
+            currentBatchData.sscc,
           );
 
           const response = await fetch("/api/verify-batch", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              sscc: currentBatchData.sscc
-            })
+              sscc: currentBatchData.sscc,
+            }),
           });
 
           console.log("Response status:", response.status);
@@ -901,7 +900,7 @@
             const text = await response.text();
             console.error("Response is not JSON:", text);
             throw new Error(
-              "Server trả về định dạng không hợp lệ. Vui lòng kiểm tra console để biết chi tiết."
+              "Server trả về định dạng không hợp lệ. Vui lòng kiểm tra console để biết chi tiết.",
             );
           }
 
@@ -966,12 +965,12 @@
                 <p><strong>Thời gian tạo:</strong> ${
                   data.batchDetails?.productionDate
                     ? new Date(data.batchDetails.productionDate).toLocaleString(
-                        "vi-VN"
+                        "vi-VN",
                       )
                     : "N/A"
                 }</p>
                 <p><strong>Thời gian xác thực:</strong> ${new Date(
-                  data.verifiedAt
+                  data.verifiedAt,
                 ).toLocaleString("vi-VN")}</p>
                 
                 ${
