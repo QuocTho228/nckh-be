@@ -1838,6 +1838,105 @@ function setupRoutes(app, db) {
     },
   );
 
+  /**
+   * GET /api/farmer/verify-tree-qr/:qrCode
+   * Verify QR code và trả về thông tin cây
+   * Role: Farmer
+   */
+  app.get(
+    "/api/farmer/verify-tree-qr/:qrCode",
+    requireAuth,
+    requireRole(ROLES.FARMER),
+    async (req, res) => {
+      try {
+        const farmerId = req.session.userId;
+        const qrCode = req.params.qrCode;
+
+        console.log("Verifying QR code:", qrCode, "for farmer:", farmerId);
+
+        // Validate QR code format
+        // Support both formats:
+        // Format 1: TREE-XXXXXXXX-XXXXXX (new format)
+        // Format 2: PRODUCTNAME-N-YYYYMMDD (legacy format)
+        const isValidFormat =
+          qrCode.match(/^TREE-\d{8}-[A-Z0-9]{6}$/) ||
+          qrCode.match(/^[A-Z]+-\d+-\d{8}$/);
+
+        if (!isValidFormat) {
+          return res.status(400).json({
+            success: false,
+            error: "Mã QR không đúng định dạng",
+          });
+        }
+
+        // Try to find tree by QR code first
+        let [trees] = await db.query(
+          `SELECT 
+          tree_id,
+          tree_qr_code,
+          farmer_id,
+          region_id,
+          tree_type,
+          variety,
+          planted_date,
+          planted_date_iso,
+          coordinates,
+          qr_image_url,
+          is_active
+        FROM trees 
+        WHERE tree_qr_code = ? AND farmer_id = ?`,
+          [qrCode, farmerId],
+        );
+
+        // If not found and it's a legacy format, try to parse and find by tree_id
+        if (trees.length === 0 && qrCode.match(/^[A-Z]+-(\d+)-\d{8}$/)) {
+          const match = qrCode.match(/^[A-Z]+-(\d+)-\d{8}$/);
+          const possibleTreeId = match[1];
+
+          console.log(`Legacy QR detected, trying tree_id: ${possibleTreeId}`);
+
+          [trees] = await db.query(
+            `SELECT 
+            tree_id,
+            tree_qr_code,
+            farmer_id,
+            region_id,
+            tree_type,
+            variety,
+            planted_date,
+            planted_date_iso,
+            coordinates,
+            qr_image_url,
+            is_active
+          FROM trees 
+          WHERE tree_id = ? AND farmer_id = ?`,
+            [possibleTreeId, farmerId],
+          );
+        }
+
+        if (trees.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: "Không tìm thấy cây hoặc cây không thuộc về bạn",
+          });
+        }
+
+        const tree = trees[0];
+
+        res.json({
+          success: true,
+          data: tree,
+        });
+      } catch (error) {
+        console.error("Error verifying QR code:", error);
+        res.status(500).json({
+          success: false,
+          error: "Lỗi khi kiểm tra mã QR: " + error.message,
+        });
+      }
+    },
+  );
+
   // ==========================================
   // BƯỚC 2: Inspector - PHÊ DUYỆT
   // ==========================================

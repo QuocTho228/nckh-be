@@ -32,7 +32,7 @@ const TreeForm = {
             ${regions
               .map(
                 (r) =>
-                  `<option value="${r.region_id}">${r.region_name}</option>`
+                  `<option value="${r.region_id}">${r.region_name}</option>`,
               )
               .join("")}
           </select>
@@ -272,7 +272,7 @@ const TreeForm = {
               <span class="badge badge-success">
                 ${t.tree_qr_code}
               </span>
-            `
+            `,
               )
               .join("")}
           </div>
@@ -569,7 +569,7 @@ const TreeForm = {
 
         if (result.success) {
           Utils.toast.success(
-            `Đã ghi nhật ký chăm sóc cho ${treeIds.length} cây!`
+            `Đã ghi nhật ký chăm sóc cho ${treeIds.length} cây!`,
           );
           if (options.onSuccess) {
             options.onSuccess(result.data);

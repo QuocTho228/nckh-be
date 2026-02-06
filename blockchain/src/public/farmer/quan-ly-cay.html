@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -36,6 +36,9 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ✅ jsQR Library for QR Code Detection -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   </head>
   <body class="bg-gradient-bg min-h-screen">
     <!-- Navbar -->
@@ -137,19 +140,6 @@
           <button @click="openAddTreeModal()" class="btn-primary">
             <i class="fas fa-plus mr-2"></i> Đăng ký cây mới
           </button>
-          <button
-            @click="openAddCareModal()"
-            class="btn-secondary"
-            :disabled="selectedTrees.length === 0"
-          >
-            <i class="fas fa-heart mr-2"></i> Ghi nhật ký chăm sóc
-            <span
-              x-show="selectedTrees.length > 0"
-              x-cloak
-              class="ml-2 badge badge-success"
-              x-text="selectedTrees.length"
-            ></span>
-          </button>
         </div>
       </div>
 
@@ -224,9 +214,52 @@
         </div>
       </div>
 
+      <!-- ✅ NEW: Selection Actions Bar -->
+      <div
+        x-show="selectedTrees.length > 0"
+        x-cloak
+        x-transition
+        class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8"
+      >
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"
+            >
+              <span x-text="selectedTrees.length"></span>
+            </div>
+            <div>
+              <p class="font-semibold text-blue-900">
+                <span x-text="selectedTrees.length"></span> cây đã chọn
+              </p>
+              <p class="text-sm text-blue-700">Sẵn sàng ghi nhật ký chăm sóc</p>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              @click="deselectAllTrees()"
+              class="btn-secondary text-sm py-2 px-4"
+            >
+              <i class="fas fa-times mr-2"></i>
+              Bỏ chọn tất cả
+            </button>
+            <button
+              @click="openAddCareModal()"
+              class="btn-primary text-sm py-2 px-4"
+            >
+              <i class="fas fa-heart mr-2"></i>
+              Ghi nhật ký chăm sóc
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Filter & Search -->
       <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2"
               >Tìm kiếm</label
@@ -259,6 +292,38 @@
             </button>
           </div>
         </div>
+
+        <!-- ✅ NEW: Batch Selection Actions -->
+        <div class="border-t border-gray-200 pt-4">
+          <p class="text-sm font-semibold text-gray-700 mb-3">
+            <i class="fas fa-hand-pointer mr-2"></i>
+            Chọn cây hàng loạt:
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              @click="openQRScanner()"
+              class="btn-primary text-sm py-2 px-4"
+            >
+              <i class="fas fa-qrcode mr-2"></i>
+              Quét mã QR
+            </button>
+            <button
+              @click="selectAllActiveTrees()"
+              class="btn-secondary text-sm py-2 px-4"
+            >
+              <i class="fas fa-check-double mr-2"></i>
+              Chọn tất cả cây đang hoạt động
+            </button>
+            <button
+              @click="deselectAllTrees()"
+              class="btn-secondary text-sm py-2 px-4"
+              :disabled="selectedTrees.length === 0"
+            >
+              <i class="fas fa-times mr-2"></i>
+              Bỏ chọn tất cả
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -288,6 +353,7 @@
         <template x-for="tree in filteredTrees" :key="tree.tree_id">
           <div
             class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
+            :class="selectedTrees.includes(tree.tree_id) ? 'ring-2 ring-blue-500' : ''"
           >
             <!-- Tree Card Header -->
             <div class="bg-gradient-primary p-4 text-white">
@@ -377,7 +443,7 @@
                 </template>
               </div>
 
-              <!-- Actions (giữ nguyên bên dưới) -->
+              <!-- Actions -->
               <div class="flex gap-2 mt-6 pt-4 border-t border-gray-200">
                 <button
                   @click="viewTreeDetails(tree)"
@@ -394,7 +460,7 @@
                 </button>
               </div>
 
-              <!-- Quick actions QR (nếu muốn giữ) -->
+              <!-- Quick actions QR -->
               <template x-if="tree.qr_image_url">
                 <div class="flex gap-2 mt-3">
                   <button
@@ -571,6 +637,7 @@
     <script src="../shared/js/api.js"></script>
     <script src="../shared/js/auth.js"></script>
     <script src="js/tree-form.js"></script>
+    <script src="js/qr-scanner.js"></script>
     <script src="js/tree-manager.js"></script>
   </body>
 </html>

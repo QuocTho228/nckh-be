@@ -2,6 +2,7 @@
  * ========================================
  * TREE-MANAGER.JS - Logic Quản Lý Cây
  * With Auto QR Code Generation & Display
+ * With QR Scanner Integration
  * ========================================
  */
 
@@ -51,7 +52,7 @@ function treeManager() {
             tree.tree_qr_code?.toLowerCase().includes(query) ||
             tree.tree_type?.toLowerCase().includes(query) ||
             tree.variety?.toLowerCase().includes(query) ||
-            tree.coordinates?.toLowerCase().includes(query)
+            tree.coordinates?.toLowerCase().includes(query),
         );
       }
 
@@ -81,19 +82,6 @@ function treeManager() {
       Auth.updateNavbar();
 
       console.log("Tree Manager initialized successfully");
-      console.log("Modal states:", {
-        addTree: this.showAddTreeModal,
-        addCare: this.showAddCareModal,
-        treeDetail: this.showTreeDetailModal,
-      });
-
-      // SAFETY CHECK: Close any modals that might have been opened
-      setTimeout(() => {
-        if (this.showTreeDetailModal) {
-          console.warn("Modal was opened unexpectedly! Closing...");
-          this.closeTreeDetailModal();
-        }
-      }, 500);
     },
 
     /**
@@ -143,6 +131,72 @@ function treeManager() {
     },
 
     /**
+     * ✅ NEW: Open QR Scanner for batch selection
+     */
+    async openQRScanner() {
+      if (!window.QRScanner) {
+        Utils.toast.error("QR Scanner chưa được tải");
+        return;
+      }
+
+      console.log("Opening QR Scanner for batch selection...");
+
+      await QRScanner.openScanner({
+        onTreeScanned: (tree) => {
+          // Add tree to selection if not already selected
+          if (!this.selectedTrees.includes(tree.tree_id)) {
+            this.selectedTrees.push(tree.tree_id);
+            console.log("Tree added to selection:", tree.tree_qr_code);
+          }
+        },
+        onClose: (scannedCodes) => {
+          if (scannedCodes && scannedCodes.length > 0) {
+            Utils.toast.success(
+              `Đã quét ${scannedCodes.length} cây, sẵn sàng ghi nhật ký`,
+            );
+
+            // Auto open care modal after scanning
+            setTimeout(() => {
+              this.openAddCareModal();
+            }, 500);
+          } else if (scannedCodes === null) {
+            console.log("QR Scanner cancelled");
+          }
+        },
+      });
+    },
+
+    /**
+     * ✅ NEW: Select all active trees
+     */
+    selectAllActiveTrees() {
+      const activeTrees = this.trees
+        .filter((t) => t.is_active)
+        .map((t) => t.tree_id);
+
+      if (activeTrees.length === 0) {
+        Utils.toast.warning("Không có cây nào đang hoạt động");
+        return;
+      }
+
+      this.selectedTrees = [...activeTrees];
+      Utils.toast.success(`Đã chọn ${activeTrees.length} cây`);
+    },
+
+    /**
+     * ✅ NEW: Deselect all trees
+     */
+    deselectAllTrees() {
+      if (this.selectedTrees.length === 0) {
+        Utils.toast.warning("Chưa chọn cây nào");
+        return;
+      }
+
+      this.selectedTrees = [];
+      Utils.toast.info("Đã bỏ chọn tất cả");
+    },
+
+    /**
      * Clear filters
      */
     clearFilters() {
@@ -180,9 +234,7 @@ function treeManager() {
       console.log("Opening add tree modal...");
       this.showAddTreeModal = true;
 
-      // Sử dụng $nextTick để đợi Alpine render xong
       this.$nextTick(() => {
-        // Thêm một chút delay để chắc chắn DOM đã sẵn sàng
         setTimeout(() => {
           const container = document.getElementById("addTreeFormContainer");
           if (!container) {
@@ -218,7 +270,6 @@ function treeManager() {
       console.log("Closing add tree modal...");
       this.showAddTreeModal = false;
 
-      // Clear form container
       const container = document.getElementById("addTreeFormContainer");
       if (container) {
         container.innerHTML = "";
@@ -237,7 +288,6 @@ function treeManager() {
       console.log("Opening add care modal for trees:", this.selectedTrees);
       this.showAddCareModal = true;
 
-      // Sử dụng $nextTick để đợi Alpine render xong
       this.$nextTick(() => {
         setTimeout(() => {
           const container = document.getElementById("addCareFormContainer");
@@ -253,7 +303,7 @@ function treeManager() {
             TreeForm.renderAddCareForm("addCareFormContainer", {
               treeIds: this.selectedTrees,
               trees: this.trees.filter((t) =>
-                this.selectedTrees.includes(t.tree_id)
+                this.selectedTrees.includes(t.tree_id),
               ),
               onSuccess: () => {
                 this.closeAddCareModal();
@@ -279,7 +329,6 @@ function treeManager() {
       console.log("Closing add care modal...");
       this.showAddCareModal = false;
 
-      // Clear form container
       const container = document.getElementById("addCareFormContainer");
       if (container) {
         container.innerHTML = "";
@@ -301,7 +350,7 @@ function treeManager() {
     },
 
     /**
-     * ✅ View QR Code in modal
+     * View QR Code in modal
      */
     viewQRCode(tree) {
       if (!tree.qr_image_url) {
@@ -345,7 +394,7 @@ function treeManager() {
     },
 
     /**
-     * ✅ Download QR Code
+     * Download QR Code
      */
     async downloadQRCode(tree) {
       try {
@@ -368,7 +417,7 @@ function treeManager() {
     },
 
     /**
-     * ✅ Copy QR Code text
+     * Copy QR Code text
      */
     copyQRCode(tree) {
       Utils.copyToClipboard(tree.tree_qr_code);
@@ -414,7 +463,7 @@ function treeManager() {
         <div>
           <p class="opacity-75 mb-1">Ngày trồng</p>
           <p class="font-semibold">${Utils.formatDate(
-            tree.planted_date_iso
+            tree.planted_date_iso,
           )}</p>
         </div>
         <div>
@@ -495,7 +544,7 @@ function treeManager() {
                 <i class="fas fa-calendar mr-2"></i>Ngày trồng:
               </p>
               <p class="font-semibold">${Utils.formatDate(
-                tree.planted_date_iso
+                tree.planted_date_iso,
               )}</p>
             </div>
             
@@ -504,7 +553,7 @@ function treeManager() {
                 <i class="fas fa-clock mr-2"></i>Tuổi cây:
               </p>
               <p class="font-semibold">${this.getTreeAge(
-                tree.planted_date_iso
+                tree.planted_date_iso,
               )}</p>
             </div>
             
@@ -645,11 +694,11 @@ function treeManager() {
           <div>
             <h5 class="font-bold text-gray-900">${act.activityName}</h5>
             <p class="text-sm text-gray-600">${Utils.getCategoryName(
-              act.category
+              act.category,
             )}</p>
           </div>
           <span class="text-sm text-gray-500">${Utils.formatDateTime(
-            act.timestamp
+            act.timestamp,
           )}</span>
         </div>
         
@@ -683,8 +732,8 @@ function treeManager() {
               ? `
             <div>
               <span class="font-semibold">Số lượng:</span> ${act.quantity} ${
-                  act.unit || ""
-                }
+                act.unit || ""
+              }
             </div>
           `
               : ""
@@ -743,7 +792,7 @@ function treeManager() {
                 .map(
                   (img) => `
                 <img src="${img}" alt="Ảnh hoạt động" class="w-full h-24 object-cover rounded" />
-              `
+              `,
                 )
                 .join("")}
             </div>
@@ -758,7 +807,7 @@ function treeManager() {
           } (${act.participant.phone})
         </div>
       </div>
-    `
+    `,
           )
           .join("");
       } catch (error) {
@@ -780,7 +829,6 @@ function treeManager() {
       this.showTreeDetailModal = false;
       this.currentTree = null;
 
-      // Clear container
       const container = document.getElementById("treeDetailContainer");
       if (container) {
         container.innerHTML = "";
@@ -788,55 +836,6 @@ function treeManager() {
     },
   };
 }
-
-/**
- * ========================================
- * PRINT STYLES - Add to <head> once
- * ========================================
- */
-(function initPrintStyles() {
-  if (document.getElementById("treeQRPrintStyles")) return;
-
-  const styleEl = document.createElement("style");
-  styleEl.id = "treeQRPrintStyles";
-  styleEl.textContent = `
-    @media print {
-      @page {
-        size: auto;
-        margin: 20mm;
-      }
-      
-      body * {
-        visibility: hidden;
-      }
-      
-      .bg-white.rounded-xl.shadow-md:has(img[alt*="QR Code"]),
-      .bg-white.rounded-xl.shadow-md:has(img[alt*="QR Code"]) * {
-        visibility: visible;
-      }
-      
-      .bg-white.rounded-xl.shadow-md:has(img[alt*="QR Code"]) {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: white;
-      }
-
-      button, .btn-secondary, .btn-primary {
-        display: none !important;
-      }
-
-      img[alt*="QR Code"] {
-        display: block;
-        margin: 0 auto;
-        width: 300px !important;
-        height: 300px !important;
-      }
-    }
-  `;
-  document.head.appendChild(styleEl);
-})();
 
 /**
  * Initialize auth khi page load
