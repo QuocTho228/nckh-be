@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-02-26T01:50:10.789Z",
+  "testType": "frontrunning-attack",
+  "summary": {
+    "protected": 5,
+    "vulnerable": 0,
+    "total": 5
+  },
+  "results": [
+    {
+      "test": "SSCC tự sinh unique — không trùng nhau ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": "A:000000012283602413 | L:000000016864926523"
+    },
+    {
+      "test": "Chỉ 1 trong 2 approve thành công ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "TX1:true TX2:false"
+    },
+    {
+      "test": "Batch approved đúng 1 lần ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "status=1"
+    },
+    {
+      "test": "Batch không tự nhiên vào Approved sau reject ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": "status=2"
+    },
+    {
+      "test": "Gas price analysis hoàn thành ✓",
+      "status": "PASS",
+      "severity": "INFO",
+      "detail": ""
+    }
+  ]
+}

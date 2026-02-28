@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-02-26T01:49:35.685Z",
+  "testType": "timestamp-manipulation",
+  "riskLevel": "LOW",
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "score": 100
+  },
+  "results": [
+    {
+      "test": "plantedDate = block.timestamp ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "planted=1772070574 blockTs=1772070574"
+    },
+    {
+      "test": "ActivityLog timestamp = block.timestamp ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "logTs=1772070574"
+    },
+    {
+      "test": "Timestamps tăng đơn điệu ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "[1772070574,1772070574,1772070575,1772070575,1772070575]"
+    },
+    {
+      "test": "Miner có thể tăng time +900s ✓",
+      "status": "PASS",
+      "severity": "INFO",
+      "detail": ""
+    },
+    {
+      "test": "Timestamp chỉ dùng để logging (không time-lock/interest) → Rủi ro THẤP ✓",
+      "status": "PASS",
+      "severity": "INFO",
+      "detail": ""
+    }
+  ]
+}

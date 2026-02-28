@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-02-26T01:50:43.457Z",
+  "testType": "large-dataset",
+  "config": {
+    "BATCHES": 40,
+    "LOGS_EACH": 3,
+    "TREES": 12
+  },
+  "results": {
+    "seedTime": {
+      "totalMs": 19201.64359998703,
+      "batches": 40,
+      "treesCount": 12
+    },
+    "getBatchesByStage": {
+      "avgMs": 139.89423999786376,
+      "n": 40
+    },
+    "getActivityLogs": {
+      "avgMs": 50.414060020446776
+    },
+    "getAllPending": {
+      "avgMs": 137.67788009643556
+    },
+    "getBatchesByProducer": {
+      "avgMs": 269.0287799835205
+    },
+    "getBatchesByStage_60": {
+      "avgMs": 1362.5835401535035,
+      "n": 60
+    }
+  },
+  "projections": {
+    "per1000ms": "3497",
+    "needsIndex": false
+  }
+}

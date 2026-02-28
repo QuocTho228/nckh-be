@@ -69,7 +69,6 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
    ```
 
 3. Cấu hình môi trường:
-
    - Tạo file `.env` trong thư mục gốc và cấu hình các biến môi trường:
 
    ```sh
@@ -111,12 +110,10 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
    ```
 
 4. Khởi tạo cơ sở dữ liệu:
-
    - Tạo database MySQL
    - Import schema từ file `database.sql` (nếu có)
 
 5. Terminal
-
    - Khởi chạy ganache không lưu dữ liệu:
      `ganache --gasLimit 1000000000 --defaultBalanceEther 1000`
 
@@ -124,19 +121,16 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
      `ganache --gasLimit 1000000000 --defaultBalanceEther 1000 --deterministic --db ./ganache-data`
 
 6. Triển khai smart contract:
-
    - Cài đặt Truffle: `npm install -g truffle`
    - Di chuyển vào thư mục blockchain: `cd blockchain`
    - Triển khai contract: `truffle migrate --network <your_network>`
 
 7. Lấy 2 giá trị:
-
    - contract address: Deploying 'ActivityLogContract'
    - contract address: Deploying 'TraceabilityContract'
    - Dán vào `.env`
 
 8. Mở terminal
-
    - khởi chạy server redis: `redis-server`
 
 9. Chạy dự án:
@@ -146,23 +140,11 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
 ## Cấu Trúc Dự Án
 
 ```
-nckh-be
+.
 ├── .babelrc
 ├── .gitignore
-├── brcypt.js
-├── docker-compose.yml
-├── Dockerfile
-├── nginx.conf
-├── package-lock.json
-├── package.json
-├── Procfile
-├── README.md
-├── SECURITY.md
-├── truffle-config.js
-├── webpack.config.js
 ├── .vscode/
 ├── blockchain/
-│   ├── truffle-config.js
 │   ├── build/
 │   │   └── contracts/
 │   │       ├── ActivityLog.json
@@ -179,30 +161,28 @@ nckh-be
 │   │   ├── app.js
 │   │   ├── backend.js
 │   │   ├── blockchainLogger.js
-│   │   ├── firebase.js
-│   │   ├── manage.js
-│   │   ├── notification.js
-│   │   ├── util.js
-│   │   ├── websocket.js
 │   │   ├── components/
 │   │   │   ├── tieu-dung/
 │   │   │   │   └── trang-chu.js
 │   │   │   └── user/
+│   │   │       ├── batch/
+│   │   │       │   └── createBatch.js
 │   │   │       ├── dangky.js
 │   │   │       ├── dangnhap.js
 │   │   │       ├── data.json
-│   │   │       ├── sendmail.js
-│   │   │       └── batch/
-│   │   │           └── createBatch.js
+│   │   │       └── sendmail.js
 │   │   ├── config/
 │   │   │   ├── db.js
 │   │   │   └── redis.js
 │   │   ├── database/
-│   │   │   └── blockchain_schema.sql
+│   │   │   ├── blockchain_schema.sql
+│   │   │   └── data.sql
+│   │   ├── firebase.js
+│   │   ├── manage.js
 │   │   ├── middleware/
 │   │   │   └── roleAuth.js
+│   │   ├── notification.js
 │   │   ├── public/
-│   │   │   ├── trangcanhan_caidat.html
 │   │   │   ├── account/
 │   │   │   │   ├── dangky.html
 │   │   │   │   ├── dangnhap.html
@@ -214,12 +194,6 @@ nckh-be
 │   │   │   │   ├── addregion.html
 │   │   │   │   ├── admintest.html
 │   │   │   │   ├── caidat.html
-│   │   │   │   ├── editproduct.html
-│   │   │   │   ├── product.html
-│   │   │   │   ├── region.html
-│   │   │   │   ├── reply.html
-│   │   │   │   ├── stats.html
-│   │   │   │   ├── user.html
 │   │   │   │   ├── css/
 │   │   │   │   │   ├── animation.css
 │   │   │   │   │   ├── header.css
@@ -227,21 +201,33 @@ nckh-be
 │   │   │   │   │   ├── reply.css
 │   │   │   │   │   ├── responsive.css
 │   │   │   │   │   ├── stat.css
-│   │   │   │   │   └── style.css
+│   │   │   │   │   ├── style.css
 │   │   │   │   │   └── theme.css
-│   │   │   │   └── js/
-│   │   │   │       ├── addregion.js
-│   │   │   │       ├── admin-auth.js
-│   │   │   │       ├── admin.js
-│   │   │   │       ├── editproduct.js
-│   │   │   │       ├── feature.js
-│   │   │   │       ├── product.js
-│   │   │   │       ├── region.js
-│   │   │   │       ├── reply.js
-│   │   │   │       ├── settings.js
-│   │   │   │       ├── stats.js
-│   │   │   │       ├── unread-count.js
-│   │   │   │       └── user.js
+│   │   │   │   ├── editproduct.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── addregion.js
+│   │   │   │   │   ├── admin-auth.js
+│   │   │   │   │   ├── admin.js
+│   │   │   │   │   ├── editproduct.js
+│   │   │   │   │   ├── feature.js
+│   │   │   │   │   ├── product.js
+│   │   │   │   │   ├── region.js
+│   │   │   │   │   ├── reply.js
+│   │   │   │   │   ├── settings.js
+│   │   │   │   │   ├── stats.js
+│   │   │   │   │   ├── unread-count.js
+│   │   │   │   │   └── user.js
+│   │   │   │   ├── product.html
+│   │   │   │   ├── region.html
+│   │   │   │   ├── reply.html
+│   │   │   │   ├── stats.html
+│   │   │   │   └── user.html
+│   │   │   ├── assets/
+│   │   │   │   ├── data/
+│   │   │   │   │   └── categories.json
+│   │   │   │   ├── images/
+│   │   │   │   │   ├── icons/
+│   │   │   │   │   └── logo.png
 │   │   │   ├── chatbox/
 │   │   │   │   └── chatbox.js
 │   │   │   ├── css/
@@ -253,68 +239,166 @@ nckh-be
 │   │   │   │   ├── nav-bar2.css
 │   │   │   │   ├── nha-kho.css
 │   │   │   │   ├── nhakiemduyet.css
-│   │   │   │   ├── nhatky-hoatdong.css
 │   │   │   │   ├── profile.css
 │   │   │   │   ├── san-xuat.css
 │   │   │   │   ├── sanpham.css
-│   │   │   │   ├── style.css
-│   │   │   │   ├── them-lo-hang.css
-│   │   │   │   ├── thongbao.css
-│   │   │   │   ├── trangcanhan.css
-│   │   │   │   ├── trangchu.css
-│   │   │   │   └── van-chuyen.css
+│   │   │   │   └── style.css
+│   │   │   ├── distributor/
+│   │   │   │   ├── index.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── dashboard.js
+│   │   │   │   │   ├── product-list.js
+│   │   │   │   │   ├── sales-history.js
+│   │   │   │   │   ├── scan-sell-enhanced.js
+│   │   │   │   │   └── scan-sell.js
+│   │   │   │   ├── lich-su-ban.html
+│   │   │   │   ├── san-pham-co-san.html
+│   │   │   │   └── scan-ban-hang.html
+│   │   │   ├── farmer/
+│   │   │   │   ├── chi-tiet-lo.html
+│   │   │   │   ├── css/
+│   │   │   │   │   └── farmer.css
+│   │   │   │   ├── index.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── batch-creator.js
+│   │   │   │   │   ├── batch-detail.js
+│   │   │   │   │   ├── dashboard.js
+│   │   │   │   │   ├── qr-scanner.js
+│   │   │   │   │   ├── tree-form.js
+│   │   │   │   │   └── tree-manager.js
+│   │   │   │   ├── quan-ly-cay.html
+│   │   │   │   └── tao-lo-hang.html
+│   │   │   ├── government/
+│   │   │   │   ├── quan-ly-tem-qr.html
+│   │   │   │   └── quan-ly-tem-qr.js
 │   │   │   ├── hinhanh/
-│   │   │   ├── js_giaodien/
-│   │   │   │   ├── loaditem.js
-│   │   │   │   ├── nav-bar.js
-│   │   │   │   ├── profile.js
-│   │   │   │   ├── san-xuat.js
-│   │   │   │   ├── sanpham.js
-│   │   │   │   ├── thongbaoNKD.js
-│   │   │   │   └── thongbaoNSX.js
+│   │   │   ├── inspector/
+│   │   │   │   ├── danh-sach-lo.html
+│   │   │   │   ├── index.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── approval-form.js
+│   │   │   │   │   ├── batch-list.js
+│   │   │   │   │   └── dashboard.js
+│   │   │   │   └── phe-duyet-lo.html
 │   │   │   ├── kiem-duyet/
 │   │   │   │   ├── nhakiemduyet.html
 │   │   │   │   └── thongbaoNKD.html
 │   │   │   ├── nha-kho/
 │   │   │   │   ├── nha-kho.html
 │   │   │   │   └── nha-kho.js
-│   │   │   ├── farmer/
-│   │   │   │   ├── css/farmer.css
-│   │   │   │   ├── js/
-│   │   │   │   │   ├── batch-creator.js
-│   │   │   │   │   ├── batch-detail.js
-│   │   │   │   │   ├── dashboard.js
-│   │   │   │   │   ├── tree-form.js
-│   │   │   │   │   └── tree-manager.js
-│   │   │   │   ├── chi-tiet-lo.html
+│   │   │   ├── processor/
+│   │   │   │   ├── danh-sach-lo-can-so-che.html
+│   │   │   │   ├── danh-sach-san-pham.html
+│   │   │   │   ├── dong-goi-san-pham.html
+│   │   │   │   ├── ghi-nhan-so-che.html
 │   │   │   │   ├── index.html
-│   │   │   │   ├── quan-ly-cay.html
-│   │   │   │   └── tao-lo-hang.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── batch-list.js
+│   │   │   │   │   ├── dashboard.js
+│   │   │   │   │   ├── packaging-form.js
+│   │   │   │   │   ├── processing-form.js
+│   │   │   │   │   └── product-list.js
+│   │   │   │   └── lich-su-so-che.html
+│   │   │   ├── purchaser/
+│   │   │   │   ├── danh-sach-lo-duyet.html
+│   │   │   │   ├── ghi-nhan-mua.html
+│   │   │   │   ├── index.html
+│   │   │   │   └── lich-su-mua.html
+│   │   │   ├── quality-inspector/
+│   │   │   │   ├── danh-sach-lo-can-kiem.html
+│   │   │   │   ├── ghi-nhan-test.html
+│   │   │   │   ├── index.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── batch-list.js
+│   │   │   │   │   ├── dashboard.js
+│   │   │   │   │   └── test-form.js
+│   │   │   │   └── lich-su-test.html
+│   │   │   ├── san-xuat/
+│   │   │   │   ├── nhatky-hoatdong.html
+│   │   │   │   ├── sanxuat.html
+│   │   │   │   ├── them-lo-hang.html
+│   │   │   │   ├── thongbao-pheduyet.html
+│   │   │   │   └── thongbao-tuchoi.html
+│   │   │   ├── shared/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── loading.html
+│   │   │   │   │   └── navbar.html
+│   │   │   │   ├── css/
+│   │   │   │   │   ├── reset.css
+│   │   │   │   │   └── theme.css
+│   │   │   │   └── js/
+│   │   │   │       ├── api.js
+│   │   │   │       ├── auth.js
+│   │   │   │       ├── config.js
+│   │   │   │       └── utils.js
 │   │   │   ├── tieu-dung/
 │   │   │   │   ├── allnhakiemduyet.html
 │   │   │   │   ├── allnongdan.html
 │   │   │   │   ├── allsanpham.html
 │   │   │   │   ├── batch-direct.html
+│   │   │   │   ├── cay-nguon-goc.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── cay-nguon-goc.js
+│   │   │   │   │   ├── loaditem.js
+│   │   │   │   │   ├── nav-bar.js
+│   │   │   │   │   ├── profile.js
+│   │   │   │   │   ├── san-xuat.js
+│   │   │   │   │   ├── sanpham.js
+│   │   │   │   │   ├── thongbaoNKD.js
+│   │   │   │   │   ├── thongbaoNSX.js
+│   │   │   │   │   ├── truy-xuat-camera.js
+│   │   │   │   │   └── truy-xuat.js
 │   │   │   │   ├── lo-hang.html
 │   │   │   │   ├── sanpham.html
 │   │   │   │   ├── trangcanhan.html
-│   │   │   │   └── trangchu.html
-│   │   │   └── van-chuyen/
-│   │   │       ├── van-chuyen.html
-│   │   │       └── van-chuyen.js
+│   │   │   │   ├── trangchu.html
+│   │   │   │   └── truy-xuat.html
+│   │   │   ├── trangcanhan_caidat.html
+│   │   │   ├── transporter/
+│   │   │   │   ├── cap-nhat-trang-thai.html
+│   │   │   │   ├── danh-sach-lo-can-van.html
+│   │   │   │   ├── index.html
+│   │   │   │   ├── js/
+│   │   │   │   │   ├── dashboard.js
+│   │   │   │   │   ├── status-update.js
+│   │   │   │   │   └── transport-list.js
+│   │   │   ├── van-chuyen/
+│   │   │   │   ├── van-chuyen.html
+│   │   │   │   └── van-chuyen.js
+│   │   │   └── warehouse/
+│   │   │       ├── index.html
+│   │   │       ├── js/
+│   │   │       │   ├── confirm-receipt.js
+│   │   │       │   ├── dashboard.js
+│   │   │       │   └── incoming-list.js
+│   │   │       ├── lo-dang-den.html
+│   │   │       ├── ton-kho.html
+│   │   │       └── xac-nhan-nhan-hang.html
 │   │   ├── scripts/
 │   │   │   ├── resetLogger.js
 │   │   │   ├── setupDatabase.js
 │   │   │   ├── showStats.js
 │   │   │   ├── testLogger.js
 │   │   │   └── verifyChain.js
-│   │   └── templates/
-│   │       ├── password-changed-confirmation.html
-│   │       └── reset-password.html
-│   └── test/
-│       └── .gitkeep
-└── nginx/
-    └── nginx.conf
+│   │   ├── templates/
+│   │   │   ├── password-changed-confirmation.html
+│   │   │   └── reset-password.html
+│   │   ├── util.js
+│   │   └── websocket.js
+│   └── truffle-config.js
+├── brcypt.js
+├── docker-compose.yml
+├── Dockerfile
+├── nginx/
+│   └── nginx.conf
+├── nginx.conf
+├── package-lock.json
+├── package.json
+├── Procfile
+├── README.md
+├── SECURITY.md
+├── truffle-config.js
+└── webpack.config.js
 ```
 
 ## API Endpoints
