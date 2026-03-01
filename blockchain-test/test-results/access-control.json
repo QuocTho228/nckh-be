@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-26T01:49:30.332Z",
+  "timestamp": "2026-02-28T11:33:00.210Z",
   "testType": "access-control",
   "summary": {
     "passed": 7,
@@ -37,7 +37,7 @@
       "test": "Owner approve batch hợp lệ",
       "status": "FAIL",
       "severity": "HIGH",
-      "detail": "Transaction has been reverted by the EVM:\n {\"transactionHash\":\"0x3d9327dd019731d"
+      "detail": "Transaction has been reverted by the EVM:\n {\"transactionHash\":\"0x6a54aa1d96194b7"
     },
     {
       "test": "Block double approval ✓",

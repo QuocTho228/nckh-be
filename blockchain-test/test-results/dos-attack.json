@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-26T01:50:09.466Z",
+  "timestamp": "2026-02-28T11:33:35.463Z",
   "testType": "dos-attack",
   "summary": {
     "resistant": 4,
@@ -11,46 +11,46 @@
       "test": "Block stuffing không block hệ thống ✓",
       "status": "PASS",
       "severity": "MEDIUM",
-      "detail": "3.0s"
+      "detail": "2.9s"
     },
     {
       "test": "O(n) scan <5s ✓",
       "status": "PASS",
       "severity": "MEDIUM",
-      "detail": "1061ms"
+      "detail": "1235ms"
     },
     {
       "test": "getActivityLogs read <3s ✓",
       "status": "PASS",
       "severity": "MEDIUM",
-      "detail": "297ms"
+      "detail": "292ms"
     },
     {
       "test": "15 concurrent scans <30s ✓",
       "status": "PASS",
       "severity": "MEDIUM",
-      "detail": "16360ms"
+      "detail": "12924ms"
     }
   ],
   "metrics": {
     "blockStuffing": {
       "attempted": 20,
       "ok": 20,
-      "durationSec": "3.03",
-      "tps": "6.60"
+      "durationSec": "2.90",
+      "tps": "6.89"
     },
     "arrayGrowth": {
       "batchCount": 31,
-      "avgScanMs": 1060.8451200485229
+      "avgScanMs": 1235.220980001986
     },
     "logSpam": {
       "spamOk": 30,
       "totalLogs": 31,
-      "readMs": 297.09699964523315
+      "readMs": 291.62780000269413
     },
     "heavyRead": {
       "requests": 15,
-      "durationMs": 16359.833800315857
+      "durationMs": 12924.292300000787
     }
   }
 }

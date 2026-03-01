@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-02-26T01:49:28.665Z",
+  "timestamp": "2026-02-28T11:32:58.781Z",
   "testType": "load-test",
   "results": {
     "sequential": {
       "total": 30,
       "ok": 30,
       "err": 0,
-      "durationSec": "4.58",
-      "tps": "6.55"
+      "durationSec": "5.00",
+      "tps": "6.00"
     },
     "burst": {
       "total": 15,
@@ -20,15 +20,15 @@
       "reads": 13,
       "writes": 7,
       "errors": 0,
-      "rps": "28.90"
+      "rps": "30.08"
     },
     "sustained": {
       "durationSec": 8,
-      "total": 50,
-      "ok": 50,
-      "tps": "6.25",
-      "avgMs": "160",
-      "p95Ms": "188"
+      "total": 47,
+      "ok": 47,
+      "tps": "5.88",
+      "avgMs": "171",
+      "p95Ms": "199"
     }
   }
 }

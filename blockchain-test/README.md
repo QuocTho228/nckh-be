@@ -2,7 +2,9 @@
 
 ```
 blockchain-test/               ← Thư mục này (thêm vào root project)
-│
+├── contracts/test/
+│   ├── MaliciousReentrancy.sol
+│   └── MaliciousInteraction.sol
 ├── test/
 │   ├── performance/
 │   │   ├── write-performance.test.js       ✍️  Đo tốc độ ghi blockchain
@@ -321,3 +323,44 @@ Các function được test phải tồn tại trong ABI:
 - `getAllPendingBatches()`, `verifyBatchDataHash(...)`
 
 ---
+
+## Tích hợp vào CI/CD (GitHub Actions)
+
+```yaml
+# .github/workflows/blockchain-test.yml
+name: Blockchain Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start Ganache
+        run: |
+          npm install -g ganache
+          ganache --gasLimit 1000000000 --deterministic &
+          sleep 3
+
+      - name: Compile contracts
+        run: cd blockchain && npx truffle compile
+
+      - name: Run blockchain tests
+        run: cd blockchain-test && node scripts/run-all-tests.js --only=security
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: blockchain-test/test-results/
+```

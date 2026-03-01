@@ -1,671 +1,109 @@
 {
-  "timestamp": "2026-02-26T01:50:43.487Z",
+  "timestamp": "2026-02-28T11:34:26.666Z",
   "summary": {
-    "total": 11,
-    "passed": 11,
+    "total": 14,
+    "passed": 14,
     "failed": 0,
-    "totalDurationSec": "111.4"
+    "totalDurationSec": "127.6"
   },
   "suiteResults": [
     {
-      "suite": "Write Performance",
+      "name": "Write Performance",
+      "file": "test/performance/write-performance.test.js",
       "category": "performance",
       "status": "PASSED",
-      "duration": "7.9"
+      "duration": "8.2"
     },
     {
-      "suite": "Read Performance",
+      "name": "Read Performance",
+      "file": "test/performance/read-performance.test.js",
       "category": "performance",
       "status": "PASSED",
-      "duration": "12.7"
+      "duration": "15.1"
     },
     {
-      "suite": "Load Test",
+      "name": "Load Test",
+      "file": "test/performance/load-test.test.js",
       "category": "performance",
       "status": "PASSED",
-      "duration": "16.1"
+      "duration": "16.4"
     },
     {
-      "suite": "Access Control",
+      "name": "Access Control",
+      "file": "test/security/access-control.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.4"
+    },
+    {
+      "name": "Data Integrity",
+      "file": "test/security/data-integrity.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.4"
+    },
+    {
+      "name": "Overflow/Underflow",
+      "file": "test/security/overflow-underflow.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.6"
+    },
+    {
+      "name": "Timestamp Manipulation",
+      "file": "test/security/timestamp-manipulation.test.js",
       "category": "security",
       "status": "PASSED",
       "duration": "1.7"
     },
     {
-      "suite": "Data Integrity",
-      "category": "security",
+      "name": "Data Manipulation",
+      "file": "test/attacks/data-manipulation.test.js",
+      "category": "attacks",
       "status": "PASSED",
       "duration": "1.5"
     },
     {
-      "suite": "Overflow/Underflow",
-      "category": "security",
-      "status": "PASSED",
-      "duration": "1.8"
-    },
-    {
-      "suite": "Timestamp Manipulation",
-      "category": "security",
-      "status": "PASSED",
-      "duration": "2.0"
-    },
-    {
-      "suite": "Data Manipulation",
+      "name": "DoS Attack",
+      "file": "test/attacks/dos-attack.test.js",
       "category": "attacks",
       "status": "PASSED",
-      "duration": "1.7"
+      "duration": "29.1"
     },
     {
-      "suite": "DoS Attack",
+      "name": "Front-running",
+      "file": "test/attacks/frontrunning.test.js",
       "category": "attacks",
       "status": "PASSED",
-      "duration": "32.0"
+      "duration": "1.4"
     },
     {
-      "suite": "Front-running",
-      "category": "attacks",
-      "status": "PASSED",
-      "duration": "1.3"
-    },
-    {
-      "suite": "Large Dataset",
+      "name": "Large Dataset",
+      "file": "test/scalability/large-dataset.test.js",
       "category": "scalability",
       "status": "PASSED",
-      "duration": "32.7"
+      "duration": "34.2"
+    },
+    {
+      "name": "Event Emission",
+      "file": "test/events/event-emission.test.js",
+      "category": "events",
+      "status": "PASSED",
+      "duration": "3.6"
+    },
+    {
+      "name": "Static Analysis",
+      "file": "test/static-analysis/static-analysis.test.js",
+      "category": "static-analysis",
+      "status": "PASSED",
+      "duration": "9.0"
+    },
+    {
+      "name": "E2E Full Lifecycle",
+      "file": "test/e2e/full-lifecycle.test.js",
+      "category": "e2e",
+      "status": "PASSED",
+      "duration": "2.8"
     }
-  ],
-  "detailedResults": {
-    "access-control": {
-      "timestamp": "2026-02-26T01:49:30.332Z",
-      "testType": "access-control",
-      "summary": {
-        "passed": 7,
-        "failed": 2,
-        "warnings": 1,
-        "total": 9,
-        "score": 78
-      },
-      "results": [
-        {
-          "test": "Farmer2 không được sửa cây farmer1 ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Farmer2 không được deactivate cây farmer1 ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Owner/farmer1 được deactivate cây của mình ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block approve producerId sai",
-          "status": "FAIL",
-          "severity": "CRITICAL",
-          "detail": ""
-        },
-        {
-          "test": "Owner approve batch hợp lệ",
-          "status": "FAIL",
-          "severity": "HIGH",
-          "detail": "Transaction has been reverted by the EVM:\n {\"transactionHash\":\"0x3d9327dd019731d"
-        },
-        {
-          "test": "Block double approval ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block mua batch chưa approve ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block duplicate QR cây ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Bất kỳ địa chỉ nào đều ghi được ActivityLog!",
-          "status": "WARN",
-          "severity": "MEDIUM",
-          "detail": "Cần thêm onlyAuthorized modifier"
-        },
-        {
-          "test": "Block truy cập batch không tồn tại ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        }
-      ]
-    },
-    "data-integrity": {
-      "timestamp": "2026-02-26T01:49:31.853Z",
-      "testType": "data-integrity",
-      "summary": {
-        "passed": 13,
-        "failed": 0,
-        "total": 13,
-        "score": 100
-      },
-      "results": [
-        {
-          "test": "Dữ liệu batch không thay đổi sau khi ghi ✓",
-          "status": "PASS",
-          "severity": "CRITICAL",
-          "detail": ""
-        },
-        {
-          "test": "verifyBatchDataHash đúng với dữ liệu thật ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "verifyBatchDataHash phát hiện qty giả mạo ✓",
-          "status": "PASS",
-          "severity": "CRITICAL",
-          "detail": ""
-        },
-        {
-          "test": "verifyBatchDataHash phát hiện SSCC giả mạo ✓",
-          "status": "PASS",
-          "severity": "CRITICAL",
-          "detail": ""
-        },
-        {
-          "test": "verifyActivityDataHash đúng ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "verifyActivityDataHash phát hiện log giả mạo ✓",
-          "status": "PASS",
-          "severity": "CRITICAL",
-          "detail": ""
-        },
-        {
-          "test": "Timestamp log > 0 ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Timestamp chính xác (±5 phút) ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "diff=1s"
-        },
-        {
-          "test": "Status=Approved(1) ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block re-approve ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "ID tăng đơn điệu: 1 < 2 ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": ""
-        },
-        {
-          "test": "Logs nhất quán: 3 ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Dữ liệu tồn tại sau nhiều block ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        }
-      ]
-    },
-    "data-manipulation-attack": {
-      "timestamp": "2026-02-26T01:49:37.441Z",
-      "testType": "data-manipulation-attack",
-      "summary": {
-        "blocked": 5,
-        "vulnerable": 2,
-        "total": 7,
-        "securityScore": 71
-      },
-      "results": [
-        {
-          "test": "SSCC tự sinh unique — attacker không trùng SSCC ✓",
-          "status": "FAIL",
-          "severity": "HIGH",
-          "detail": "fakeSSCC=000000017363346348"
-        },
-        {
-          "test": "Injection payloads không được thực thi ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "Blockchain lưu as-is, không execute code"
-        },
-        {
-          "test": "CẢNH BÁO: Attacker ghi được log giả!",
-          "status": "FAIL",
-          "severity": "CRITICAL",
-          "detail": "Cần onlyAuthorized modifier cho addActivityLog"
-        },
-        {
-          "test": "Block replay approval ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block double purchase ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "keccak256 không có collision (qty khác → hash khác) ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block duplicate tree QR ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        }
-      ],
-      "attackLog": [
-        {
-          "name": "SSCC Duplicate",
-          "result": "BLOCKED_UNIQUE_AUTO"
-        },
-        {
-          "name": "Fake Log",
-          "result": "SUCCESS_ATTACK"
-        }
-      ]
-    },
-    "dos-attack": {
-      "timestamp": "2026-02-26T01:50:09.466Z",
-      "testType": "dos-attack",
-      "summary": {
-        "resistant": 4,
-        "vulnerable": 0,
-        "total": 4
-      },
-      "results": [
-        {
-          "test": "Block stuffing không block hệ thống ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "3.0s"
-        },
-        {
-          "test": "O(n) scan <5s ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "1061ms"
-        },
-        {
-          "test": "getActivityLogs read <3s ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "297ms"
-        },
-        {
-          "test": "15 concurrent scans <30s ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "16360ms"
-        }
-      ],
-      "metrics": {
-        "blockStuffing": {
-          "attempted": 20,
-          "ok": 20,
-          "durationSec": "3.03",
-          "tps": "6.60"
-        },
-        "arrayGrowth": {
-          "batchCount": 31,
-          "avgScanMs": 1060.8451200485229
-        },
-        "logSpam": {
-          "spamOk": 30,
-          "totalLogs": 31,
-          "readMs": 297.09699964523315
-        },
-        "heavyRead": {
-          "requests": 15,
-          "durationMs": 16359.833800315857
-        }
-      }
-    },
-    "frontrunning-attack": {
-      "timestamp": "2026-02-26T01:50:10.789Z",
-      "testType": "frontrunning-attack",
-      "summary": {
-        "protected": 5,
-        "vulnerable": 0,
-        "total": 5
-      },
-      "results": [
-        {
-          "test": "SSCC tự sinh unique — không trùng nhau ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "A:000000012283602413 | L:000000016864926523"
-        },
-        {
-          "test": "Chỉ 1 trong 2 approve thành công ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "TX1:true TX2:false"
-        },
-        {
-          "test": "Batch approved đúng 1 lần ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "status=1"
-        },
-        {
-          "test": "Batch không tự nhiên vào Approved sau reject ✓",
-          "status": "PASS",
-          "severity": "MEDIUM",
-          "detail": "status=2"
-        },
-        {
-          "test": "Gas price analysis hoàn thành ✓",
-          "status": "PASS",
-          "severity": "INFO",
-          "detail": ""
-        }
-      ]
-    },
-    "large-dataset": {
-      "timestamp": "2026-02-26T01:50:43.457Z",
-      "testType": "large-dataset",
-      "config": {
-        "BATCHES": 40,
-        "LOGS_EACH": 3,
-        "TREES": 12
-      },
-      "results": {
-        "seedTime": {
-          "totalMs": 19201.64359998703,
-          "batches": 40,
-          "treesCount": 12
-        },
-        "getBatchesByStage": {
-          "avgMs": 139.89423999786376,
-          "n": 40
-        },
-        "getActivityLogs": {
-          "avgMs": 50.414060020446776
-        },
-        "getAllPending": {
-          "avgMs": 137.67788009643556
-        },
-        "getBatchesByProducer": {
-          "avgMs": 269.0287799835205
-        },
-        "getBatchesByStage_60": {
-          "avgMs": 1362.5835401535035,
-          "n": 60
-        }
-      },
-      "projections": {
-        "per1000ms": "3497",
-        "needsIndex": false
-      }
-    },
-    "load-test": {
-      "timestamp": "2026-02-26T01:49:28.665Z",
-      "testType": "load-test",
-      "results": {
-        "sequential": {
-          "total": 30,
-          "ok": 30,
-          "err": 0,
-          "durationSec": "4.58",
-          "tps": "6.55"
-        },
-        "burst": {
-          "total": 15,
-          "ok": 15,
-          "err": 0,
-          "durationSec": "2.31",
-          "tps": "6.50"
-        },
-        "mixed": {
-          "reads": 13,
-          "writes": 7,
-          "errors": 0,
-          "rps": "28.90"
-        },
-        "sustained": {
-          "durationSec": 8,
-          "total": 50,
-          "ok": 50,
-          "tps": "6.25",
-          "avgMs": "160",
-          "p95Ms": "188"
-        }
-      }
-    },
-    "overflow-underflow": {
-      "timestamp": "2026-02-26T01:49:33.650Z",
-      "testType": "overflow-underflow",
-      "summary": {
-        "passed": 6,
-        "failed": 1,
-        "total": 7,
-        "score": 86
-      },
-      "results": [
-        {
-          "test": "Solidity 0.8 chấp nhận uint256 max ✓",
-          "status": "PASS",
-          "severity": "INFO",
-          "detail": "Không overflow"
-        },
-        {
-          "test": "Revert MAX price ✓",
-          "status": "PASS",
-          "severity": "INFO",
-          "detail": "Transaction has been reverted by the EVM:\n {\"transactionHash"
-        },
-        {
-          "test": "Block endDate < startDate ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Block startDate=0 ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Nên reject string quá dài",
-          "status": "FAIL",
-          "severity": "MEDIUM",
-          "detail": "5000 chars được chấp nhận"
-        },
-        {
-          "test": "Block invalid enum ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": ""
-        },
-        {
-          "test": "Counter không tăng khi fail ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "Before:4 After:4"
-        }
-      ]
-    },
-    "read-performance": {
-      "timestamp": "2026-02-26T01:49:12.560Z",
-      "testType": "read-performance",
-      "results": {
-        "getBatchDetails": {
-          "min": 13.281199932098389,
-          "max": 34.499199867248535,
-          "avg": 24.000670019785563,
-          "median": 24.10860013961792,
-          "p95": 30.67020034790039,
-          "count": 30
-        },
-        "getBatchBySSCC": {
-          "min": 11.716300010681152,
-          "max": 30.185500144958496,
-          "avg": 22.567340008417766,
-          "median": 23.000699996948242,
-          "p95": 26.615599632263184,
-          "count": 30
-        },
-        "getActivityLogs": {
-          "min": 33.206199645996094,
-          "max": 106.34559965133667,
-          "avg": 63.26930325826009,
-          "median": 61.47179985046387,
-          "p95": 104.5991997718811,
-          "count": 30
-        },
-        "getTreeByQRCode": {
-          "min": 17.401599884033203,
-          "max": 35.43600034713745,
-          "avg": 24.831893316904704,
-          "median": 24.176499843597412,
-          "p95": 31.130099773406982,
-          "count": 30
-        },
-        "getSystemLogs": {
-          "min": 54.496999740600586,
-          "max": 94.18639993667603,
-          "avg": 63.250876633326214,
-          "median": 60.723000049591064,
-          "p95": 77.60380029678345,
-          "count": 30
-        },
-        "concurrent30": {
-          "totalMs": 815.8978996276855,
-          "avgPerCall": 27.196596654256187
-        }
-      }
-    },
-    "timestamp-manipulation": {
-      "timestamp": "2026-02-26T01:49:35.685Z",
-      "testType": "timestamp-manipulation",
-      "riskLevel": "LOW",
-      "summary": {
-        "passed": 5,
-        "failed": 0,
-        "total": 5,
-        "score": 100
-      },
-      "results": [
-        {
-          "test": "plantedDate = block.timestamp ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "planted=1772070574 blockTs=1772070574"
-        },
-        {
-          "test": "ActivityLog timestamp = block.timestamp ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "logTs=1772070574"
-        },
-        {
-          "test": "Timestamps tăng đơn điệu ✓",
-          "status": "PASS",
-          "severity": "HIGH",
-          "detail": "[1772070574,1772070574,1772070575,1772070575,1772070575]"
-        },
-        {
-          "test": "Miner có thể tăng time +900s ✓",
-          "status": "PASS",
-          "severity": "INFO",
-          "detail": ""
-        },
-        {
-          "test": "Timestamp chỉ dùng để logging (không time-lock/interest) → Rủi ro THẤP ✓",
-          "status": "PASS",
-          "severity": "INFO",
-          "detail": ""
-        }
-      ]
-    },
-    "write-performance": {
-      "timestamp": "2026-02-26T01:48:59.908Z",
-      "testType": "write-performance",
-      "results": {
-        "registerTree": {
-          "stats": {
-            "min": 68.29220008850098,
-            "max": 124.07570028305054,
-            "avg": 97.0389533996582,
-            "median": 100.08050012588501,
-            "p95": 124.07570028305054,
-            "count": 15
-          },
-          "gasAvg": 445671
-        },
-        "createBatch": {
-          "stats": {
-            "min": 97.60940027236938,
-            "max": 171.86529970169067,
-            "avg": 135.3701533317566,
-            "median": 133.93470001220703,
-            "p95": 171.86529970169067,
-            "count": 15
-          },
-          "gasAvg": 431665
-        },
-        "addDetailedLog": {
-          "stats": {
-            "min": 51.269099712371826,
-            "max": 73.89449977874756,
-            "avg": 58.766279983520505,
-            "median": 57.39869976043701,
-            "p95": 73.89449977874756,
-            "count": 20
-          },
-          "gasAvg": 172652
-        },
-        "approveBatch": {
-          "stats": {
-            "min": 69.42089986801147,
-            "max": 84.22710037231445,
-            "avg": 75.14145007133484,
-            "median": 73.9665002822876,
-            "p95": 84.22710037231445,
-            "count": 10
-          },
-          "gasAvg": 235076
-        }
-      }
-    }
-  }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-26T01:50:43.457Z",
+  "timestamp": "2026-02-28T11:34:11.115Z",
   "testType": "large-dataset",
   "config": {
     "BATCHES": 40,
@@ -8,30 +8,30 @@
   },
   "results": {
     "seedTime": {
-      "totalMs": 19201.64359998703,
+      "totalMs": 19054.841099999845,
       "batches": 40,
       "treesCount": 12
     },
     "getBatchesByStage": {
-      "avgMs": 139.89423999786376,
+      "avgMs": 167.0692399993539,
       "n": 40
     },
     "getActivityLogs": {
-      "avgMs": 50.414060020446776
+      "avgMs": 55.12990000247955
     },
     "getAllPending": {
-      "avgMs": 137.67788009643556
+      "avgMs": 184.3225199997425
     },
     "getBatchesByProducer": {
-      "avgMs": 269.0287799835205
+      "avgMs": 313.49899999946354
     },
     "getBatchesByStage_60": {
-      "avgMs": 1362.5835401535035,
+      "avgMs": 1534.4180800020695,
       "n": 60
     }
   },
   "projections": {
-    "per1000ms": "3497",
+    "per1000ms": "4177",
     "needsIndex": false
   }
 }

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-26T01:49:37.441Z",
+  "timestamp": "2026-02-28T11:33:06.359Z",
   "testType": "data-manipulation-attack",
   "summary": {
     "blocked": 5,
@@ -12,7 +12,7 @@
       "test": "SSCC tự sinh unique — attacker không trùng SSCC ✓",
       "status": "FAIL",
       "severity": "HIGH",
-      "detail": "fakeSSCC=000000017363346348"
+      "detail": "fakeSSCC=000000010058708407"
     },
     {
       "test": "Injection payloads không được thực thi ✓",

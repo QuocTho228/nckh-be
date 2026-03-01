@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-02-26T01:49:31.853Z",
+  "timestamp": "2026-02-28T11:33:01.618Z",
   "testType": "data-integrity",
   "summary": {
-    "passed": 13,
-    "failed": 0,
+    "passed": 12,
+    "failed": 1,
     "total": 13,
-    "score": 100
+    "score": 92
   },
   "results": [
     {
@@ -52,9 +52,9 @@
     },
     {
       "test": "Timestamp chính xác (±5 phút) ✓",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "MEDIUM",
-      "detail": "diff=1s"
+      "detail": "diff=1799s"
     },
     {
       "test": "Status=Approved(1) ✓",

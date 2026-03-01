@@ -1,0 +1,20 @@
+
+=== HƯỚNG DẪN CHẠY SLITHER & MYTHRIL ===
+
+## Slither (Trail of Bits) — Static Analyzer tốt nhất
+Cài đặt: pip install slither-analyzer
+Chạy:    cd blockchain
+         slither contracts/TraceabilityContract.sol --solc-version 0.8.20 --json slither-tc.json
+         slither contracts/ActivityLog.sol --solc-version 0.8.20 --json slither-al.json
+         # Hoặc toàn project Truffle:
+         slither . --truffle-build-directory build/contracts
+
+## Mythril (ConsenSys) — Symbolic execution
+Cài:     pip install mythril
+Chạy:    myth analyze contracts/TraceabilityContract.sol --execution-timeout 120 -o json > mythril.json
+Docker:  docker run -v $(pwd)/blockchain/contracts:/tmp/c mythril/myth analyze /tmp/c/TraceabilityContract.sol
+
+## Online (không cần cài đặt)
+- Remix IDE: https://remix.ethereum.org → Analysis tab
+- MythX:     https://mythx.io (3 scans/ngày free)
+- Securify2: https://securify.chainsecurity.com

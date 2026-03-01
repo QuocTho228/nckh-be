@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-26T01:50:10.789Z",
+  "timestamp": "2026-02-28T11:33:36.886Z",
   "testType": "frontrunning-attack",
   "summary": {
     "protected": 5,
@@ -11,7 +11,7 @@
       "test": "SSCC tự sinh unique — không trùng nhau ✓",
       "status": "PASS",
       "severity": "MEDIUM",
-      "detail": "A:000000012283602413 | L:000000016864926523"
+      "detail": "A:000000014888359099 | L:000000014181985377"
     },
     {
       "test": "Chỉ 1 trong 2 approve thành công ✓",
