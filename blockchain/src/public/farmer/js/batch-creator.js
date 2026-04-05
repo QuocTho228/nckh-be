@@ -41,7 +41,7 @@ function batchCreator() {
           (tree) =>
             tree.tree_qr_code?.toLowerCase().includes(query) ||
             tree.tree_type?.toLowerCase().includes(query) ||
-            tree.variety?.toLowerCase().includes(query)
+            tree.variety?.toLowerCase().includes(query),
         );
       }
 
@@ -263,7 +263,7 @@ function batchCreator() {
       const confirmed = await Utils.confirm(
         "Xác nhận tạo lô hàng",
         "Bạn có chắc muốn tạo lô hàng này?",
-        "Tạo lô hàng"
+        "Tạo lô hàng",
       );
 
       if (!confirmed) return;
