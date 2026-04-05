@@ -5,6 +5,14 @@
 
 const COLAB_API_URL = "https://triphibious-precondyloid-norma.ngrok-free.dev"; // ← THAY URL NGROK
 
+// ── Roboflow Detection (Bước 1: kiểm tra có phải sầu riêng không) ──
+// Lấy API key tại: https://universe.roboflow.com/durian-project-rfru6/durian-lq8ha/model/1 → Settings → Roboflow API
+const ROBOFLOW_API_KEY = "wxGFosaJU3sg7tw1zoQu"; // ← THAY API KEY
+const ROBOFLOW_MODEL = "durian-lq8ha";
+const ROBOFLOW_VERSION = 1;
+const ROBOFLOW_MIN_CONF = 30; // ngưỡng tin cậy tối thiểu (%)
+// ──────────────────────────────────────────────────────────────────
+
 (function () {
   "use strict";
 
@@ -58,7 +66,7 @@ const COLAB_API_URL = "https://triphibious-precondyloid-norma.ngrok-free.dev"; /
       /* ── Wrapper section ── */
       #ai-phan-loai {
         background: linear-gradient(135deg, #f8fff9 0%, #e8f5e9 100%);
-        padding: 64px 0 72px;
+        padding: 30px 0 30px;
         border-top: 1px solid #d1fae5;
         border-bottom: 1px solid #d1fae5;
         border-radius: 20px;
@@ -278,10 +286,10 @@ const COLAB_API_URL = "https://triphibious-precondyloid-norma.ngrok-free.dev"; /
         <!-- Header -->
         <div class="ai-hd">
           <div class="ai-hd-eyebrow">
-            <span class="ai-hd-eyebrow-dot"></span>AI · EfficientNet-B4
+            <span class="ai-hd-eyebrow-dot"></span>AI · Deep Learning Model
           </div>
-          <h2>Phân loại <span>độ chín</span> sầu riêng</h2>
-          <p>Upload ảnh hoặc dùng camera nhận ngay kết quả</p>
+          <h2>Phân loại độ chín sầu riêng</h2>
+          <p>Upload ảnh hoặc dùng camera nhận kết quả ngay</p>
           <div id="ai-pill" class="ai-pill pill-c">
             <span class="ai-pill-dot"></span>
             <span id="ai-pill-txt">Đang kiểm tra kết nối...</span>
@@ -502,27 +510,85 @@ const COLAB_API_URL = "https://triphibious-precondyloid-norma.ngrok-free.dev"; /
   }
 
   // ================================================================
-  // PREDICT
+  // PREDICT — Pipeline 2 bước: Roboflow detect → EfficientNet classify
   // ================================================================
+
+  // Bước 1: Chuyển file sang base64 để gọi Roboflow API
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const rd = new FileReader();
+      rd.onload = () => resolve(rd.result.split(",")[1]); // bỏ prefix data:...
+      rd.onerror = reject;
+      rd.readAsDataURL(file);
+    });
+  }
+
+  // Bước 1: Gọi Roboflow để detect sầu riêng
+  async function detectDurian(file) {
+    const b64 = await fileToBase64(file);
+    const url = `https://serverless.roboflow.com/${ROBOFLOW_MODEL}/${ROBOFLOW_VERSION}?api_key=${ROBOFLOW_API_KEY}&confidence=${ROBOFLOW_MIN_CONF}`;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: b64,
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) throw new Error(`Roboflow HTTP ${r.status}`);
+    const data = await r.json();
+    // Trả về prediction có confidence cao nhất (nếu có)
+    const preds = data.predictions || [];
+    if (!preds.length) return null;
+    return preds.reduce(
+      (best, p) => (p.confidence > best.confidence ? p : best),
+      preds[0],
+    );
+  }
+
+  // Bước 2: Gọi EfficientNet để phân loại độ chín
+  async function classifyRipeness(file, name) {
+    const fd = new FormData();
+    fd.append("file", file, name);
+    const r = await fetch(`${COLAB_API_URL}/predict`, {
+      method: "POST",
+      body: fd,
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.detail || `HTTP ${r.status}`);
+    }
+    return r.json();
+  }
+
   async function runPredict(file, name = "image.jpg") {
     if (!isServerOnline) {
       showErr("AI Server chưa hoạt động.\nVui lòng chạy Colab notebook trước!");
       return;
     }
-    showLoad();
+    showLoad("Đang kiểm tra đối tượng...");
     try {
-      const fd = new FormData();
-      fd.append("file", file, name);
-      const r = await fetch(`${COLAB_API_URL}/predict`, {
-        method: "POST",
-        body: fd,
-        signal: AbortSignal.timeout(30000),
-      });
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}));
-        throw new Error(e.detail || `HTTP ${r.status}`);
+      // ── Bước 1: Roboflow detect ──
+      let detection = null;
+      try {
+        detection = await detectDurian(file);
+      } catch (e) {
+        // Nếu Roboflow lỗi (network, API key sai...) → bỏ qua bước detect, vẫn phân loại
+        console.warn("Roboflow detect lỗi, bỏ qua:", e.message);
       }
-      showOk(await r.json());
+
+      // Nếu Roboflow chạy thành công nhưng không tìm thấy sầu riêng → dừng lại
+      if (detection === null && ROBOFLOW_API_KEY !== "THAY_API_KEY_CUA_BAN") {
+        showNotDurian();
+        return;
+      }
+
+      // ── Bước 2: EfficientNet classify ──
+      showLoad("AI đang phân loại độ chín...");
+      const result = await classifyRipeness(file, name);
+
+      // Đính kèm thông tin detection vào kết quả (để hiển thị confidence detect)
+      if (detection) result._detection = detection;
+      showOk(result);
     } catch (e) {
       showErr(
         e.name === "TimeoutError"
@@ -539,9 +605,20 @@ const COLAB_API_URL = "https://triphibious-precondyloid-norma.ngrok-free.dev"; /
     document.getElementById(id).classList.remove("ai-hide");
   }
 
-  function showLoad() {
+  function showLoad(msg = "AI đang phân tích...") {
     hide("ai-r-empty", "ai-r-ok", "ai-r-err");
+    const p = document.querySelector("#ai-r-load p");
+    if (p) p.innerHTML = `<i class="fas fa-cog fa-spin"></i> ${msg}`;
     show("ai-r-load");
+  }
+
+  function showNotDurian() {
+    hide("ai-r-empty", "ai-r-load", "ai-r-ok");
+    document.getElementById("ai-r-errtxt").innerHTML =
+      "Không phát hiện sầu riêng trong ảnh này.<br><small style='color:#6b7280'>Vui lòng upload ảnh có chứa trái sầu riêng.</small>";
+    const errBox = document.getElementById("ai-r-err");
+    errBox.querySelector(".ei i").className = "fas fa-search";
+    show("ai-r-err");
   }
   function showErr(msg) {
     hide("ai-r-empty", "ai-r-load", "ai-r-ok");
@@ -579,10 +656,11 @@ const COLAB_API_URL = "https://triphibious-precondyloid-norma.ngrok-free.dev"; /
 
     document.getElementById("ai-r-ok").innerHTML = `
       <div class="ai-res-hero" style="background:${cls.light};border-color:${cls.border};color:${cls.color}">
+        ${data._detection ? `<div style="font-size:.72rem;font-weight:700;color:#15803d;margin-bottom:6px;letter-spacing:.05em"><i class="fas fa-check-circle"></i> Phát hiện sầu riêng · ${Math.round(data._detection.confidence * 100)}% tin cậy</div>` : ""}
         <span class="ai-res-icon"><i class="${cls.icon}" style="color:${cls.color}"></i></span>
         <div class="ai-res-name" style="color:${cls.color}">${data.predicted_class_vi}</div>
         <div class="ai-res-sub">
-          Độ chính xác
+          Độ chính xác phân loại
           <span class="ai-res-pct" style="color:${cls.color}">${data.confidence}%</span>
         </div>
       </div>
