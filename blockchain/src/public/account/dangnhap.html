@@ -18,6 +18,7 @@
       type="text/css"
       href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       body {
         background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
@@ -539,14 +540,15 @@
             console.log("Phản hồi đăng nhập:", data);
 
             if (response.ok) {
-              Toastify({
-                text: "Đăng nhập thành công!",
-                duration: 2000,
-                gravity: "top",
-                position: "right",
-                className: "toast-success",
-                close: true,
-              }).showToast();
+              Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "success",
+                title: "Đăng nhập thành công!",
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+              });
 
               setTimeout(() => {
                 if (data.admin) {
@@ -598,14 +600,15 @@
                 }
               }, 2000);
             } else {
-              Toastify({
-                text: data.message || "Đăng nhập thất bại",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                className: "toast-error",
-                close: true,
-              }).showToast();
+              Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "error",
+                title: data.message || "Đăng nhập thất bại",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+              });
             }
           } catch (error) {
             console.error("Lỗi khi đăng nhập:", error);
