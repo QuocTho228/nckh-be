@@ -8325,7 +8325,7 @@ function setupRoutes(app, db) {
               usedDate: stamp.used_date,
             },
 
-            // Thông tin sản phẩm
+            // Thông tin sản phẩm (weight ở đây = gram/gói, không đổi)
             product: {
               productId: product.product_id,
               productQRCode: product.product_qr_code,
@@ -8340,6 +8340,8 @@ function setupRoutes(app, db) {
             },
 
             // Thông tin lô hàng
+            // FIX: Thêm is_corrected để frontend biết hiện badge "Đã đính chính"
+            //      quantity ở đây là tổng lô — đã được cập nhật khi approve đính chính
             batch: {
               batchId: batch.batch_id,
               batchName: batch.batch_name,
@@ -8347,8 +8349,11 @@ function setupRoutes(app, db) {
               status: batch.status,
               currentStage: batch.current_stage,
               productionDate: batch.production_date_iso,
-              quantity: batch.quantity,
+              quantity: batch.quantity, // tổng lô, đã đính chính nếu có
               totalProducts: batch.total_products,
+              isCorrected:
+                batch.is_corrected === 1 || batch.is_corrected === true, // FIX: thêm field này
+              correctionCount: batch.correction_count || 0, // FIX: thêm field này
             },
 
             // Thông tin nhà sản xuất
@@ -8376,7 +8381,7 @@ function setupRoutes(app, db) {
               totalActivities: tree.total_activities || 0,
             })),
 
-            // Timeline (đã được generate bởi function đã fix)
+            // Timeline
             timeline: timeline,
 
             // Kết quả kiểm định

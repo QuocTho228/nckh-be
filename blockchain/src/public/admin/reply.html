@@ -1,13 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />  
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
     <title>Phản hồi người dùng</title>
     <script>
       (function () {
-        document.documentElement.classList.add(localStorage.getItem('theme') || 'light-theme');
+        document.documentElement.classList.add(
+          localStorage.getItem("theme") || "light-theme",
+        );
       })();
     </script>
     <link
@@ -21,28 +23,30 @@
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/responsive.css" />
     <link rel="stylesheet" href="./css/animation.css" />
-    <link rel="stylesheet" href="./css/theme.css">
-    <link rel="stylesheet" href="./css/header.css">
-    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/theme.css" />
+    <link rel="stylesheet" href="./css/header.css" />
+    <link rel="stylesheet" href="./css/main.css" />
     <link rel="stylesheet" href="./css/reply.css" />
   </head>
   <body onload="time()">
     <div id="messageContainer"></div>
     <header class="text-white">
-
       <div class="header-container">
         <!-- Logo -->
         <div class="header-left">
           <a href="#" class="header-logo">
-            <img src="..\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="Logo">
+            <img
+              src="..\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+              alt="Logo"
+            />
           </a>
         </div>
-      
+
         <!-- Title -->
         <div class="header-title">
           <h2>PHẢN HỒI NGƯỜI DÙNG</h2>
         </div>
-      
+
         <!-- Actions: Notification, Theme, Profile -->
         <div class="header-right">
           <div class="action-item notification-item">
@@ -53,7 +57,11 @@
             <i class="fas fa-sun" id="themeIcon" title="Đổi giao diện"></i>
           </div>
           <div class="action-item">
-            <i class="fas fa-sign-out-alt" id="logoutIcon" title="Đăng xuất"></i>
+            <i
+              class="fas fa-sign-out-alt"
+              id="logoutIcon"
+              title="Đăng xuất"
+            ></i>
           </div>
         </div>
       </div>
@@ -65,19 +73,37 @@
       <div class="row">
         <nav class="col-md-2 sidebar">
           <div class="section-title"></div>
-          <a href="admintest.html" class="menu-item rounded mt-2"><i class="fas fa-home"></i> Trang chủ</a>
+          <a href="admintest.html" class="menu-item rounded mt-2"
+            ><i class="fas fa-home"></i> Trang chủ</a
+          >
           <div class="divider"></div>
           <div class="section-title">CHỨC NĂNG</div>
-          <a href="user.html" class="menu-item rounded"><i class="fas fa-users"></i> Quản lý người dùng</a>
+          <a href="user.html" class="menu-item rounded"
+            ><i class="fas fa-users"></i> Quản lý người dùng</a
+          >
           <!-- <a href="#" class="menu-item"><i class="fas fa-exchange-alt"></i> Quản lý giao dịch</a> -->
           <!-- <a href="#" class="menu-item"><i class="fas fa-cogs"></i> Quy trình</a> -->
-          <a href="product.html" class="menu-item rounded"><i class="fas fa-box"></i> Sản phẩm</a>
-          <a href="region.html" class="menu-item rounded"><i class="fas fa-map-marker-alt"></i> Vùng sản xuất</a>
+          <a href="product.html" class="menu-item rounded"
+            ><i class="fas fa-box"></i> Sản phẩm</a
+          >
+          <a href="region.html" class="menu-item rounded"
+            ><i class="fas fa-map-marker-alt"></i> Vùng sản xuất</a
+          >
+          <a href="dinh-chinh-lo-hang.html" class="menu-item rounded"
+            ><i class="fas fa-edit"></i> Đính chính lô hàng</a
+          >
           <div class="divider"></div>
           <div class="section-title">TIỆN ÍCH</div>
-          <a href="stats.html" class="menu-item rounded"><i class="fas fa-chart-bar"></i> Báo cáo và thống kê</a>
-          <a href="#" class="menu-item rounded"><i class="fas fa-comments"></i> Phản hồi
-            <span class="badge badge-danger ml-2 reply-count" style="display: none;">0</span>
+          <a href="stats.html" class="menu-item rounded"
+            ><i class="fas fa-chart-bar"></i> Báo cáo và thống kê</a
+          >
+          <a href="#" class="menu-item rounded"
+            ><i class="fas fa-comments"></i> Phản hồi
+            <span
+              class="badge badge-danger ml-2 reply-count"
+              style="display: none"
+              >0</span
+            >
           </a>
         </nav>
 

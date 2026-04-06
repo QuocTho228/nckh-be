@@ -171,6 +171,12 @@ const {
 
 setupRoutes(app, db); // Gọi sau khi body parser đã được setup
 
+const {
+  setupCorrectionRoutes,
+} = require("./components/correction/correctionController");
+
+setupCorrectionRoutes(app, db);
+
 // app.js
 const backendModule = require("./backend.js");
 backendModule.setupRoutes(app, db); // Truyền app vào
@@ -655,6 +661,19 @@ app.get("/allnhakiemduyet.html", (req, res) => {
   );
 });
 
+// Admin: Trang quản lý đính chính
+app.get("/admin/dinh-chinh-lo-hang.html", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "admin", "dinh-chinh-lo-hang.html"),
+  );
+});
+
+// Farmer: Trang tạo yêu cầu đính chính
+app.get("/farmer/yeu-cau-dinh-chinh.html", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "farmer", "yeu-cau-dinh-chinh.html"),
+  );
+});
 // ============================================
 // 16. SOCKET.IO CHAT SETUP
 // ============================================
