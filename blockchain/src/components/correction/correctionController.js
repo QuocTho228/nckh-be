@@ -49,7 +49,19 @@ const ALLOWED_CORRECTION_FIELDS = [
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  if (req.session?.isLoggedIn && (req.session.userId || req.session.adminId)) {
+  const isLoggedIn =
+    req.session?.isLoggedIn === true ||
+    req.session?.isLoggedIn === "true" ||
+    req.session?.userId ||
+    req.session?.user_id;
+  if (
+    isLoggedIn &&
+    (req.session.userId || req.session.user_id || req.session.adminId)
+  ) {
+    // Normalize userId so downstream code always finds it
+    if (!req.session.userId && req.session.user_id) {
+      req.session.userId = req.session.user_id;
+    }
     return next();
   }
   return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
@@ -57,7 +69,14 @@ function requireAuth(req, res, next) {
 
 function requireRoleId(roleId) {
   return function (req, res, next) {
-    if (req.session?.roleId === roleId) return next();
+    // Support cả number và string, và cả roleId lẫn role_id trong session
+    const sessionRole =
+      req.session?.roleId ?? req.session?.role_id ?? req.session?.userRole;
+    if (
+      String(sessionRole) === String(roleId) ||
+      Number(sessionRole) === Number(roleId)
+    )
+      return next();
     return res.status(403).json({ success: false, error: "Không có quyền" });
   };
 }
@@ -339,6 +358,40 @@ function setupCorrectionRoutes(app, db) {
         });
       } catch (err) {
         console.error("[Correction] Request error:", err);
+        return res.status(500).json({ success: false, error: err.message });
+      }
+    },
+  );
+
+  // ==========================================================================
+  // FARMER: Thống kê yêu cầu của mình
+  // GET /api/correction/my-stats
+  // ==========================================================================
+  app.get(
+    "/api/correction/my-stats",
+    requireAuth,
+    requireFarmer,
+    async (req, res) => {
+      try {
+        const farmerId = req.session.userId;
+        const [[stats]] = await db.query(
+          `SELECT
+             SUM(CASE WHEN status='pending'  THEN 1 ELSE 0 END) AS pending,
+             SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) AS approved,
+             SUM(CASE WHEN status='rejected' THEN 1 ELSE 0 END) AS rejected
+           FROM batch_correction_requests
+           WHERE requested_by = ?`,
+          [farmerId],
+        );
+        return res.json({
+          success: true,
+          data: {
+            pending: Number(stats.pending || 0),
+            approved: Number(stats.approved || 0),
+            rejected: Number(stats.rejected || 0),
+          },
+        });
+      } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
       }
     },

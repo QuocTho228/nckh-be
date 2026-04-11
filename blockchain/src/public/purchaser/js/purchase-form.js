@@ -16,6 +16,7 @@ function purchaseForm() {
     formData: {
       quantityKg: "",
       pricePerKg: "",
+      qualityGrade: "",
       notes: "",
       images: [],
     },
@@ -57,7 +58,7 @@ function purchaseForm() {
 
       try {
         const result = await API.get(
-          `/api/purchaser/batch/${this.batchId}/details`
+          `/api/purchaser/batch/${this.batchId}/details`,
         );
 
         if (!result.success) {
@@ -177,13 +178,17 @@ function purchaseForm() {
               <div class="flex justify-between">
                 <span class="text-gray-600">Đơn giá:</span>
                 <span class="font-semibold">${Utils.formatNumber(
-                  this.formData.pricePerKg
+                  this.formData.pricePerKg,
                 )} VNĐ/kg</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Chất lượng:</span>
+                <span class="font-semibold">${this.formData.qualityGrade || "Không xác định"}</span>
               </div>
               <div class="flex justify-between border-t pt-2 mt-2">
                 <span class="text-gray-600">Tổng giá trị:</span>
                 <span class="font-bold text-green-600">${Utils.formatNumber(
-                  this.totalPrice
+                  this.totalPrice,
                 )} VNĐ</span>
               </div>
             </div>
@@ -213,6 +218,10 @@ function purchaseForm() {
         formData.append("totalQuantity", this.formData.quantityKg);
         formData.append("pricePerUnit", this.formData.pricePerKg);
 
+        if (this.formData.qualityGrade) {
+          formData.append("qualityGrade", this.formData.qualityGrade);
+        }
+
         if (this.formData.notes) {
           formData.append("notes", this.formData.notes);
         }
@@ -225,7 +234,7 @@ function purchaseForm() {
         // Submit
         const result = await API.post(
           "/api/purchaser/record-purchase",
-          formData
+          formData,
         );
 
         Utils.loading.hide();
@@ -244,8 +253,12 @@ function purchaseForm() {
                   result.data.data.purchaseId
                 }</strong></p>
                 <p><span class="text-gray-600">Số lượng:</span> <strong>${quantity} kg</strong></p>
+                <p><span class="text-gray-600">Đơn giá:</span> <strong>${Utils.formatNumber(
+                  this.formData.pricePerKg,
+                )} VNĐ/kg</strong></p>
+                <p><span class="text-gray-600">Chất lượng:</span> <strong>${this.formData.qualityGrade || "Không xác định"}</strong></p>
                 <p><span class="text-gray-600">Tổng giá trị:</span> <strong class="text-green-600">${Utils.formatNumber(
-                  this.totalPrice
+                  this.totalPrice,
                 )} VNĐ</strong></p>
               </div>
               <p class="text-xs text-gray-500 mt-3">

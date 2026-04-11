@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -352,6 +352,25 @@
                         class="input-gradient"
                         placeholder="Nhập đơn giá"
                       />
+                    </div>
+
+                    <!-- Chất lượng -->
+                    <div>
+                      <label
+                        class="block text-sm font-semibold text-gray-700 mb-2"
+                      >
+                        Chất lượng hàng
+                      </label>
+                      <select
+                        x-model="formData.qualityGrade"
+                        class="input-gradient"
+                      >
+                        <option value="">-- Chọn chất lượng --</option>
+                        <option value="A">Loại A - Xuất sắc</option>
+                        <option value="B">Loại B - Tốt</option>
+                        <option value="C">Loại C - Trung bình</option>
+                        <option value="D">Loại D - Thấp</option>
+                      </select>
                     </div>
 
                     <!-- Tổng tiền -->

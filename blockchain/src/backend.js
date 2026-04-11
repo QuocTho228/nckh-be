@@ -4540,13 +4540,16 @@ function setupRoutes(app, db) {
 
         // Validate trees
         const treeIds = products.map((p) => parseInt(p.treeId));
+        const uniqueTreeIds = [...new Set(treeIds)]; // ✅ Chỉ lấy unique
+
         const [treeLinks] = await connection.query(
           `SELECT tree_id FROM tree_batch_links 
-         WHERE batch_id = ? AND tree_id IN (?)`,
-          [batchId, treeIds],
+   WHERE batch_id = ? AND tree_id IN (?)`,
+          [batchId, uniqueTreeIds], // ✅ Query unique IDs
         );
 
-        if (treeLinks.length !== treeIds.length) {
+        if (treeLinks.length !== uniqueTreeIds.length) {
+          // ✅ So sánh với unique
           await connection.rollback();
           return res.status(400).json({
             error: "Một số cây không thuộc lô hàng này",

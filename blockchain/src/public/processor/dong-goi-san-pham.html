@@ -66,8 +66,6 @@
       }
     </style>
   </head>
-
-  < class="bg-gradient-bg min-h-screen">
     <!-- Navbar -->
     <nav class="bg-white shadow-md sticky top-0 z-50">
       <div class="container mx-auto px-4">
@@ -186,23 +184,86 @@
             </div>
           </div>
 
-          <!-- Progress bar -->
+          <!-- Progress bar + Weight Tracker -->
           <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <div class="flex items-center justify-between text-sm mb-2">
-              <span class="font-semibold text-gray-700">Tiến độ đóng gói</span>
-              <span class="text-gray-600">
-                <span
-                  class="font-bold text-green-600"
-                  x-text="products.length"
-                ></span>
-                / <span x-text="targetQuantity"></span> sản phẩm
-              </span>
+            <!-- Weight summary row -->
+            <div class="grid grid-cols-3 gap-4 mb-5">
+              <div class="text-center bg-blue-50 rounded-lg p-3">
+                <div class="text-xs text-gray-500 mb-1">Đầu ra sơ chế</div>
+                <div class="text-xl font-bold text-blue-700" x-text="outputWeight > 0 ? outputWeight.toFixed(2) + ' kg' : '—'"></div>
+              </div>
+              <div class="text-center bg-green-50 rounded-lg p-3">
+                <div class="text-xs text-gray-500 mb-1">Đã đóng gói</div>
+                <div class="text-xl font-bold text-green-700" x-text="(alreadyPackagedWeight + totalWeight).toFixed(2) + ' kg'"></div>
+              </div>
+              <div class="text-center rounded-lg p-3"
+                :class="remainingWeight > 0.01 ? 'bg-orange-50' : 'bg-gray-50'"
+              >
+                <div class="text-xs text-gray-500 mb-1">Còn lại</div>
+                <div class="text-xl font-bold"
+                  :class="remainingWeight > 0.01 ? 'text-orange-600' : 'text-gray-400'"
+                  x-text="outputWeight > 0 ? remainingWeight.toFixed(2) + ' kg' : '—'"
+                ></div>
+              </div>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-3">
-              <div
-                class="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
-                :style="`width: ${Math.min(100, (products.length / targetQuantity * 100)).toFixed(0)}%`"
-              ></div>
+
+            <!-- Progress bar (theo kg nếu có, theo sản phẩm nếu không) -->
+            <template x-if="outputWeight > 0">
+              <div>
+                <div class="flex items-center justify-between text-sm mb-2">
+                  <span class="font-semibold text-gray-700">Tiến độ theo khối lượng</span>
+                  <span class="text-gray-600 font-mono">
+                    <span class="font-bold text-green-600" x-text="packedPercent"></span>%
+                  </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <!-- Phần đã đóng gói phiên trước (xám) -->
+                  <div class="h-4 float-left bg-green-300 transition-all duration-500"
+                    :style="`width: ${Math.min(100, alreadyPackagedWeight / outputWeight * 100).toFixed(1)}%`"
+                    :title="`Đã đóng gói trước: ${alreadyPackagedWeight.toFixed(2)} kg`"
+                  ></div>
+                  <!-- Phần đang đóng gói phiên này (xanh đậm) -->
+                  <div class="h-4 float-left bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-500"
+                    :style="`width: ${Math.min(100 - alreadyPackagedWeight / outputWeight * 100, totalWeight / outputWeight * 100).toFixed(1)}%`"
+                    :title="`Phiên này: ${totalWeight.toFixed(2)} kg`"
+                  ></div>
+                </div>
+                <div class="flex gap-4 mt-2 text-xs text-gray-500">
+                  <span><span class="inline-block w-3 h-3 rounded bg-green-300 mr-1"></span>Phiên trước</span>
+                  <span><span class="inline-block w-3 h-3 rounded bg-emerald-600 mr-1"></span>Phiên này</span>
+                  <span><span class="inline-block w-3 h-3 rounded bg-gray-200 mr-1"></span>Còn lại</span>
+                </div>
+              </div>
+            </template>
+            <template x-if="outputWeight <= 0">
+              <div>
+                <div class="flex items-center justify-between text-sm mb-2">
+                  <span class="font-semibold text-gray-700">Tiến độ đóng gói</span>
+                  <span class="text-gray-600">
+                    <span class="font-bold text-green-600" x-text="products.length"></span>
+                    / <span x-text="targetQuantity"></span> sản phẩm
+                  </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                  <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
+                    :style="`width: ${Math.min(100, (products.length / targetQuantity * 100)).toFixed(0)}%`"
+                  ></div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Banner cảnh báo còn lại -->
+            <div x-show="alreadyPackagedWeight > 0" x-cloak
+              class="mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center gap-3 text-sm"
+            >
+              <i class="fas fa-history text-amber-500 text-lg"></i>
+              <div>
+                <span class="font-semibold text-amber-800">Tiếp tục đóng gói —</span>
+                <span class="text-amber-700">
+                  Bạn đã đóng gói <strong x-text="alreadyPackagedWeight.toFixed(2)"></strong> kg trước đó.
+                  Phiên này tiếp tục với <strong x-text="remainingWeight.toFixed(2)"></strong> kg còn lại.
+                </span>
+              </div>
             </div>
           </div>
 

@@ -8549,10 +8549,34 @@
       "links": {},
       "address": "0x489453336885dF505867DB701Ee0255a3D9C7C0B",
       "transactionHash": "0xbcc6f86c3f47389466fa21d8e4b5b047e467f6cacb20d7efc87455e69654d2f1"
+    },
+    "1775480379775": {
+      "events": {},
+      "links": {},
+      "address": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C",
+      "transactionHash": "0x2d4a398eaadad8d2975911c2c295aacf11022f749738e69b55b4cbbd674b6b2f"
+    },
+    "1775480744381": {
+      "events": {},
+      "links": {},
+      "address": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C",
+      "transactionHash": "0x2d4a398eaadad8d2975911c2c295aacf11022f749738e69b55b4cbbd674b6b2f"
+    },
+    "1775481002609": {
+      "events": {},
+      "links": {},
+      "address": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C",
+      "transactionHash": "0x2d4a398eaadad8d2975911c2c295aacf11022f749738e69b55b4cbbd674b6b2f"
+    },
+    "1775481182581": {
+      "events": {},
+      "links": {},
+      "address": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
+      "transactionHash": "0x7d0edd5be8b5bb013afbd96b86d924313d84abd1d343a6c5df372d0b948a06a3"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-04-06T02:52:30.902Z",
+  "updatedAt": "2026-04-06T13:13:26.250Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Ghi nhận bất biến mọi lần đính chính dữ liệu lô hàng.      Dữ liệu chi tiết (giá trị cũ/mới) lưu MySQL.      Blockchain chỉ lưu: batchId, adminId, timestamp, contentHash.      → Không thể chối cãi: ai sửa gì, lúc nào.",

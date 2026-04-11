@@ -173,13 +173,9 @@ setupRoutes(app, db); // Gọi sau khi body parser đã được setup
 
 const {
   setupCorrectionRoutes,
-} = require("./components/correction/correctionController");
+} = require("./components/correction/correctionController.js");
 
 setupCorrectionRoutes(app, db);
-
-// app.js
-const backendModule = require("./backend.js");
-backendModule.setupRoutes(app, db); // Truyền app vào
 // ============================================
 // 9. MANAGE ROUTES
 // ============================================

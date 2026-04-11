@@ -29,7 +29,7 @@
   </head>
 
   <body class="bg-gradient-bg min-h-screen">
-    <!-- ── Navbar (đồng bộ quan-ly-cay.html) ── -->
+    <!-- ── Navbar ── -->
     <nav class="bg-white shadow-md sticky top-0 z-50">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
@@ -227,6 +227,27 @@
             <div x-show="loadingBatches" class="py-6 text-center text-gray-400">
               <div class="spinner mx-auto mb-2"></div>
               <p class="text-sm">Đang tải danh sách lô hàng...</p>
+            </div>
+
+            <!-- Lỗi tải lô hàng -->
+            <div
+              x-show="!loadingBatches && batchLoadError"
+              x-cloak
+              class="bg-red-50 border border-red-200 rounded-xl p-4 mb-3 text-sm text-red-700 flex items-start gap-2"
+            >
+              <i class="fas fa-exclamation-circle mt-0.5"></i>
+              <div>
+                <p class="font-semibold mb-1">
+                  Không thể tải danh sách lô hàng
+                </p>
+                <p x-text="batchLoadError"></p>
+                <button
+                  @click="loadMyBatches()"
+                  class="mt-2 text-xs underline hover:no-underline"
+                >
+                  Thử lại
+                </button>
+              </div>
             </div>
 
             <div x-show="!loadingBatches">
@@ -638,7 +659,6 @@
                       class="text-xs opacity-60"
                       x-text="formatDateTime(req.reviewed_at)"
                     ></p>
-                    <!-- Blockchain log timestamp nếu có -->
                     <p
                       x-show="req.blockchain_logged_at"
                       x-cloak
@@ -667,12 +687,100 @@
     <script src="../shared/js/auth.js"></script>
 
     <script>
+      // ─── Helper: gọi API an toàn ─────────────────────────────────────────────
+      async function safeGet(url) {
+        try {
+          const res = await fetch(url, { credentials: "include" });
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            return {
+              success: false,
+              error: errJson.error || `HTTP ${res.status}`,
+              data: [],
+            };
+          }
+          return await res.json();
+        } catch (e) {
+          console.warn("safeGet error:", url, e.message);
+          return { success: false, error: e.message, data: [] };
+        }
+      }
+
+      async function safePost(url, body) {
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          const json = await res.json();
+          if (!res.ok && json.success === undefined) {
+            return {
+              success: false,
+              error: json.error || `HTTP ${res.status}`,
+            };
+          }
+          return json;
+        } catch (e) {
+          console.warn("safePost error:", url, e.message);
+          return { success: false, error: e.message };
+        }
+      }
+
+      // ─── Toast helper ─────────────────────────────────────────────────────────
+      function showToast(msg, type = "error") {
+        if (typeof Utils !== "undefined" && Utils.toast) {
+          return type === "error"
+            ? Utils.toast.error(msg)
+            : Utils.toast.success(msg);
+        }
+        if (typeof Swal !== "undefined") {
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: type,
+            title: msg,
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true,
+          });
+        } else {
+          alert(msg);
+        }
+      }
+
+      // ─── Confirm helper ───────────────────────────────────────────────────────
+      async function showConfirm(title, text, confirmText = "Xác nhận") {
+        if (
+          typeof Utils !== "undefined" &&
+          typeof Utils.confirm === "function"
+        ) {
+          return await Utils.confirm(title, text, confirmText);
+        }
+        if (typeof Swal !== "undefined") {
+          const result = await Swal.fire({
+            title,
+            text,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: confirmText,
+            cancelButtonText: "Hủy",
+            confirmButtonColor: "#16a34a",
+          });
+          return result.isConfirmed;
+        }
+        return confirm(`${title}\n${text}`);
+      }
+
+      // ─── Alpine component ─────────────────────────────────────────────────────
       function correctionPage() {
         return {
           activeTab: "new",
           loadingBatches: true,
           loadingHistory: false,
           submitting: false,
+          batchLoadError: "",
 
           myBatches: [],
           selectedBatchId: "",
@@ -688,50 +796,140 @@
             reason: "",
           },
 
+          // ── Khởi tạo ─────────────────────────────────────────────────────────
           async init() {
-            const ok = await Auth.requireFarmer();
-            if (!ok) return;
-            Auth.updateNavbar();
-            await Promise.all([this.loadMyBatches(), this.loadStats()]);
-          },
-
-          async loadStats() {
             try {
-              const result = await API.get("/api/correction/my-requests");
-              if (result.success) {
-                const all = result.data || [];
-                this.stats.pending = all.filter(
-                  (r) => r.status === "pending",
-                ).length;
-                this.stats.approved = all.filter(
-                  (r) => r.status === "approved",
-                ).length;
-                this.stats.rejected = all.filter(
-                  (r) => r.status === "rejected",
-                ).length;
+              if (typeof Auth !== "undefined") {
+                if (typeof Auth.init === "function") await Auth.init();
+                if (typeof Auth.requireFarmer === "function") {
+                  const ok = await Auth.requireFarmer();
+                  if (!ok) return;
+                }
+                if (typeof Auth.updateNavbar === "function")
+                  Auth.updateNavbar();
               }
             } catch (e) {
-              console.error(e);
+              console.warn("Auth error (ignored):", e.message);
+            }
+
+            // Load song song
+            await Promise.all([
+              this.loadMyBatches(),
+              this.loadMyRequests(),
+              this.loadMyStats(),
+            ]);
+          },
+
+          // ── Load stats riêng từ endpoint /api/correction/my-stats ─────────────
+          // (nhanh hơn, không cần tải toàn bộ lịch sử)
+          async loadMyStats() {
+            try {
+              const result = await safeGet("/api/correction/my-stats");
+              if (result && result.success && result.data) {
+                this.stats.pending = Number(result.data.pending || 0);
+                this.stats.approved = Number(result.data.approved || 0);
+                this.stats.rejected = Number(result.data.rejected || 0);
+              }
+            } catch (e) {
+              console.warn("loadMyStats error:", e.message);
+              // fallback: tính từ myRequests (sẽ được cập nhật sau loadMyRequests)
             }
           },
 
+          // ── Tính lại stats từ myRequests (fallback) ───────────────────────────
+          _recalcStats() {
+            this.stats.pending = this.myRequests.filter(
+              (r) => r.status === "pending",
+            ).length;
+            this.stats.approved = this.myRequests.filter(
+              (r) => r.status === "approved",
+            ).length;
+            this.stats.rejected = this.myRequests.filter(
+              (r) => r.status === "rejected",
+            ).length;
+          },
+
+          // ── Load danh sách lô hàng ────────────────────────────────────────────
           async loadMyBatches() {
             this.loadingBatches = true;
+            this.batchLoadError = "";
             try {
-              const result = await API.getMyBatches();
-              if (result.success) {
-                const raw = result.data?.data || result.data || [];
-                this.myBatches = Array.isArray(raw)
-                  ? raw.filter((b) => b.status !== "Rejected")
-                  : [];
+              let result;
+              if (
+                typeof API !== "undefined" &&
+                typeof API.getMyBatches === "function"
+              ) {
+                result = await API.getMyBatches();
+              } else {
+                result = await safeGet("/api/farmer/my-batches");
+              }
+
+              if (result && result.success) {
+                // /api/farmer/my-batches trả về { success, count, data: [...] }
+                // data là array thẳng, KHÔNG có .data bên trong
+                const raw = Array.isArray(result.data)
+                  ? result.data
+                  : result.data?.data || [];
+                this.myBatches = raw.filter((b) => b.status !== "Rejected");
+              } else {
+                const errMsg = result?.error || "Lỗi không xác định";
+                console.warn("Không tải được danh sách lô:", errMsg);
+                this.batchLoadError = errMsg;
+                this.myBatches = [];
               }
             } catch (e) {
-              console.error(e);
+              console.error("loadMyBatches error:", e);
+              this.batchLoadError = e.message;
+              this.myBatches = [];
             } finally {
               this.loadingBatches = false;
             }
           },
 
+          // ── Load lịch sử yêu cầu ─────────────────────────────────────────────
+          async loadMyRequests() {
+            this.loadingHistory = true;
+            try {
+              const result = await safeGet("/api/correction/my-requests");
+
+              if (result && result.success) {
+                const raw = Array.isArray(result.data) ? result.data : [];
+                this.myRequests = raw.map((r) => ({
+                  ...r,
+                  changed_fields: this._parseJson(r.changed_fields, []),
+                  original_data: this._parseJson(r.original_data, {}),
+                  corrected_data: this._parseJson(r.corrected_data, {}),
+                }));
+              } else {
+                console.warn(
+                  "API correction/my-requests:",
+                  result?.error || "no data",
+                );
+                this.myRequests = [];
+              }
+              // Luôn tính lại stats từ dữ liệu trả về
+              this._recalcStats();
+            } catch (e) {
+              console.error("loadMyRequests error:", e);
+              this.myRequests = [];
+              this._recalcStats();
+            } finally {
+              this.loadingHistory = false;
+            }
+          },
+
+          // ── Parse JSON an toàn ────────────────────────────────────────────────
+          _parseJson(val, fallback) {
+            if (val === null || val === undefined) return fallback;
+            if (typeof val === "object") return val;
+            try {
+              return JSON.parse(val);
+            } catch {
+              return fallback;
+            }
+          },
+
+          // ── Khi chọn lô hàng ──────────────────────────────────────────────────
           onBatchSelect() {
             this.selectedBatch =
               this.myBatches.find(
@@ -745,6 +943,7 @@
             };
           },
 
+          // ── Reset form ────────────────────────────────────────────────────────
           resetForm() {
             this.selectedBatchId = "";
             this.selectedBatch = null;
@@ -756,36 +955,14 @@
             };
           },
 
-          async loadMyRequests() {
-            this.loadingHistory = true;
-            try {
-              const result = await API.get("/api/correction/my-requests");
-              if (result.success) {
-                this.myRequests = result.data || [];
-                this.stats.pending = this.myRequests.filter(
-                  (r) => r.status === "pending",
-                ).length;
-                this.stats.approved = this.myRequests.filter(
-                  (r) => r.status === "approved",
-                ).length;
-                this.stats.rejected = this.myRequests.filter(
-                  (r) => r.status === "rejected",
-                ).length;
-              }
-            } catch (e) {
-              console.error(e);
-            } finally {
-              this.loadingHistory = false;
-            }
-          },
-
+          // ── Gửi yêu cầu đính chính ────────────────────────────────────────────
           async submitRequest() {
             if (!this.selectedBatchId) {
-              Utils.toast.error("Vui lòng chọn lô hàng");
+              showToast("Vui lòng chọn lô hàng", "error");
               return;
             }
             if (this.form.reason.trim().length < 10) {
-              Utils.toast.error("Lý do đính chính phải có ít nhất 10 ký tự");
+              showToast("Lý do đính chính phải có ít nhất 10 ký tự", "error");
               return;
             }
 
@@ -799,13 +976,14 @@
                 this.form.farm_plot_number.trim();
 
             if (Object.keys(correctedData).length === 0) {
-              Utils.toast.error(
+              showToast(
                 "Vui lòng nhập ít nhất 1 trường muốn đính chính",
+                "error",
               );
               return;
             }
 
-            const confirmed = await Utils.confirm(
+            const confirmed = await showConfirm(
               "Xác nhận gửi yêu cầu",
               "Yêu cầu sẽ được gửi đến Admin để phê duyệt.",
               "Gửi yêu cầu",
@@ -814,13 +992,13 @@
 
             this.submitting = true;
             try {
-              const result = await API.post("/api/correction/request", {
+              const result = await safePost("/api/correction/request", {
                 batchId: this.selectedBatchId,
                 reason: this.form.reason.trim(),
                 correctedData,
               });
 
-              if (result.success) {
+              if (result && result.success) {
                 await Swal.fire({
                   icon: "success",
                   title: "Đã gửi yêu cầu!",
@@ -829,20 +1007,38 @@
                 });
                 this.resetForm();
                 this.activeTab = "history";
-                await this.loadMyRequests();
+                // Reload cả requests lẫn stats
+                await Promise.all([this.loadMyRequests(), this.loadMyStats()]);
               } else {
-                Utils.toast.error(result.error || "Gửi yêu cầu thất bại");
+                const errMsg = result?.error || "Gửi yêu cầu thất bại";
+                // Hiển thị lỗi chi tiết hơn nếu là lỗi auth
+                if (
+                  errMsg.includes("Không có quyền") ||
+                  errMsg.includes("Chưa đăng nhập")
+                ) {
+                  showToast(
+                    "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+                    "error",
+                  );
+                } else {
+                  showToast(errMsg, "error");
+                }
               }
             } catch (e) {
-              Utils.toast.error(e.message || "Lỗi kết nối");
+              showToast(e.message || "Lỗi kết nối", "error");
             } finally {
               this.submitting = false;
             }
           },
 
+          // ── Formatters ────────────────────────────────────────────────────────
           formatDateTime(d) {
-            if (!d) return "";
-            return new Date(d).toLocaleString("vi-VN");
+            if (!d) return "—";
+            try {
+              return new Date(d).toLocaleString("vi-VN");
+            } catch {
+              return d;
+            }
           },
           statusLabel(s) {
             return (
@@ -866,7 +1062,13 @@
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
-        await Auth.init();
+        try {
+          if (typeof Auth !== "undefined" && typeof Auth.init === "function") {
+            await Auth.init();
+          }
+        } catch (e) {
+          console.warn("Auth.init error:", e.message);
+        }
       });
     </script>
   </body>
