@@ -23,6 +23,8 @@ blockchain-test/               ← Thư mục này (thêm vào root project)
 │       └── large-dataset.test.js           📈  Kiểm thử dữ liệu lớn
 ├── scripts/
 │   ├── run-all-tests.js                    🚀  Chạy toàn bộ
+│   ├── gas-test.js                              Kiểm tra phí gas
+│   ├── web3-helper.js
 │   └── analyze-gas.js                      ⛽  Phân tích chi phí gas
 └── test-results/                           📊  Kết quả (auto-generated)
 ```

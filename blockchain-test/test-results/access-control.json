@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-02-28T11:33:00.210Z",
+  "timestamp": "2026-04-12T11:16:41.550Z",
   "testType": "access-control",
   "summary": {
-    "passed": 7,
-    "failed": 2,
-    "warnings": 1,
-    "total": 9,
-    "score": 78
+    "passed": 10,
+    "failed": 0,
+    "warnings": 0,
+    "total": 10,
+    "score": 100
   },
   "results": [
     {
@@ -28,16 +28,16 @@
       "detail": ""
     },
     {
-      "test": "Block approve producerId sai",
-      "status": "FAIL",
-      "severity": "CRITICAL",
+      "test": "Block approve producerId sai ✓",
+      "status": "PASS",
+      "severity": "HIGH",
       "detail": ""
     },
     {
-      "test": "Owner approve batch hợp lệ",
-      "status": "FAIL",
+      "test": "Owner approve batch hợp lệ ✓",
+      "status": "PASS",
       "severity": "HIGH",
-      "detail": "Transaction has been reverted by the EVM:\n {\"transactionHash\":\"0x6a54aa1d96194b7"
+      "detail": ""
     },
     {
       "test": "Block double approval ✓",
@@ -58,10 +58,10 @@
       "detail": ""
     },
     {
-      "test": "Bất kỳ địa chỉ nào đều ghi được ActivityLog!",
-      "status": "WARN",
-      "severity": "MEDIUM",
-      "detail": "Cần thêm onlyAuthorized modifier"
+      "test": "ActivityLog revert với attacker ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
     },
     {
       "test": "Block truy cập batch không tồn tại ✓",

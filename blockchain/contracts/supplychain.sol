@@ -548,6 +548,7 @@ contract TraceabilityContract {
         batchExists(_batchId) 
     {
         require(_batches[_batchId].status == BatchStatus.PendingApproval, "Not pending");
+        require(_batches[_batchId].producerId == _approverId, "Not producer of batch");
 
         _batches[_batchId].status = BatchStatus.Approved;
         _approvedBatches[_batchId] = true;
@@ -562,6 +563,7 @@ contract TraceabilityContract {
         batchExists(_batchId) 
     {
         require(_batches[_batchId].status == BatchStatus.PendingApproval, "Not pending");
+        require(_batches[_batchId].producerId == _approverId, "Not producer of batch");
 
         _batches[_batchId].status = BatchStatus.Rejected;
 

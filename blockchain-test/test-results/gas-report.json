@@ -1,0 +1,330 @@
+{
+  "timestamp": "2026-04-11T08:13:40.024Z",
+  "priceSource": "Etherscan / BaseScan / Fortune — April 10-11, 2026",
+  "networkParams": {
+    "eth_now": {
+      "label": "ETH avg (0.5 Gwei)",
+      "gasPriceGwei": 0.5,
+      "tokenPriceUSD": 2182,
+      "unit": "ETH"
+    },
+    "eth_peak": {
+      "label": "ETH peak (50 Gwei)",
+      "gasPriceGwei": 50,
+      "tokenPriceUSD": 2182,
+      "unit": "ETH"
+    },
+    "polygon": {
+      "label": "Polygon (30 Gwei)",
+      "gasPriceGwei": 30,
+      "tokenPriceUSD": 0.2,
+      "unit": "POL"
+    },
+    "base": {
+      "label": "Base L2 (0.005 Gwei)",
+      "gasPriceGwei": 0.005,
+      "tokenPriceUSD": 2182,
+      "unit": "ETH"
+    }
+  },
+  "deployment": {
+    "ActivityLog": {
+      "gas": 2459691,
+      "cost": {
+        "eth_now": "~$2.6835",
+        "eth_peak": "~$268.3523",
+        "polygon": "~$0.01476",
+        "base": "~$0.02684"
+      }
+    },
+    "TraceabilityContract": {
+      "gas": 4711855,
+      "cost": {
+        "eth_now": "~$5.1406",
+        "eth_peak": "~$514.0634",
+        "polygon": "~$0.02827",
+        "base": "~$0.05141"
+      }
+    },
+    "total": {
+      "gas": 7171546,
+      "cost": {
+        "eth_now": "~$7.8242",
+        "eth_peak": "~$782.4157",
+        "polygon": "~$0.04303",
+        "base": "~$0.07824"
+      }
+    }
+  },
+  "activityLog": {
+    "registerTree": {
+      "gas": 509351,
+      "cost": {
+        "eth_now": "~$0.55570",
+        "eth_peak": "~$55.5702",
+        "polygon": "~$0.00306",
+        "base": "~$0.00556"
+      }
+    },
+    "addTreeCareActivity": {
+      "gas": 162458,
+      "cost": {
+        "eth_now": "~$0.17724",
+        "eth_peak": "~$17.7242",
+        "polygon": "~$0.0009747",
+        "base": "~$0.00177"
+      }
+    },
+    "addActivityLog": {
+      "gas": 193524,
+      "cost": {
+        "eth_now": "~$0.21113",
+        "eth_peak": "~$21.1135",
+        "polygon": "~$0.00116",
+        "base": "~$0.00211"
+      }
+    },
+    "addDetailedActivityLog": {
+      "gas": 173882,
+      "cost": {
+        "eth_now": "~$0.18971",
+        "eth_peak": "~$18.9705",
+        "polygon": "~$0.00104",
+        "base": "~$0.00190"
+      }
+    }
+  },
+  "traceability": {
+    "createBatch": {
+      "gas": 461857,
+      "cost": {
+        "eth_now": "~$0.50389",
+        "eth_peak": "~$50.3886",
+        "polygon": "~$0.00277",
+        "base": "~$0.00504"
+      }
+    },
+    "approveBatch": {
+      "gas": 235076,
+      "cost": {
+        "eth_now": "~$0.25647",
+        "eth_peak": "~$25.6468",
+        "polygon": "~$0.00141",
+        "base": "~$0.00256"
+      }
+    },
+    "rejectBatch": {
+      "gas": 214991,
+      "cost": {
+        "eth_now": "~$0.23456",
+        "eth_peak": "~$23.4555",
+        "polygon": "~$0.00129",
+        "base": "~$0.00235"
+      }
+    },
+    "recordPurchase": {
+      "gas": 459078,
+      "cost": {
+        "eth_now": "~$0.50085",
+        "eth_peak": "~$50.0854",
+        "polygon": "~$0.00275",
+        "base": "~$0.00501"
+      }
+    },
+    "updateTransportStatus": {
+      "gas": 307065,
+      "cost": {
+        "eth_now": "~$0.33501",
+        "eth_peak": "~$33.5008",
+        "polygon": "~$0.00184",
+        "base": "~$0.00335"
+      }
+    },
+    "recordProcessing": {
+      "gas": 373331,
+      "cost": {
+        "eth_now": "~$0.40730",
+        "eth_peak": "~$40.7304",
+        "polygon": "~$0.00224",
+        "base": "~$0.00407"
+      }
+    },
+    "recordQualityTest": {
+      "gas": 373121,
+      "cost": {
+        "eth_now": "~$0.40708",
+        "eth_peak": "~$40.7075",
+        "polygon": "~$0.00224",
+        "base": "~$0.00407"
+      }
+    },
+    "warehouseConfirmation": {
+      "gas": 150000,
+      "cost": {
+        "eth_now": "~$0.16365",
+        "eth_peak": "~$16.3650",
+        "polygon": "~$0.0009000",
+        "base": "~$0.00164"
+      }
+    }
+  },
+  "lifecycle": {
+    "steps": [
+      {
+        "label": "Dang ky cay trong",
+        "gas": 509351,
+        "cost": {
+          "eth_now": "~$0.55570",
+          "eth_peak": "~$55.5702",
+          "polygon": "~$0.00306",
+          "base": "~$0.00556"
+        }
+      },
+      {
+        "label": "Cham soc cay (x3)",
+        "gas": 487374,
+        "cost": {
+          "eth_now": "~$0.53173",
+          "eth_peak": "~$53.1725",
+          "polygon": "~$0.00292",
+          "base": "~$0.00532"
+        }
+      },
+      {
+        "label": "Tao lo hang",
+        "gas": 461857,
+        "cost": {
+          "eth_now": "~$0.50389",
+          "eth_peak": "~$50.3886",
+          "polygon": "~$0.00277",
+          "base": "~$0.00504"
+        }
+      },
+      {
+        "label": "Phe duyet lo hang",
+        "gas": 235076,
+        "cost": {
+          "eth_now": "~$0.25647",
+          "eth_peak": "~$25.6468",
+          "polygon": "~$0.00141",
+          "base": "~$0.00256"
+        }
+      },
+      {
+        "label": "Ghi nhat ky HD (x5)",
+        "gas": 869410,
+        "cost": {
+          "eth_now": "~$0.94853",
+          "eth_peak": "~$94.8526",
+          "polygon": "~$0.00522",
+          "base": "~$0.00949"
+        }
+      },
+      {
+        "label": "Ghi nhan mua hang",
+        "gas": 459078,
+        "cost": {
+          "eth_now": "~$0.50085",
+          "eth_peak": "~$50.0854",
+          "polygon": "~$0.00275",
+          "base": "~$0.00501"
+        }
+      },
+      {
+        "label": "Cap nhat van chuyen",
+        "gas": 307065,
+        "cost": {
+          "eth_now": "~$0.33501",
+          "eth_peak": "~$33.5008",
+          "polygon": "~$0.00184",
+          "base": "~$0.00335"
+        }
+      },
+      {
+        "label": "Ghi nhan che bien",
+        "gas": 373331,
+        "cost": {
+          "eth_now": "~$0.40730",
+          "eth_peak": "~$40.7304",
+          "polygon": "~$0.00224",
+          "base": "~$0.00407"
+        }
+      },
+      {
+        "label": "Kiem tra chat luong",
+        "gas": 373121,
+        "cost": {
+          "eth_now": "~$0.40708",
+          "eth_peak": "~$40.7075",
+          "polygon": "~$0.00224",
+          "base": "~$0.00407"
+        }
+      },
+      {
+        "label": "Xac nhan kho",
+        "gas": 150000,
+        "cost": {
+          "eth_now": "~$0.16365",
+          "eth_peak": "~$16.3650",
+          "polygon": "~$0.0009000",
+          "base": "~$0.00164"
+        }
+      }
+    ],
+    "totalGas": 4225663,
+    "totalCost": {
+      "eth_now": "~$4.6102",
+      "eth_peak": "~$461.0198",
+      "polygon": "~$0.02535",
+      "base": "~$0.04610"
+    },
+    "per1000Batches": {
+      "eth_now": "~$4610.20",
+      "eth_peak": "~$461019.83",
+      "polygon": "~$25.35",
+      "base": "~$46.10"
+    }
+  },
+  "summaryTable": [
+    {
+      "operation": "Dang ky cay trong",
+      "gas": 509351,
+      "eth_now": "~$0.55570",
+      "eth_peak": "~$55.5702",
+      "polygon": "~$0.00306",
+      "base": "~$0.00556"
+    },
+    {
+      "operation": "Tao lo hang",
+      "gas": 461857,
+      "eth_now": "~$0.50389",
+      "eth_peak": "~$50.3886",
+      "polygon": "~$0.00277",
+      "base": "~$0.00504"
+    },
+    {
+      "operation": "Ghi nhat ky hoat dong",
+      "gas": 193524,
+      "eth_now": "~$0.21113",
+      "eth_peak": "~$21.1135",
+      "polygon": "~$0.00116",
+      "base": "~$0.00211"
+    },
+    {
+      "operation": "Phe duyet lo hang",
+      "gas": 235076,
+      "eth_now": "~$0.25647",
+      "eth_peak": "~$25.6468",
+      "polygon": "~$0.00141",
+      "base": "~$0.00256"
+    },
+    {
+      "operation": "Tong mot vong doi san pham (uoc tinh)",
+      "gas": 4225663,
+      "eth_now": "~$4.6102",
+      "eth_peak": "~$461.0198",
+      "polygon": "~$0.02535",
+      "base": "~$0.04610"
+    }
+  ]
+}
