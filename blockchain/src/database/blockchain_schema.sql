@@ -1176,6 +1176,128 @@ DROP TABLE IF EXISTS register;
 DROP TABLE IF EXISTS batch;
 
 -- =====================================================
+-- BẢNG YÊU CẦU ĐÍNH CHÍNH
+-- =====================================================
+CREATE TABLE IF NOT EXISTS batch_correction_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+ 
+    -- Lô hàng cần đính chính
+    batch_id BIGINT NOT NULL COMMENT 'ID lô hàng trong blockchain_batches',
+ 
+    -- Người yêu cầu (nông dân)
+    requested_by INT NOT NULL COMMENT 'user uid của nông dân',
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ 
+    -- Trạng thái
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+ 
+    -- Admin xử lý
+    reviewed_by INT NULL COMMENT 'admin id duyệt/từ chối',
+    reviewed_at TIMESTAMP NULL,
+    review_note TEXT NULL COMMENT 'Ghi chú của admin khi duyệt/từ chối',
+ 
+    -- Lý do đính chính
+    reason TEXT NOT NULL COMMENT 'Nông dân giải thích lý do cần sửa',
+ 
+    -- Dữ liệu GỐC (snapshot trước khi sửa - để audit)
+    original_data JSON NOT NULL COMMENT 'Snapshot dữ liệu gốc của lô hàng',
+ 
+    -- Dữ liệu MỚI (nông dân muốn sửa thành)
+    corrected_data JSON NOT NULL COMMENT 'Dữ liệu mới nông dân đề xuất',
+ 
+    -- Danh sách field được sửa (để hiển thị diff)
+    changed_fields JSON NULL COMMENT 'Mảng tên các field bị thay đổi',
+ 
+    -- Blockchain proof (ghi sau khi admin approve)
+    blockchain_tx_hash VARCHAR(66) NULL COMMENT 'TX hash ghi correction lên chain',
+    blockchain_logged_at TIMESTAMP NULL,
+ 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ 
+    INDEX idx_batch (batch_id),
+    INDEX idx_requested_by (requested_by),
+    INDEX idx_status (status),
+    INDEX idx_reviewed_by (reviewed_by),
+    INDEX idx_created_at (created_at),
+ 
+    FOREIGN KEY (requested_by) REFERENCES users(uid) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES admin(id) ON DELETE SET NULL,
+    FOREIGN KEY (batch_id) REFERENCES blockchain_batches(batch_id) ON DELETE CASCADE
+ 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Yêu cầu đính chính lô hàng - phê duyệt bởi Admin';
+ 
+ 
+-- =====================================================
+-- BẢNG LỊCH SỬ ĐÍNH CHÍNH (Audit trail đầy đủ)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS batch_correction_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+ 
+    -- Liên kết với request
+    correction_request_id INT NOT NULL,
+    batch_id BIGINT NOT NULL,
+ 
+    -- Ai thực hiện thay đổi
+    changed_by_user_id INT NULL,
+    changed_by_admin_id INT NULL,
+    changed_by_name VARCHAR(255) NOT NULL,
+    changed_by_role VARCHAR(50) NOT NULL COMMENT 'farmer / admin',
+ 
+    -- Hành động
+    action ENUM('requested', 'approved', 'rejected', 'blockchain_recorded') NOT NULL,
+ 
+    -- Chi tiết thay đổi từng field
+    field_name VARCHAR(100) NULL COMMENT 'Tên field bị thay đổi',
+    old_value TEXT NULL,
+    new_value TEXT NULL,
+ 
+    -- Ghi chú
+    note TEXT NULL,
+ 
+    -- Blockchain
+    blockchain_tx_hash VARCHAR(66) NULL,
+ 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ 
+    INDEX idx_request (correction_request_id),
+    INDEX idx_batch (batch_id),
+    INDEX idx_action (action),
+ 
+    FOREIGN KEY (correction_request_id) REFERENCES batch_correction_requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by_user_id) REFERENCES users(uid) ON DELETE SET NULL,
+    FOREIGN KEY (changed_by_admin_id) REFERENCES admin(id) ON DELETE SET NULL
+ 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Audit trail đầy đủ mọi thay đổi đính chính';
+
+-- =====================================================
+-- THÊM CỘT is_corrected VÀO blockchain_batches
+-- (Đánh dấu lô đã từng bị đính chính)
+-- =====================================================
+-- 1. Thêm cột is_corrected
+ALTER TABLE blockchain_batches 
+ADD COLUMN is_corrected BOOLEAN DEFAULT FALSE 
+    COMMENT 'Đã từng được đính chính' 
+    AFTER data_hash;
+
+-- 2. Thêm cột correction_count
+ALTER TABLE blockchain_batches 
+ADD COLUMN correction_count INT DEFAULT 0 
+    COMMENT 'Số lần đã đính chính' 
+    AFTER is_corrected;
+
+-- 3. Thêm cột last_corrected_at
+ALTER TABLE blockchain_batches 
+ADD COLUMN last_corrected_at TIMESTAMP NULL 
+    COMMENT 'Lần đính chính gần nhất' 
+    AFTER correction_count;
+ 
+-- Index cho việc filter
+CREATE INDEX idx_is_corrected ON blockchain_batches(is_corrected);
+
+-- =====================================================
 -- SUMMARY COMMENTS
 -- =====================================================
 /*
