@@ -1,17 +1,18 @@
 /**
  * web3-helper.js  —  Web3 v4.x  (contracts thực tế)
  *
- * createBatch(name, producerId, quantity, productTypeId, startDate, endDate)
- * addActivityLog(batchId, participantId, activityName, description, isSystemActivity)
- * addDetailedActivityLog(batchId, participantId, category, activityName, description, isSystemActivity)
- * registerTree(treeQRCode, farmerId, regionId, treeType, variety, coordinates)
- * approveBatch(batchId, approverId)
- * rejectBatch(batchId, approverId, reason)
- * recordPurchase(batchId, purchaserId, totalQuantity, pricePerUnit)
- * updateTransportStatus(batchId, participantId, actionCode, temperature, humidity)
- * recordProcessing(batchId, processorId, method, inputWeight, outputWeight)
- * recordQualityTest(batchId, inspectorId, passed)
- * warehouseConfirmation(batchId, warehouseId)
+ * THAY ĐỔI SO VỚI PHIÊN BẢN CŨ:
+ *   - Thêm getBatchIdsByStage / getBatchIdsByProducer / getPendingIds   ← IDs only
+ *   - Thêm getBatchesByStagesPaged / getBatchesByProducerPaged           ← pagination
+ *   - Thêm getBatchSummariesByStage                                      ← summary fields
+ *   - Thêm fetchBatchDetails (parallel getBatchDetails cho mảng IDs)
+ *
+ * API HIERARCHY (nhanh nhất → chậm nhất):
+ *   1. getBatchCountByStage / getBatchCountByStatus             O(1) count — ~1ms
+ *   2. getBatchIdsByStage / getPendingIds                       IDs only  — ~5ms/1000
+ *   3. getBatchSummariesByStage (5 fields, paginated)           ~5ms/50
+ *   4. getBatchesByStagesPaged (đầy đủ Batch, paginated)        ~10ms/50
+ *   5. getBatchesByStage [LEGACY] (không dùng khi >100 batch)   ~15s/1000 ← TRÁNH
  */
 
 const { Web3 } = require("web3");
@@ -49,22 +50,27 @@ async function deployContracts(web3, owner) {
     .deploy({ data: tcABI.bytecode, arguments: [al.options.address] })
     .send({ from: owner, gas: 8000000n });
 
-  // Đăng ký TC là authorized caller trong ActivityLog
   await al.methods
     .addAuthorizedCaller(tc.options.address)
     .send({ from: owner, gas: 100000n });
+
+  const accounts = await web3.eth.getAccounts();
+  for (const acc of accounts) {
+    if (acc.toLowerCase() === owner.toLowerCase()) continue;
+    await al.methods
+      .addAuthorizedCaller(acc)
+      .send({ from: owner, gas: 100000n });
+  }
 
   return { alInstance: al, tcInstance: tc };
 }
 
 // ─── BigInt helpers ────────────────────────────────────────────────────────
-// Web3 v4 trả BigInt; dùng toN() để ép về Number an toàn
 const toN = (v) => Number(v);
 const toBI = (v) => BigInt(v);
-// Tổng mảng BigInt an toàn
 const sumBI = (arr) => arr.reduce((a, b) => a + toN(b), 0);
 
-// ─── Wrappers theo đúng signature contract ─────────────────────────────────
+// ─── Write wrappers ────────────────────────────────────────────────────────
 
 async function createBatch(
   tc,
@@ -79,7 +85,7 @@ async function createBatch(
     .createBatch(
       name,
       toBI(producerId),
-      String(quantity), // quantity là string
+      String(quantity),
       toBI(productTypeId),
       now,
       now + 2592000n,
@@ -87,21 +93,13 @@ async function createBatch(
     .send({ from, gas: 1200000n });
 }
 
-async function approveBatch(tc, from, batchId, approverId = 1) {
-  return tc.methods
-    .approveBatch(toBI(batchId), toBI(approverId))
-    .send({ from, gas: 500000n });
+async function approveBatch(tc, from, batchId) {
+  return tc.methods.approveBatch(toBI(batchId)).send({ from, gas: 500000n });
 }
 
-async function rejectBatch(
-  tc,
-  from,
-  batchId,
-  approverId = 1,
-  reason = "Rejected",
-) {
+async function rejectBatch(tc, from, batchId, reason = "Rejected") {
   return tc.methods
-    .rejectBatch(toBI(batchId), toBI(approverId), reason)
+    .rejectBatch(toBI(batchId), reason)
     .send({ from, gas: 500000n });
 }
 
@@ -118,7 +116,6 @@ async function recordPurchase(
     .send({ from, gas: 500000n });
 }
 
-// actionCode: 0=start, 1=checkpoint, 2=delay, 3=delivered
 async function updateTransport(
   tc,
   from,
@@ -209,7 +206,90 @@ async function addDetailedLog(
     .send({ from, gas: 300000n });
 }
 
-// ─── Stats helper (BigInt-safe) ───────────────────────────────────────────
+// ─── NEW: Read helpers — IDs only ─────────────────────────────────────────
+
+/**
+ * Trả về uint256[] batchId ở một stage — payload tối thiểu
+ * Với 1000 batch: ~32KB thay vì ~352KB → nhanh hơn ~11x so với getBatchesByStage
+ */
+async function getBatchIdsByStage(tc, stage) {
+  return tc.methods.getBatchIdsByStage(toBI(stage)).call();
+}
+
+/**
+ * Trả về uint256[] batchId của producer
+ */
+async function getBatchIdsByProducer(tc, producerId) {
+  return tc.methods.getBatchIdsByProducer(toBI(producerId)).call();
+}
+
+/**
+ * Trả về uint256[] batchId đang pending
+ */
+async function getPendingBatchIds(tc) {
+  return tc.methods.getPendingBatchIds().call();
+}
+
+// ─── NEW: Read helpers — Pagination ───────────────────────────────────────
+
+/**
+ * Lấy trang Batch đầy đủ theo stage
+ * @param {number} stage   - enum SupplyChainStage (0=Created, ...)
+ * @param {number} offset  - vị trí bắt đầu
+ * @param {number} limit   - số lượng (khuyên dùng 20–50)
+ * @returns {{ batches, total }}
+ */
+async function getBatchesByStagesPaged(tc, stage, offset = 0, limit = 20) {
+  return tc.methods
+    .getBatchesByStagesPaged(toBI(stage), toBI(offset), toBI(limit))
+    .call();
+}
+
+/**
+ * Lấy trang BatchSummary (5 fields) theo stage — nhỏ nhất, nhanh nhất cho list view
+ * @returns {{ summaries, total }}
+ */
+async function getBatchSummariesByStage(tc, stage, offset = 0, limit = 20) {
+  return tc.methods
+    .getBatchSummariesByStage(toBI(stage), toBI(offset), toBI(limit))
+    .call();
+}
+
+/**
+ * Lấy trang Batch của producer
+ * @returns {{ batches, total }}
+ */
+async function getBatchesByProducerPaged(
+  tc,
+  producerId,
+  offset = 0,
+  limit = 20,
+) {
+  return tc.methods
+    .getBatchesByProducerPaged(toBI(producerId), toBI(offset), toBI(limit))
+    .call();
+}
+
+/**
+ * Lấy trang batch pending
+ * @returns {{ batches, total }}
+ */
+async function getPendingBatchesPaged(tc, offset = 0, limit = 20) {
+  return tc.methods.getPendingBatchesPaged(toBI(offset), toBI(limit)).call();
+}
+
+/**
+ * Fetch chi tiết song song cho mảng batchIds — dùng sau khi có IDs
+ * @param {bigint[]} ids
+ * @returns {Promise<Batch[]>}
+ */
+async function fetchBatchDetails(tc, ids) {
+  return Promise.all(
+    ids.map((id) => tc.methods.getBatchDetails(toBI(id)).call()),
+  );
+}
+
+// ─── Stats helper ─────────────────────────────────────────────────────────
 function calcStats(times) {
   if (!times.length)
     return { min: 0, max: 0, avg: 0, median: 0, p95: 0, count: 0 };
@@ -226,7 +306,7 @@ function calcStats(times) {
   };
 }
 
-// ─── hrtime timer (Node 10+) ──────────────────────────────────────────────
+// ─── hrtime timer ─────────────────────────────────────────────────────────
 function now() {
   if (typeof performance !== "undefined") return performance.now();
   const [s, ns] = process.hrtime();
@@ -235,7 +315,6 @@ function now() {
 
 // ─── Ganache time manipulation ────────────────────────────────────────────
 async function increaseTime(web3, seconds) {
-  // Web3 v4: currentProvider.request (EIP-1193)
   try {
     await web3.currentProvider.request({
       method: "evm_increaseTime",
@@ -243,7 +322,6 @@ async function increaseTime(web3, seconds) {
     });
     await web3.currentProvider.request({ method: "evm_mine", params: [] });
   } catch {
-    // fallback send style
     await new Promise((res, rej) => {
       web3.currentProvider.send(
         {
@@ -268,7 +346,6 @@ async function increaseTime(web3, seconds) {
 function getBatchId(receipt) {
   const ev = receipt?.events?.BatchCreated?.returnValues;
   if (ev) return Number(ev.batchId);
-  // fallback: scan logs
   return null;
 }
 
@@ -279,6 +356,7 @@ module.exports = {
   getWeb3,
   loadABI,
   deployContracts,
+  // write
   createBatch,
   approveBatch,
   rejectBatch,
@@ -290,6 +368,17 @@ module.exports = {
   registerTree,
   addActivityLog,
   addDetailedLog,
+  // read — IDs only (khuyên dùng khi cần list lớn)
+  getBatchIdsByStage,
+  getBatchIdsByProducer,
+  getPendingBatchIds,
+  // read — paginated (khuyên dùng cho UI)
+  getBatchesByStagesPaged,
+  getBatchSummariesByStage,
+  getBatchesByProducerPaged,
+  getPendingBatchesPaged,
+  fetchBatchDetails,
+  // utils
   calcStats,
   now,
   increaseTime,

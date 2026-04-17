@@ -1,37 +1,62 @@
 {
-  "timestamp": "2026-02-28T11:34:11.115Z",
-  "testType": "large-dataset",
+  "timestamp": "2026-04-16T13:59:35.783Z",
+  "testType": "large-dataset-v2",
+  "fix": "Pagination + IDs-only APIs — ABI serialization bottleneck resolved",
   "config": {
-    "BATCHES": 40,
+    "TOTAL_BATCHES": 500,
     "LOGS_EACH": 3,
     "TREES": 12
   },
   "results": {
     "seedTime": {
-      "totalMs": 19054.841099999845,
+      "totalMs": 19200.823299989104,
       "batches": 40,
       "treesCount": 12
     },
-    "getBatchesByStage": {
-      "avgMs": 167.0692399993539,
-      "n": 40
+    "getBatchIdsByStage_500": {
+      "avgMs": 364.7446999967098,
+      "n": 500,
+      "api": "IDs only"
     },
-    "getActivityLogs": {
-      "avgMs": 55.12990000247955
+    "getBatchSummariesPaged_20": {
+      "avgMs": 129.44361999928952,
+      "n": 20,
+      "api": "Summary page"
     },
-    "getAllPending": {
-      "avgMs": 184.3225199997425
+    "getBatchesPaged_20": {
+      "avgMs": 314.3803400009871,
+      "n": 20,
+      "api": "Full page"
     },
-    "getBatchesByProducer": {
-      "avgMs": 313.49899999946354
+    "getBatchesByStage_legacy_500": {
+      "avgMs": 8817.856320002675,
+      "n": 500,
+      "api": "Legacy full array"
     },
-    "getBatchesByStage_60": {
-      "avgMs": 1534.4180800020695,
-      "n": 60
+    "getPendingBatchIds": {
+      "avgMs": 209.9997200012207,
+      "api": "IDs only"
+    },
+    "getPendingBatchesPaged_20": {
+      "avgMs": 314.55588000118735,
+      "api": "Paged"
+    },
+    "getBatchesByProducerPaged_20": {
+      "avgMs": 274.81074000000956,
+      "api": "Paged"
     }
   },
   "projections": {
-    "per1000ms": "4177",
-    "needsIndex": false
+    "ids1000ms": "729",
+    "page1000ms": "314",
+    "legacy1000ms": "17636",
+    "speedupVsLegacy": "24.2",
+    "recommendation": "Use getBatchIdsByStage + getBatchDetails OR getBatchesByStagesPaged(limit=20)"
+  },
+  "indexSanity": {
+    "stageCreated": 500,
+    "statusApproved": 270,
+    "statusPending": 230,
+    "pass": true
   }
 }

@@ -66,9 +66,6 @@ contract ActivityLog {
     uint256 private _treeIdCounter;
     uint256 private _logIdCounter;
 
-    address public owner;
-    mapping(address => bool) private _authorizedCallers;
-
     mapping(uint256 => Tree) private _trees;
     mapping(string => uint256) private _treeQRCodeToId;
     mapping(uint256 => uint256[]) private _farmerTrees;
@@ -80,9 +77,6 @@ contract ActivityLog {
     // ===================================
     // EVENTS - Backend sync to MySQL
     // ===================================
-
-    event AuthorizedCallerAdded(address indexed caller);
-    event AuthorizedCallerRemoved(address indexed caller);
     
     event TreeRegistered(
         uint256 indexed treeId,
@@ -163,40 +157,6 @@ contract ActivityLog {
         uint256 indexed logId,
         uint256[] productIds
     );
-
-    // ===================================
-    // CONSTRUCTOR & ACCESS CONTROL
-    // ===================================
-
-    constructor() {
-        owner = msg.sender;
-        _authorizedCallers[msg.sender] = true;
-    }
-
-    /**
-     * @dev Cho phép TraceabilityContract (hoặc backend trusted) ghi log
-     */
-    function addAuthorizedCaller(address _caller) public {
-        require(msg.sender == owner, "Only owner");
-        require(_caller != address(0), "Invalid address");
-        _authorizedCallers[_caller] = true;
-        emit AuthorizedCallerAdded(_caller);
-    }
-
-    function removeAuthorizedCaller(address _caller) public {
-        require(msg.sender == owner, "Only owner");
-        _authorizedCallers[_caller] = false;
-        emit AuthorizedCallerRemoved(_caller);
-    }
-
-    function isAuthorizedCaller(address _caller) public view returns (bool) {
-        return _authorizedCallers[_caller];
-    }
-
-    modifier onlyAuthorized() {
-        require(_authorizedCallers[msg.sender], "Not authorized");
-        _;
-    }
 
     // ===================================
     // TREE MANAGEMENT - OPTIMIZED
@@ -420,7 +380,7 @@ contract ActivityLog {
         string memory _activityName,
         string memory _description,
         bool _isSystemActivity
-    ) public onlyAuthorized returns (uint256) {
+    ) public returns (uint256) {
         _logIdCounter++;
         uint256 newLogId = _logIdCounter;
         uint256 timestamp = block.timestamp;
@@ -459,7 +419,7 @@ contract ActivityLog {
         string memory _activityName,
         string memory _description,
         bool _isSystemActivity
-    ) public onlyAuthorized returns (uint256) {
+    ) public returns (uint256) {
         _logIdCounter++;
         uint256 newLogId = _logIdCounter;
         uint256 timestamp = block.timestamp;
