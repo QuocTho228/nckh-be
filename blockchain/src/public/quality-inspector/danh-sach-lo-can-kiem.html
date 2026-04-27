@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Danh Sách Lô Cần Kiểm - Kiểm Nghiệm</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/quality-inspector/index.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-microscope text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Lô Cần Kiểm Nghiệm
+              </span>
+            </div>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Inspector"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/quality-inspector/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div
+        x-data="batchListData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fas fa-boxes text-green-600"></i>
+              Lô Hàng Cần Kiểm Nghiệm
+            </h2>
+            <p class="text-gray-500 text-sm mt-1">
+              Các lô đã sơ chế xong, chờ kiểm nghiệm chất lượng
+            </p>
+          </div>
+          <button @click="loadBatches()" class="btn-secondary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-blue-600 font-medium">Tổng lô chờ</p>
+                <p
+                  class="text-2xl font-bold text-blue-700"
+                  x-text="batches.length"
+                ></p>
+              </div>
+              <i class="fas fa-hourglass-half text-3xl text-blue-300"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && batches.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
+          <p class="text-gray-500 mb-2">
+            Tuyệt vời! Không có lô nào cần kiểm nghiệm
+          </p>
+          <a
+            href="/quality-inspector/index.html"
+            class="btn-secondary inline-block mt-4"
+          >
+            <i class="fas fa-arrow-left mr-2"></i> Về Dashboard
+          </a>
+        </div>
+
+        <!-- Batches List -->
+        <div x-show="!loading && batches.length > 0" class="space-y-4">
+          <template x-for="batch in batches" :key="batch.batch_id">
+            <div
+              class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
+            >
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <h3
+                    class="font-bold text-xl mb-2"
+                    x-text="batch.batch_name"
+                  ></h3>
+
+                  <!-- Batch Info Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-hashtag"></i>
+                      <span
+                        >Lô:
+                        <span
+                          class="font-semibold"
+                          x-text="batch.batch_id"
+                        ></span
+                      ></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-user"></i>
+                      <span x-text="batch.farmer_name || 'N/A'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-leaf"></i>
+                      <span x-text="batch.product_name || 'N/A'"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <i class="fas fa-calendar"></i>
+                      <span
+                        x-text="Utils.formatDate(batch.processing_date_iso)"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Processing Info -->
+              <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <i class="fas fa-cogs text-blue-600"></i>
+                  Thông tin sơ chế
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span class="text-gray-500">Phương pháp:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="Utils.getProcessingMethodText(batch.method)"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Khối lượng:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="batch.output_weight + ' kg'"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Ngày sơ chế:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="Utils.formatDate(batch.processing_date_iso)"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Button -->
+              <div class="flex justify-end">
+                <a
+                  :href="`/quality-inspector/ghi-nhan-test.html?batchId=${batch.batch_id}`"
+                  class="btn-primary"
+                >
+                  <i class="fas fa-vial mr-2"></i> Kiểm nghiệm ngay
+                </a>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Durian AI Section -->
+      <section class="mt-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-3"></h3>
+        <div data-durian-ai data-durian-compact></div>
+      </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/batch-list.js"></script>
+    <script src="../shared/js/durian-ai.js"></script>
+  </body>
+</html>

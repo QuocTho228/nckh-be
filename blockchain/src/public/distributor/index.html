@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Dashboard - Phân Phối</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-store text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Phân Phối
+            </span>
+          </div>
+
+          <!-- User Menu -->
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Distributor"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">
+                  Nhà phân phối
+                </div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/distributor/lich-su-ban.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-history mr-2"></i> Lịch sử bán hàng
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8">
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fas fa-hand-wave mr-2"></i>
+          Xin chào, <span id="welcomeName">Nhà phân phối</span>!
+        </h1>
+        <p class="opacity-90">Quản lý bán hàng và phân phối sản phẩm</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div
+        x-data="dashboardData()"
+        x-init="init()"
+        class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+      >
+        <!-- Tổng đã bán -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng đã bán</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.totalSold"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-shopping-cart text-3xl text-green-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sản phẩm có sẵn -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Sản phẩm có sẵn</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.availableProducts"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <i class="fas fa-box-open text-3xl text-blue-600"></i>
+            </div>
+          </div>
+          <a
+            href="/distributor/san-pham-co-san.html"
+            class="text-sm text-blue-600 hover:text-blue-700 mt-4 inline-block"
+          >
+            Xem danh sách <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Hôm nay -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Bán hôm nay</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.soldToday"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center"
+            >
+              <i class="fas fa-calendar-day text-3xl text-yellow-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doanh thu (ước tính) -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Sản phẩm tuần này</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.soldThisWeek"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center"
+            >
+              <i class="fas fa-chart-line text-3xl text-purple-600"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-yellow-500"></i> Thao tác nhanh
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a
+            href="/distributor/scan-ban-hang.html"
+            class="btn-primary text-center"
+          >
+            <i class="fas fa-qrcode mr-2"></i> Scan QR Bán Hàng
+          </a>
+          <a
+            href="/distributor/san-pham-co-san.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-boxes mr-2"></i> Sản phẩm có sẵn
+          </a>
+          <a
+            href="/distributor/lich-su-ban.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-history mr-2"></i> Lịch sử bán hàng
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Sales -->
+      <div
+        x-data="recentSalesData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-receipt text-green-600"></i> Bán Hàng Gần Đây
+          </h2>
+          <a
+            href="/distributor/lich-su-ban.html"
+            class="text-sm text-blue-600 hover:text-blue-700"
+          >
+            Xem tất cả <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!loading && sales.length === 0" class="text-center py-12">
+          <i class="fas fa-shopping-bag text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500 mb-2">Chưa có giao dịch nào</p>
+          <a
+            href="/distributor/scan-ban-hang.html"
+            class="btn-primary inline-block mt-4"
+          >
+            <i class="fas fa-qrcode mr-2"></i> Bán sản phẩm đầu tiên
+          </a>
+        </div>
+
+        <!-- Sales List -->
+        <div x-show="!loading && sales.length > 0" class="space-y-3">
+          <template x-for="sale in sales.slice(0, 5)" :key="sale.id">
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4 flex-1">
+                  <div
+                    class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center"
+                  >
+                    <i class="fas fa-check text-green-600 text-xl"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span
+                        class="font-semibold"
+                        x-text="sale.product_qr_code"
+                      ></span>
+                      <span class="badge badge-success text-xs">Đã bán</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      <span x-text="sale.batch_name || 'N/A'"></span>
+                      <span class="mx-2">•</span>
+                      <span
+                        x-text="Utils.formatDateTime(sale.sold_date_iso)"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

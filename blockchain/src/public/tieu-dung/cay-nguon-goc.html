@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lịch sử cây nguồn gốc</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="../css/trangchu.css" />
+    <link rel="stylesheet" href="../css/nav-bar.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+
+    <style>
+      :root {
+        --primary-green: #028040;
+        --secondary-green: #7fae2a;
+        --dark-green: #016633;
+        --light-green: #01a854;
+        --accent-gold: #f39c12;
+        --text-dark: #2c3e50;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+        min-height: 100vh;
+      }
+
+      /* Header với gradient đẹp như truy-xuat.html */
+      .tree-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green) 0%,
+          var(--light-green) 100%
+        );
+        color: white;
+        padding: 4rem 0 6rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .tree-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>')
+          no-repeat bottom;
+        background-size: cover;
+      }
+
+      .tree-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 2rem;
+      }
+
+      .header-info-card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 1rem;
+      }
+
+      .header-info-card p {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+
+      /* Container hiện đại */
+      .main-container {
+        max-width: 1200px;
+        margin: -50px auto 0;
+        position: relative;
+        z-index: 10;
+        padding: 0 15px;
+      }
+
+      /* Card styles */
+      .modern-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+      }
+
+      .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+      }
+
+      .card-header-custom {
+        background: linear-gradient(90deg, #028040 0%, #7fae2a 100%) !important;
+        color: white;
+        padding: 1.5rem;
+        border: none;
+      }
+
+      .card-header-custom h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.3rem;
+      }
+
+      /* Timeline hiện đại */
+      .activity-timeline {
+        position: relative;
+        padding: 2rem 0 2rem 60px;
+      }
+
+      .activity-timeline::before {
+        content: "";
+        position: absolute;
+        left: 25px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(
+          to bottom,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        border-radius: 2px;
+      }
+
+      .activity-item {
+        position: relative;
+        margin-bottom: 2rem;
+        padding-left: 20px;
+      }
+
+      .activity-item::before {
+        content: "";
+        position: absolute;
+        left: -35px;
+        top: 10px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: white;
+        border: 4px solid var(--primary-green);
+        box-shadow: 0 0 0 4px rgba(2, 128, 64, 0.2);
+        z-index: 1;
+      }
+
+      .activity-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid var(--primary-green);
+        transition: all 0.3s;
+      }
+
+      .activity-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateX(5px);
+      }
+
+      .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+      }
+
+      .activity-title {
+        color: var(--primary-green);
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .activity-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      /* Image grid hiện đại */
+      .activity-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 1rem;
+      }
+
+      .activity-images img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .activity-images img:hover {
+        transform: scale(1.05) rotate(2deg);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Metadata badges */
+      .metadata-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        margin: 0.2rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      /* Loading spinner */
+      .loading-container {
+        text-align: center;
+        padding: 4rem 0;
+      }
+
+      .spinner {
+        width: 60px;
+        height: 60px;
+        border: 5px solid rgba(2, 128, 64, 0.2);
+        border-top-color: var(--primary-green);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Image overlay */
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .overlay img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 10px;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 40px;
+        color: white;
+        font-size: 40px;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+
+      .close-btn:hover {
+        transform: scale(1.2);
+      }
+
+      /* Harvest section */
+      .harvest-card {
+        background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--accent-gold);
+        transition: all 0.3s;
+      }
+
+      .harvest-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(243, 156, 18, 0.3);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .tree-header h1 {
+          font-size: 1.8rem;
+        }
+
+        .activity-timeline {
+          padding-left: 40px;
+        }
+
+        .activity-item::before {
+          left: -25px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      /* Info stats */
+      .info-stat {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      .info-stat i {
+        font-size: 2rem;
+        color: var(--primary-green);
+        margin-bottom: 0.5rem;
+      }
+
+      .info-stat h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0.5rem 0;
+      }
+
+      .info-stat p {
+        color: #7f8c8d;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav
+      class="navbar navbar-expand-lg navbar-light bg-light custom-navbar-height"
+    >
+      <div class="logo-home">
+        <a href="#">
+          <img
+            src="\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+            alt="logo"
+            class="logo"
+          />
+        </a>
+      </div>
+      <a class="navbar-brand" href="#">Trang chủ</a>
+      <button
+        class="navbar-toggler ml-auto"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class></li>
+          <li class="nav-item">
+            <a class="nav-link" href="./truy-xuat.html"
+              ><i class="fas fa-qrcode mr-1"></i>Truy xuất nguồn gốc</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./allsanpham.html"
+              ><i class="fas fa-tree mr-1"></i>Sản phẩm</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./allnongdan.html"
+              ><i class="fas fa-leaf mr-1"></i>Nhà sản xuất</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./allnhakiemduyet.html"
+              ><i class="fas fa-check-circle mr-1"></i>Nhà kiểm duyệt</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./account/dangnhap.html"
+              ><i class="fas fa-sign-in-alt mr-1"></i>Đăng nhập</a
+            >
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Tree Header -->
+    <div class="tree-header" data-aos="fade-down">
+      <div class="container">
+        <h1 class="text-center">
+          <i class="fas fa-tree mr-3"></i>
+          <span id="treeType">Đang tải...</span>
+        </h1>
+        <div class="row mt-4">
+          <div class="col-md-6 mb-3">
+            <div class="header-info-card">
+              <p>
+                <i class="fas fa-qrcode mr-2"></i><strong>Mã QR:</strong>
+                <span id="treeQR">-</span>
+              </p>
+              <p>
+                <i class="fas fa-seedling mr-2"></i><strong>Giống:</strong>
+                <span id="variety">-</span>
+              </p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="header-info-card">
+              <p>
+                <i class="fas fa-calendar-alt mr-2"></i
+                ><strong>Ngày trồng:</strong> <span id="plantedDate">-</span>
+              </p>
+              <p>
+                <i class="fas fa-user mr-2"></i><strong>Nông dân:</strong>
+                <span id="farmerName">-</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+      <!-- Loading -->
+      <div id="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p class="text-muted">Đang tải lịch sử chăm sóc cây...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error" class="alert alert-danger" style="display: none"></div>
+
+      <!-- Tree Content -->
+      <div id="treeContent" style="display: none">
+        <!-- Tree Info Stats -->
+        <div class="row mb-4" data-aos="fade-up">
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="info-stat">
+              <i class="fas fa-map-marker-alt"></i>
+              <p>Vị trí</p>
+              <h3 id="location" style="font-size: 1.2rem">-</h3>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="info-stat">
+              <i class="fas fa-calendar-check"></i>
+              <p>Số ngày trồng</p>
+              <h3 id="daysSincePlanted">-</h3>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="info-stat">
+              <i class="fas fa-tasks"></i>
+              <p>Hoạt động</p>
+              <h3 id="totalActivities">-</h3>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="info-stat">
+              <i class="fas fa-map-marked-alt"></i>
+              <p>Tọa độ GPS</p>
+              <h3 id="coordinates" style="font-size: 0.9rem">-</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activities Timeline -->
+        <div class="modern-card" data-aos="fade-up">
+          <div class="card-header-custom">
+            <h5><i class="fas fa-history mr-2"></i>Lịch sử chăm sóc</h5>
+          </div>
+          <div class="p-4">
+            <div class="activity-timeline" id="activitiesContainer">
+              <!-- Activities will be loaded here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Harvest History -->
+        <div
+          id="harvestSection"
+          class="modern-card"
+          style="display: none"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          <div
+            class="card-header-custom"
+            style="
+              background: linear-gradient(
+                90deg,
+                #f39c12 0%,
+                #e67e22 100%
+              ) !important;
+            "
+          >
+            <h5>
+              <i class="fas fa-shopping-basket mr-2"></i>Lịch sử thu hoạch
+            </h5>
+          </div>
+          <div class="p-4">
+            <div id="harvestContainer">
+              <!-- Harvest history will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Overlay -->
+    <div id="overlay" class="overlay" onclick="hideImage()">
+      <span class="close-btn">&times;</span>
+      <img id="overlay-img" src="" alt="Large view" />
+    </div>
+
+    <!-- Footer -->
+    <div class="footer bg-dark text-white py-4" data-aos="fade-up">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4">
+            <h3>Thông tin liên hệ</h3>
+            <p>
+              Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ
+            </p>
+            <p>Điện thoại: 0337267892</p>
+            <p>Email: thob2203474@student.ctu.edu.vn</p>
+          </div>
+          <div class="col-md-4 d-none d-md-block">
+            <h3>Về chúng tôi</h3>
+            <p>
+              Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng
+              bằng công nghệ Blockchain.
+            </p>
+          </div>
+          <div class="col-md-4 d-none d-md-block">
+            <h3>Theo dõi chúng tôi</h3>
+            <div class="social-links">
+              <a href="#"><i class="fab fa-facebook-f"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+      AOS.init({
+        duration: 800,
+        once: true,
+      });
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const treeQR = urlParams.get("qr");
+
+        if (!treeQR) {
+          showError("Không tìm thấy mã QR cây");
+          return;
+        }
+
+        await loadTreeDetails(treeQR);
+      });
+
+      async function loadTreeDetails(treeQR) {
+        try {
+          const response = await fetch(
+            `/api/public/tree/${encodeURIComponent(treeQR)}/details`,
+          );
+          const result = await response.json();
+
+          if (!result.success) {
+            showError(result.error || "Không thể tải thông tin cây");
+            return;
+          }
+
+          const data = result.data;
+
+          displayTreeInfo(data);
+          displayActivities(data.activities);
+          displayHarvests(data.harvests);
+
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("treeContent").style.display = "block";
+        } catch (error) {
+          console.error("Error loading tree:", error);
+          showError("Không thể kết nối đến server");
+        }
+      }
+
+      function displayTreeInfo(data) {
+        const { tree, farmer, location, statistics } = data;
+
+        document.getElementById("treeType").textContent =
+          `${tree.treeType} - ${tree.variety}`;
+        document.getElementById("treeQR").textContent = tree.treeQRCode;
+        document.getElementById("variety").textContent = tree.variety;
+        document.getElementById("plantedDate").textContent = formatDate(
+          tree.plantedDate,
+        );
+        document.getElementById("farmerName").textContent = farmer.name;
+
+        const locationText = [
+          location.ward,
+          location.district,
+          location.province,
+          location.region,
+        ]
+          .filter(Boolean)
+          .join(", ");
+        document.getElementById("location").textContent = locationText || "-";
+        document.getElementById("coordinates").textContent =
+          tree.coordinates || "-";
+        document.getElementById("daysSincePlanted").textContent =
+          `${statistics.daysSincePlanted}`;
+        document.getElementById("totalActivities").textContent =
+          statistics.totalActivities;
+      }
+
+      function displayActivities(activities) {
+        const container = document.getElementById("activitiesContainer");
+
+        if (!activities || activities.length === 0) {
+          container.innerHTML =
+            '<p class="text-muted">Chưa có hoạt động nào</p>';
+          return;
+        }
+
+        container.innerHTML = activities
+          .map((activity, index) => {
+            const categoryInfo = getCategoryInfo(activity.category);
+
+            return `
+                <div class="activity-item" data-aos="fade-left" data-aos-delay="${index * 50}">
+                    <div class="activity-card">
+                        <div class="activity-header">
+                            <h6 class="activity-title">
+                                <i class="${categoryInfo.icon} mr-2"></i>
+                                ${activity.activityName}
+                            </h6>
+                            <span class="activity-badge badge badge-${categoryInfo.color}">
+                                ${categoryInfo.name}
+                            </span>
+                        </div>
+                        
+                        <p class="text-muted small mb-2">
+                            <i class="far fa-clock mr-2"></i>${formatDateTime(activity.timestamp)}
+                        </p>
+                        
+                        ${
+                          activity.description
+                            ? `<p class="mb-2">${activity.description}</p>`
+                            : ""
+                        }
+                        
+                        ${renderActivityMetadata(activity)}
+                        
+                        <div class="text-muted small mt-2">
+                            <i class="fas fa-user mr-2"></i>${activity.participantName}
+                            ${activity.participantPhone ? ` - ${activity.participantPhone}` : ""}
+                        </div>
+                        
+                        ${renderActivityImages(activity.images)}
+                    </div>
+                </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderActivityMetadata(activity) {
+        const fields = [];
+
+        if (activity.fertilizer) {
+          fields.push(
+            `<span class="metadata-badge badge badge-info">Phân bón: ${activity.fertilizer}</span>`,
+          );
+        }
+        if (activity.pesticide) {
+          fields.push(
+            `<span class="metadata-badge badge badge-warning">Thuốc BVTV: ${activity.pesticide}</span>`,
+          );
+        }
+        if (activity.quantity && activity.unit) {
+          fields.push(
+            `<span class="metadata-badge badge badge-secondary">Số lượng: ${activity.quantity} ${activity.unit}</span>`,
+          );
+        }
+        if (activity.temperature) {
+          fields.push(
+            `<span class="metadata-badge badge badge-light">Nhiệt độ: ${activity.temperature}°C</span>`,
+          );
+        }
+        if (activity.humidity) {
+          fields.push(
+            `<span class="metadata-badge badge badge-light">Độ ẩm: ${activity.humidity}%</span>`,
+          );
+        }
+        if (activity.weather) {
+          fields.push(
+            `<span class="metadata-badge badge badge-light">Thời tiết: ${activity.weather}</span>`,
+          );
+        }
+        if (activity.healthStatus) {
+          fields.push(
+            `<span class="metadata-badge badge badge-success">Tình trạng: ${activity.healthStatus}</span>`,
+          );
+        }
+        if (activity.notes) {
+          fields.push(
+            `<p class="text-muted small mb-0 mt-2"><i class="fas fa-sticky-note mr-2"></i>${activity.notes}</p>`,
+          );
+        }
+
+        return fields.length > 0
+          ? `<div class="mb-2">${fields.join("")}</div>`
+          : "";
+      }
+
+      function renderActivityImages(images) {
+        if (!images || images.length === 0) return "";
+
+        return `
+            <div class="activity-images">
+                ${images
+                  .map(
+                    (img) => `
+                    <img src="${img}" alt="Activity" onclick="showImage(this)" />
+                `,
+                  )
+                  .join("")}
+            </div>
+        `;
+      }
+
+      function displayHarvests(harvests) {
+        if (!harvests || harvests.length === 0) return;
+
+        document.getElementById("harvestSection").style.display = "block";
+        const container = document.getElementById("harvestContainer");
+
+        container.innerHTML = harvests
+          .map(
+            (harvest) => `
+            <div class="harvest-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="mb-2"><i class="fas fa-box mr-2"></i>${harvest.batchName}</h6>
+                        <p class="mb-1">
+                            <strong>Mã SSCC:</strong> 
+                            <a href="lo-hang.html?sscc=${harvest.sscc}" class="badge badge-warning">
+                                ${harvest.sscc}
+                            </a>
+                        </p>
+                        <p class="mb-1">
+                            <strong>Ngày thu hoạch:</strong> ${formatDate(harvest.harvestDate)}
+                        </p>
+                        ${harvest.harvestNotes ? `<p class="text-muted small mb-0">${harvest.harvestNotes}</p>` : ""}
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <span class="badge badge-info p-2">${harvest.batchStatus}</span>
+                    </div>
+                </div>
+            </div>
+        `,
+          )
+          .join("");
+      }
+
+      function getCategoryInfo(category) {
+        const categories = {
+          TreeManagement: {
+            name: "Quản lý cây",
+            icon: "fas fa-tree",
+            color: "primary",
+          },
+          Farming: {
+            name: "Canh tác",
+            icon: "fas fa-tractor",
+            color: "success",
+          },
+          Harvesting: {
+            name: "Thu hoạch",
+            icon: "fas fa-shopping-basket",
+            color: "warning",
+          },
+          Purchase: {
+            name: "Thu mua",
+            icon: "fas fa-shopping-cart",
+            color: "info",
+          },
+          Transport: {
+            name: "Vận chuyển",
+            icon: "fas fa-truck",
+            color: "secondary",
+          },
+          Processing: { name: "Sơ chế", icon: "fas fa-cogs", color: "dark" },
+          Packaging: { name: "Đóng gói", icon: "fas fa-box", color: "primary" },
+          QualityControl: {
+            name: "Kiểm nghiệm",
+            icon: "fas fa-clipboard-check",
+            color: "success",
+          },
+          Warehouse: {
+            name: "Kho bãi",
+            icon: "fas fa-warehouse",
+            color: "info",
+          },
+          Distribution: {
+            name: "Phân phối",
+            icon: "fas fa-shipping-fast",
+            color: "warning",
+          },
+        };
+
+        return (
+          categories[category] || {
+            name: category,
+            icon: "fas fa-circle",
+            color: "secondary",
+          }
+        );
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return "-";
+        return new Date(dateString).toLocaleDateString("vi-VN");
+      }
+
+      function formatDateTime(dateString) {
+        if (!dateString) return "-";
+        return new Date(dateString).toLocaleString("vi-VN");
+      }
+
+      function showError(message) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("error").textContent = message;
+        document.getElementById("error").style.display = "block";
+      }
+
+      function showImage(img) {
+        const overlay = document.getElementById("overlay");
+        const overlayImg = document.getElementById("overlay-img");
+        overlayImg.src = img.src;
+        overlay.style.display = "flex";
+      }
+
+      function hideImage() {
+        document.getElementById("overlay").style.display = "none";
+      }
+    </script>
+  </body>
+</html>

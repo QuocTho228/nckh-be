@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Tạo Lô Hàng Mới - Nông Dân</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js cloak -->
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-leaf text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Nông Trại
+            </span>
+          </div>
+
+          <!-- Breadcrumb -->
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/farmer/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Tạo lô hàng mới</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Farmer"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Nông dân</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              x-cloak
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/farmer/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8 max-w-4xl"
+      x-data="batchCreator()"
+      x-init="init()"
+    >
+      <!-- Header -->
+      <div class="mb-8">
+        <h1
+          class="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3"
+        >
+          <i class="fas fa-box text-green-600"></i>
+          Tạo Lô Hàng Mới
+        </h1>
+        <p class="text-gray-600">Đăng ký lô hàng sau khi thu hoạch</p>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <div
+            class="flex-1 text-center"
+            :class="currentStep >= 1 ? 'opacity-100' : 'opacity-50'"
+          >
+            <div
+              class="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center font-bold"
+              :class="currentStep >= 1 ? 'bg-gradient-primary text-white' : 'bg-gray-200 text-gray-600'"
+            >
+              1
+            </div>
+            <p class="text-xs font-semibold">Thông tin cơ bản</p>
+          </div>
+
+          <div
+            class="flex-1 h-1 mx-2"
+            :class="currentStep >= 2 ? 'bg-gradient-primary' : 'bg-gray-200'"
+          ></div>
+
+          <div
+            class="flex-1 text-center"
+            :class="currentStep >= 2 ? 'opacity-100' : 'opacity-50'"
+          >
+            <div
+              class="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center font-bold"
+              :class="currentStep >= 2 ? 'bg-gradient-primary text-white' : 'bg-gray-200 text-gray-600'"
+            >
+              2
+            </div>
+            <p class="text-xs font-semibold">Chọn cây nguồn gốc</p>
+          </div>
+
+          <div
+            class="flex-1 h-1 mx-2"
+            :class="currentStep >= 3 ? 'bg-gradient-primary' : 'bg-gray-200'"
+          ></div>
+
+          <div
+            class="flex-1 text-center"
+            :class="currentStep >= 3 ? 'opacity-100' : 'opacity-50'"
+          >
+            <div
+              class="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center font-bold"
+              :class="currentStep >= 3 ? 'bg-gradient-primary text-white' : 'bg-gray-200 text-gray-600'"
+            >
+              3
+            </div>
+            <p class="text-xs font-semibold">Upload ảnh</p>
+          </div>
+
+          <div
+            class="flex-1 h-1 mx-2"
+            :class="currentStep >= 4 ? 'bg-gradient-primary' : 'bg-gray-200'"
+          ></div>
+
+          <div
+            class="flex-1 text-center"
+            :class="currentStep >= 4 ? 'opacity-100' : 'opacity-50'"
+          >
+            <div
+              class="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center font-bold"
+              :class="currentStep >= 4 ? 'bg-gradient-primary text-white' : 'bg-gray-200 text-gray-600'"
+            >
+              4
+            </div>
+            <p class="text-xs font-semibold">Xác nhận</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Container -->
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <!-- Step 1: Thông tin cơ bản -->
+        <div x-show="currentStep === 1" x-cloak>
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <i class="fas fa-info-circle text-green-600"></i>
+            Bước 1: Thông tin cơ bản
+          </h2>
+
+          <div class="space-y-6">
+            <!-- Tên lô hàng -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Tên lô hàng <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                x-model="formData.name"
+                placeholder="Ví dụ: Lô Sầu riêng Tiền Giang #001"
+                maxlength="255"
+                class="input-gradient"
+              />
+            </div>
+
+            <!-- Loại sản phẩm -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Loại sản phẩm <span class="text-red-500">*</span>
+              </label>
+              <select x-model="formData.productId" class="input-gradient">
+                <option value="">-- Chọn sản phẩm --</option>
+                <template x-for="product in products" :key="product.product_id">
+                  <option
+                    :value="product.product_id"
+                    x-text="product.product_name"
+                  ></option>
+                </template>
+              </select>
+            </div>
+
+            <!-- Số lượng & Thửa đất -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Số lượng (kg) <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  x-model="formData.quantity"
+                  placeholder="500"
+                  step="0.01"
+                  min="0.01"
+                  class="input-gradient"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Thửa đất <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  x-model="formData.farmPlotNumber"
+                  placeholder="Thửa 15, Lô A2"
+                  class="input-gradient"
+                />
+              </div>
+            </div>
+
+            <!-- Ngày thu hoạch -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Ngày bắt đầu thu hoạch <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  x-model="formData.startDate"
+                  :max="formData.endDate"
+                  class="input-gradient"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Ngày kết thúc thu hoạch <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  x-model="formData.endDate"
+                  :min="formData.startDate"
+                  class="input-gradient"
+                />
+              </div>
+            </div>
+
+            <!-- Ghi chú thu hoạch -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Ghi chú thu hoạch
+              </label>
+              <textarea
+                x-model="formData.harvestNotes"
+                rows="3"
+                placeholder="Mô tả chi tiết về quá trình thu hoạch..."
+                class="input-gradient"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+            <a href="/farmer/index.html" class="btn-secondary">
+              <i class="fas fa-times mr-2"></i> Hủy
+            </a>
+            <button @click="nextStep()" class="btn-primary">
+              Tiếp theo <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Chọn cây -->
+        <div x-show="currentStep === 2" x-cloak>
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <i class="fas fa-tree text-green-600"></i>
+            Bước 2: Chọn cây nguồn gốc
+          </h2>
+
+          <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-sm text-blue-800">
+              <i class="fas fa-info-circle mr-2"></i>
+              Chọn các cây đã thu hoạch để tạo lô hàng. Mỗi sản phẩm sẽ được
+              liên kết với cây nguồn gốc để truy xuất.
+            </p>
+          </div>
+
+          <!-- Search trees -->
+          <div class="mb-4">
+            <input
+              type="text"
+              x-model="treeSearchQuery"
+              placeholder="Tìm kiếm cây (QR Code, loại cây...)"
+              class="input-gradient"
+            />
+          </div>
+
+          <!-- Loading -->
+          <div x-show="loadingTrees" x-cloak class="flex justify-center py-8">
+            <div class="spinner"></div>
+          </div>
+
+          <!-- Trees list -->
+          <div
+            x-show="!loadingTrees"
+            x-cloak
+            class="space-y-3 max-h-96 overflow-y-auto"
+          >
+            <template x-for="tree in filteredActiveTrees" :key="tree.tree_id">
+              <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    :value="tree.tree_id"
+                    @change="toggleTree(tree.tree_id)"
+                    :checked="formData.treeIds.includes(tree.tree_id)"
+                    class="mt-1 w-5 h-5 rounded"
+                  />
+                  <div class="flex-1">
+                    <div
+                      class="font-bold text-gray-900"
+                      x-text="tree.tree_qr_code"
+                    ></div>
+                    <div class="text-sm text-gray-600">
+                      <span
+                        x-text="tree.tree_type + ' - ' + tree.variety"
+                      ></span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">
+                      <i class="fas fa-calendar mr-1"></i>
+                      <span
+                        x-text="'Trồng: ' + Utils.formatDate(tree.planted_date_iso)"
+                      ></span>
+                      <span class="mx-2">•</span>
+                      <i class="fas fa-map-marker-alt mr-1"></i>
+                      <span x-text="tree.coordinates"></span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </template>
+          </div>
+
+          <!-- Selected count -->
+          <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p class="text-sm font-semibold text-green-800">
+              Đã chọn: <span x-text="formData.treeIds.length"></span> cây
+            </p>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6 pt-6 border-t">
+            <button @click="prevStep()" class="btn-secondary">
+              <i class="fas fa-arrow-left mr-2"></i> Quay lại
+            </button>
+            <button
+              @click="nextStep()"
+              class="btn-primary"
+              :disabled="formData.treeIds.length === 0"
+            >
+              Tiếp theo <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Upload ảnh -->
+        <div x-show="currentStep === 3" x-cloak>
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <i class="fas fa-camera text-green-600"></i>
+            Bước 3: Upload ảnh
+          </h2>
+
+          <!-- Ảnh sản phẩm -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Ảnh sản phẩm (tối đa 10 ảnh) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="file"
+              id="productImages"
+              accept="image/*"
+              multiple
+              max="10"
+              @change="handleProductImages($event)"
+              class="input-gradient"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              <i class="fas fa-info-circle mr-1"></i>
+              JPEG, PNG, WebP - Tối đa 10MB/ảnh
+            </p>
+
+            <!-- Preview -->
+            <div
+              id="productImagesPreview"
+              class="grid grid-cols-3 md:grid-cols-5 gap-2 mt-3"
+            ></div>
+          </div>
+
+          <!-- Ảnh chứng nhận -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Ảnh chứng nhận (VietGAP, GlobalGAP...)
+            </label>
+            <input
+              type="file"
+              id="certificateImage"
+              accept="image/*"
+              @change="handleCertificateImage($event)"
+              class="input-gradient"
+            />
+
+            <!-- Preview -->
+            <div id="certificateImagePreview" class="mt-3"></div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6 pt-6 border-t">
+            <button @click="prevStep()" class="btn-secondary">
+              <i class="fas fa-arrow-left mr-2"></i> Quay lại
+            </button>
+            <button @click="nextStep()" class="btn-primary">
+              Tiếp theo <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Xác nhận -->
+        <div x-show="currentStep === 4" x-cloak>
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <i class="fas fa-check-circle text-green-600"></i>
+            Bước 4: Xác nhận thông tin
+          </h2>
+
+          <div class="space-y-6">
+            <!-- Thông tin lô hàng -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-bold mb-3 text-gray-900">Thông tin lô hàng</h3>
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span class="text-gray-600">Tên lô:</span>
+                  <span
+                    class="font-semibold ml-2"
+                    x-text="formData.name"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Sản phẩm:</span>
+                  <span
+                    class="font-semibold ml-2"
+                    x-text="getProductName(formData.productId)"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Số lượng:</span>
+                  <span
+                    class="font-semibold ml-2"
+                    x-text="formData.quantity + ' kg'"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Thửa đất:</span>
+                  <span
+                    class="font-semibold ml-2"
+                    x-text="formData.farmPlotNumber"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Bắt đầu:</span>
+                  <span
+                    class="font-semibold ml-2"
+                    x-text="Utils.formatDate(formData.startDate)"
+                  ></span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Kết thúc:</span>
+                  <span
+                    class="font-semibold ml-2"
+                    x-text="Utils.formatDate(formData.endDate)"
+                  ></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cây nguồn gốc -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-bold mb-3 text-gray-900">Cây nguồn gốc</h3>
+              <div class="flex flex-wrap gap-2">
+                <template x-for="treeId in formData.treeIds" :key="treeId">
+                  <span
+                    class="badge badge-success"
+                    x-text="getTreeQRCode(treeId)"
+                  ></span>
+                </template>
+              </div>
+            </div>
+
+            <!-- Ảnh -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-bold mb-3 text-gray-900">Ảnh đã tải lên</h3>
+              <p class="text-sm text-gray-600">
+                <i class="fas fa-images mr-2"></i>
+                <span
+                  x-text="formData.productImages.length + ' ảnh sản phẩm'"
+                ></span>
+                <template x-if="formData.certificateImage">
+                  <span> + 1 ảnh chứng nhận</span>
+                </template>
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-3 mt-6 pt-6 border-t">
+            <button @click="prevStep()" class="btn-secondary">
+              <i class="fas fa-arrow-left mr-2"></i> Quay lại
+            </button>
+            <button
+              @click="submitBatch()"
+              class="btn-primary"
+              :disabled="submitting"
+            >
+              <template x-if="!submitting">
+                <span><i class="fas fa-save mr-2"></i> Tạo lô hàng</span>
+              </template>
+              <template x-if="submitting">
+                <span
+                  ><i class="fas fa-spinner fa-spin mr-2"></i> Đang xử
+                  lý...</span
+                >
+              </template>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/batch-creator.js"></script>
+  </body>
+</html>

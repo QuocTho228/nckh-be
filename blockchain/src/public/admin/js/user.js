@@ -1,7 +1,7 @@
 const baseUrl =
   window.location.hostname === "localhost"
     ? "http://localhost:3000/api"
-    : "https://truyxuatbuoi.xyz/api";
+    : "https://truyxuatsaurieng.xyz/api";
 // Tạo một đối tượng toàn cục để chứa các hàm và biến
 window.UserManager = {
   userData: [],
@@ -146,7 +146,7 @@ window.UserManager = {
     try {
       const url = `${baseUrl}/users/${userId}`;
       const response = await fetch(url, {
-        method: "DELETE"
+        method: "DELETE",
       });
       if (!response.ok) {
         throw new Error("Lỗi khi xóa người dùng");
@@ -161,7 +161,7 @@ window.UserManager = {
         "error"
       );
     }
-  }
+  },
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -286,9 +286,9 @@ document.addEventListener("DOMContentLoaded", function () {
           fetch(adminUrl, {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, name, password, province_id })
+            body: JSON.stringify({ email, name, password, province_id }),
           })
             .then((response) => response.json())
             .then((data) => {

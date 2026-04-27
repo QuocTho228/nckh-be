@@ -1,511 +1,688 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
     <title>Nhật ký hoạt động - Người sản xuất</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/nav-bar.css">
-    <link rel="stylesheet" href="../css/san-xuat.css">
-    <link rel="stylesheet" href="../css/thongbao.css">
-    <link rel="stylesheet" href="../css/chatbox.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/nav-bar.css" />
+    <link rel="stylesheet" href="../css/san-xuat.css" />
+    <link rel="stylesheet" href="../css/thongbao.css" />
+    <link rel="stylesheet" href="../css/chatbox.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
     <style>
-        .activity-log-item {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #fff;
-        }
+      .activity-log-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #fff;
+      }
+      .activity-image {
+        max-width: 100px;
+        height: auto;
+        margin: 5px;
+        cursor: pointer;
+        display: inline-block;
+      }
+      .image-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+      }
+      /* Modal content adjustments */
+      .modal-content {
+        position: relative;
+        max-width: 100%;
+        max-height: 200vh;
+        margin: auto;
+        animation: modalFadeIn 0.3s ease;
+        text-align: center;
+        padding-bottom: 70px; /* Tạo khoảng trống cho nút download */
+      }
+      .modal-image {
+        max-width: 100%;
+        max-height: calc(80vh - 100px); /* Trừ đi khoảng trống cho nút */
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      }
+      #addActivityLogModal {
+        display: none !important;
+      }
+      #addActivityLogModal.show {
+        display: block !important;
+      }
+      .modal {
+        z-index: 1060 !important;
+      }
+      .modal-backdrop {
+        z-index: 1050 !important;
+      }
+      .menu-overlay {
+        display: none;
+      }
+      .image-modal {
+        z-index: 2000 !important;
+      }
+      /* Style cho bảng hoạt động */
+      .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+        position: relative;
+        z-index: 1;
+        margin-top: 20px;
+      }
+
+      .table {
+        min-width: 1000px;
+        border-collapse: collapse;
+      }
+
+      .table th,
+      .table td {
+        text-align: left;
+        padding: 12px;
+        border: 1px solid #ddd;
+        vertical-align: top;
+      }
+
+      .table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        width: 16.66%; /* Chia đều 6 cột */
+      }
+
+      .activity-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        margin: 2px;
+      }
+
+      .activity-image:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Tùy chỉnh nút download trong modal */
+      .download-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #00b09b, #96c93d);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
+        z-index: 10;
+      }
+
+      .download-btn:hover {
+        background: linear-gradient(135deg, #008e7a, #7ab82d);
+        transform: translateX(-50%) translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 176, 155, 0.4);
+      }
+
+      .download-btn i {
+        font-size: 14px;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
         .activity-image {
-            max-width: 100px;
-            height: auto;
-            margin: 5px;
-            cursor: pointer;
-            display: inline-block;
+          width: 80px;
+          height: 80px;
         }
-        .image-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        /* Modal content adjustments */
-        .modal-content {
-            position: relative;
-            max-width: 70%;
-            max-height: 80vh;
-            margin: auto;
-            animation: modalFadeIn 0.3s ease;
-            text-align: center;
-            padding-bottom: 70px; /* Tạo khoảng trống cho nút download */
-        }
-        .modal-image {
-            max-width: 100%;
-            max-height: calc(80vh - 100px); /* Trừ đi khoảng trống cho nút */
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-        }
-        #addActivityLogModal {
-            display: none !important;
-        }
-        #addActivityLogModal.show {
-            display: block !important;
-        }
-        .modal {
-            z-index: 1060 !important;
-        }
-        .modal-backdrop {
-            z-index: 1050 !important;
-        }
-        .menu-overlay {
-            display: none;
-        }
-        .image-modal {
-            z-index: 2000 !important;
-        }
-        /* Style cho bảng hoạt động */
-        .table-responsive {
-            overflow-x: auto;
-            max-width: 100%;
-            position: relative;
-            z-index: 1;
-            margin-top: 20px;
-        }
-
-        .table {
-            min-width: 1000px;
-            border-collapse: collapse;
-        }
-
-        .table th, .table td {
-            text-align: left;
-            padding: 12px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-        }
-
+        .table td,
         .table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            width: 16.66%; /* Chia đều 6 cột */
+          min-width: 80px;
+          padding: 6px;
         }
-
-        .activity-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin: 2px;
-        }
-
-        .activity-image:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        /* Tùy chỉnh nút download trong modal */
         .download-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #00b09b, #96c93d);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
-            z-index: 10;
-        }
-
-        .download-btn:hover {
-            background: linear-gradient(135deg, #008e7a, #7ab82d);
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 176, 155, 0.4);
+          padding: 8px 16px;
+          font-size: 12px;
+          bottom: 15px;
         }
 
         .download-btn i {
-            font-size: 14px;
+          font-size: 12px;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .activity-image {
-                width: 80px;
-                height: 80px;
-            }
-            .table td, .table th {
-                min-width: 80px;
-                padding: 6px;
-            }
-            .download-btn {
-                padding: 8px 16px;
-                font-size: 12px;
-                bottom: 15px;
-            }
-            
-            .download-btn i {
-                font-size: 12px;
-            }
-            
-            .modal-content {
-                padding-bottom: 60px;
-            }
-            
-            .modal-image {
-                max-height: calc(80vh - 80px);
-            }
-
-            /* Style cho các nút navigation */
-.prev-btn, .next-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 20px;
-    color: #333;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    z-index: 11;
-}
-
-.prev-btn {
-    left: 20px;
-}
-
-.next-btn {
-    right: 20px;
-}
-
-.prev-btn:hover, .next-btn:hover {
-    background: white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.close-modal {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 11;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.close-modal:hover {
-    color: #ddd;
-}
+        .modal-content {
+          padding-bottom: 60px;
         }
+
+        .modal-image {
+          max-height: calc(80vh - 80px);
+        }
+
+        /* Style cho các nút navigation */
+        .prev-btn,
+        .next-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 20px;
+          color: #333;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          z-index: 11;
+        }
+
+        .prev-btn {
+          left: 20px;
+        }
+
+        .next-btn {
+          right: 20px;
+        }
+
+        .prev-btn:hover,
+        .next-btn:hover {
+          background: white;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+          transform: translateY(-50%) scale(1.1);
+        }
+
+        .close-modal {
+          position: absolute;
+          top: 20px;
+          right: 30px;
+          color: white;
+          font-size: 40px;
+          font-weight: bold;
+          cursor: pointer;
+          z-index: 11;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-modal:hover {
+          color: #ddd;
+        }
+      }
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="sanxuat.html">
-                <img src="../hinhanh/Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="Logo" class="logo-image">
-                <span>Sản xuất</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="sanxuat.html">Quản lý lô hàng</a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="nhatky-hoatdong.html">Nhật ký hoạt động</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge badge-danger" id="notification-count">0</span>
-                        </a>
-                        <div class="dropdown-menu notification-menu" aria-labelledby="notificationDropdown">
-                            <div class="notification-header">
-                                <h6 class="dropdown-header">Thông báo</h6>
-                                <button class="btn btn-sm" id="markAllRead">
-                                    <i class="fas fa-check-double mr-1"></i>
-                                    Đánh dấu tất cả đã đọc
-                                </button>
-                            </div>
-                            <div class="notification-list" id="notificationList"></div>
-                        </div>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-                            <span id="userName">Nhà sản xuất</span>
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item common-user-info" href="#" id="userRole"></a>
-                            <a class="dropdown-item common-user-info" href="#" id="userRegion"></a>
-                            <a class="dropdown-item common-user-info" href="../trangcanhan_caidat.html">Thông Tin Cá Nhân</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="../account/dangnhap.html" id="logoutButton">Đăng xuất</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+      <div class="container">
+        <a class="navbar-brand" href="sanxuat.html">
+          <img
+            src="../hinhanh/Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+            alt="Logo"
+            class="logo-image"
+          />
+          <span>Sản xuất</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="sanxuat.html">Quản lý lô hàng</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="nhatky-hoatdong.html"
+                >Nhật ký hoạt động</a
+              >
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="notificationDropdown"
+                role="button"
+                data-toggle="dropdown"
+              >
+                <i class="fas fa-bell"></i>
+                <span class="badge badge-danger" id="notification-count"
+                  >0</span
+                >
+              </a>
+              <div
+                class="dropdown-menu notification-menu"
+                aria-labelledby="notificationDropdown"
+              >
+                <div class="notification-header">
+                  <h6 class="dropdown-header">Thông báo</h6>
+                  <button class="btn btn-sm" id="markAllRead">
+                    <i class="fas fa-check-double mr-1"></i>
+                    Đánh dấu tất cả đã đọc
+                  </button>
+                </div>
+                <div class="notification-list" id="notificationList"></div>
+              </div>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-toggle="dropdown"
+              >
+                <span id="userName">Nhà sản xuất</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a
+                  class="dropdown-item common-user-info"
+                  href="#"
+                  id="userRole"
+                ></a>
+                <a
+                  class="dropdown-item common-user-info"
+                  href="#"
+                  id="userRegion"
+                ></a>
+                <a
+                  class="dropdown-item common-user-info"
+                  href="../trangcanhan_caidat.html"
+                  >Thông Tin Cá Nhân</a
+                >
+                <div class="dropdown-divider"></div>
+                <a
+                  class="dropdown-item"
+                  href="../account/dangnhap.html"
+                  id="logoutButton"
+                  >Đăng xuất</a
+                >
+              </div>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
     <div class="menu-overlay"></div>
     <main>
-        <div class="container mt-4">
-            <div class="table-title">
-                <h5><b>Quản Lý Nhật Ký Hoạt Động</b></h5>
-            </div>
-            <br>
-            <div class="container-fluid mt-3">
-                <div class="row justify-content-center">
-                    <div class="col-12">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Tìm kiếm hoạt động..." aria-label="Tìm kiếm hoạt động">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" type="button">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="dashboard-table">
-                <button type="button" class="check-button" id="addActivityBtn">
-                    <i class="fas fa-plus"></i>
-                    <b>Thêm hoạt động</b>
-                </button>
-            </div>
-            <div id="loadingSpinner" class="text-center mt-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Đang tải...</span>
-                </div>
-                <p class="mt-2">Đang tải hoạt động...</p>
-            </div>
-            <div class="filter-container">
-                <label for="statusFilter" class="filter-label">Lọc theo trạng thái:</label>
-                <select id="statusFilter" class="custom-select">
-                    <option value="all">Tất cả</option>
-                </select>
-            </div>
-            <div class="table-responsive">
-                <h5><i>Danh sách hoạt động</i></h5>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Thời gian</th>
-                            <th>Tên hoạt động</th>
-                            <th>Mô tả</th>
-                            <th>Ảnh hoạt động</th>
-                            <th>Sản phẩm</th>
-                            <th>Ảnh sản phẩm</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activityLogsList"></tbody>
-                </table>
-            </div>
+      <div class="container mt-4">
+        <div class="table-title">
+          <h5><b>Quản Lý Nhật Ký Hoạt Động</b></h5>
         </div>
+        <br />
+        <div class="container-fluid mt-3">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Tìm kiếm hoạt động..."
+                  aria-label="Tìm kiếm hoạt động"
+                />
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard-table">
+          <button type="button" class="check-button" id="addActivityBtn">
+            <i class="fas fa-plus"></i>
+            <b>Thêm hoạt động</b>
+          </button>
+        </div>
+        <div id="loadingSpinner" class="text-center mt-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Đang tải...</span>
+          </div>
+          <p class="mt-2">Đang tải hoạt động...</p>
+        </div>
+        <div class="filter-container">
+          <label for="statusFilter" class="filter-label"
+            >Lọc theo trạng thái:</label
+          >
+          <select id="statusFilter" class="custom-select">
+            <option value="all">Tất cả</option>
+          </select>
+        </div>
+        <div class="table-responsive">
+          <h5><i>Danh sách hoạt động</i></h5>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Thời gian</th>
+                <th>Tên hoạt động</th>
+                <th>Mô tả</th>
+                <th>Ảnh hoạt động</th>
+                <th>Sản phẩm</th>
+                <th>Ảnh sản phẩm</th>
+              </tr>
+            </thead>
+            <tbody id="activityLogsList"></tbody>
+          </table>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Modal thêm hoạt động -->
-    <div class="modal fade" id="addActivityLogModal" tabindex="-1" role="dialog" aria-labelledby="addActivityLogModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addActivityLogModalLabel">Thêm nhật ký hoạt động</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+    <div
+      class="modal fade"
+      id="addActivityLogModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="addActivityLogModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5
+              class="modal-title"
+              id="addActivityLogModalLabel"
+              style="text-align: center"
+            >
+              Thêm nhật ký hoạt động
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="addActivityLogForm" enctype="multipart/form-data">
+              <div class="form-group">
+                <label for="activityName">Tên hoạt động</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="activityName"
+                  name="activityName"
+                  placeholder="Nhập tên hoạt động"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="description">Mô tả</label>
+                <textarea
+                  class="form-control"
+                  id="description"
+                  name="description"
+                  rows="3"
+                  placeholder="Mô tả chi tiết hoạt động"
+                  required
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label for="relatedProductId">Sản phẩm liên quan</label>
+                <select
+                  class="form-control"
+                  id="relatedProductId"
+                  name="relatedProductId[]"
+                  multiple="multiple"
+                  required
+                ></select>
+              </div>
+              <div class="form-group">
+                <label for="images">Hình ảnh minh họa</label>
+                <div class="file-upload-wrapper" id="fileUploadWrapper">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <p class="upload-text">Kéo và thả hoặc click để chọn ảnh</p>
                 </div>
-                <div class="modal-body">
-                    <form id="addActivityLogForm" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="activityName">Tên hoạt động</label>
-                            <input type="text" class="form-control" id="activityName" name="activityName" placeholder="Nhập tên hoạt động" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Mô tả</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Mô tả chi tiết hoạt động" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="relatedProductId">Sản phẩm liên quan</label>
-                            <select class="form-control" id="relatedProductId" name="relatedProductId[]" multiple="multiple" required></select>
-                        </div>
-                        <div class="form-group">
-                            <label for="images">Hình ảnh minh họa</label>
-                            <div class="file-upload-wrapper" id="fileUploadWrapper">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p class="upload-text">Kéo và thả hoặc click để chọn ảnh</p>
-                            </div>
-                            <input type="file" class="form-control-file" id="images" name="images[]" multiple accept="image/*" style="display: none;">
-                            <div class="preview-container"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn add-activity-btn">
-                                <i class="fas fa-save"></i>
-                                Thêm
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                <input
+                  type="file"
+                  class="form-control-file"
+                  id="images"
+                  name="images[]"
+                  multiple
+                  accept="image/*"
+                  style="display: none"
+                />
+                <div class="preview-container"></div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn add-activity-btn">
+                  <i class="fas fa-save"></i>
+                  Thêm
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-    
+
     <div class="toast-container"></div>
 
     <!-- Phần chatbox -->
     <div class="chat-icon" id="openChat" onclick="toggleChat()">
-        <i class="fas fa-comments"></i>
-        <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
+      <i class="fas fa-comments"></i>
+      <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
     </div>
 
     <!-- Khung chat -->
     <div id="chatbox" class="chatbox">
-        <div class="chatbox-header">
-            <strong>Hỗ trợ</strong>
-            <button id="closeChat" class="btn-close" onclick="toggleChat()">x</button>
-        </div>
-        <div class="chatbox-body">
-            <ul id="messages" class="list-group">
-                <li class="list-group-item system-message"><strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.</li>
-            </ul>
-        </div>
-        <div class="chatbox-footer">
-            <form id="messageForm" class="d-flex">
-                <input id="messageInput" type="text" class="form-control" placeholder="Nhập tin nhắn">
-                <button type="submit" class="btn btn-primary">Gửi</button>
-            </form>
-        </div>
+      <div class="chatbox-header">
+        <strong>Hỗ trợ</strong>
+        <button id="closeChat" class="btn-close" onclick="toggleChat()">
+          x
+        </button>
+      </div>
+      <div class="chatbox-body">
+        <ul id="messages" class="list-group">
+          <li class="list-group-item system-message">
+            <strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.
+          </li>
+        </ul>
+      </div>
+      <div class="chatbox-footer">
+        <form id="messageForm" class="d-flex">
+          <input
+            id="messageInput"
+            type="text"
+            class="form-control"
+            placeholder="Nhập tin nhắn"
+          />
+          <button type="submit" class="btn btn-primary">Gửi</button>
+        </form>
+      </div>
     </div>
 
     <script>
-        async function initializeBaseUrl() {
-            try {
-                const response = await fetch('/api/config');
-                const config = await response.json();
-                window.baseUrl = config.baseUrl;
-                console.log("Base URL đã được khởi tạo:", window.baseUrl);
-            } catch (error) {
-                console.error('Lỗi khi lấy base URL:', error);
-                window.baseUrl = `${window.location.protocol}//${window.location.host}`;
-                console.log("Sử dụng base URL dự phòng:", window.baseUrl);
-            }
-        }
-
-        function getRoleName(roleId) {
-            const roles = {
-                0: 'Quản trị viên',
-                1: 'Nhà sản xuất',
-                2: 'Người tiêu dùng',
-            };
-            return roles[roleId] || 'Vai trò không xác định';
-        }
-
-        async function fetchAndDisplayActivities() {
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        loadingSpinner.style.display = 'block';
+      async function initializeBaseUrl() {
         try {
-            const response = await fetch('/api/producer-activity-logs', { credentials: 'include' });
-            if (!response.ok) {
-                throw new Error(`Lỗi từ server: ${response.status} - ${response.statusText}`);
-            }
-            const data = await response.json();
-            const activities = data.activityLogs || [];
-
-            const container = document.getElementById('activityLogsList');
-            let html = '';
-
-            activities.forEach(activity => {
-                const product = activity.relatedProducts[0] || {};
-                const imageUrl = activity.imageUrls && activity.imageUrls.length > 0 ? activity.imageUrls[0].replace(/\\/g, '/') : '';
-                const productImageUrl = product.image_url ? product.image_url.replace(/\\/g, '/') : '';
-
-                // Chuyển đổi định dạng thời gian
-                let formattedTime = 'Chưa có thời gian';
-                if (activity.timestamp) {
-                    const date = new Date(activity.timestamp);
-                    formattedTime = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}, ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-                }
-
-                html += `
-                    <tr>
-                        <td>${formattedTime}</td>
-                        <td>${activity.activityName || 'Chưa có tên'}</td>
-                        <td>${activity.description || 'Chưa có mô tả'}</td>
-                        <td>
-                            ${imageUrl ? `<img src="${window.baseUrl}${imageUrl}" alt="Hình ảnh" class="activity-image">` : 'Chưa có hình ảnh'}
-                        </td>
-                        <td>${product.product_name || 'Chưa có sản phẩm'}</td>
-                        <td>
-                            ${productImageUrl ? `<img src="${window.baseUrl}${productImageUrl}" alt="Ảnh sản phẩm" class="activity-image">` : 'Chưa có ảnh'}
-                        </td>
-                    </tr>
-                `;
-            });
-
-            container.innerHTML = html;
+          const response = await fetch("/api/config");
+          const config = await response.json();
+          window.baseUrl = config.baseUrl;
+          console.log("Base URL đã được khởi tạo:", window.baseUrl);
         } catch (error) {
-            console.error('Lỗi chi tiết:', error);
-            showToast(`Không thể tải danh sách hoạt động. Lỗi: ${error.message}`, 'error');
-            document.getElementById('activityLogsList').style.display = 'none';
-        } finally {
-            loadingSpinner.style.display = 'none';
+          console.error("Lỗi khi lấy base URL:", error);
+          window.baseUrl = `${window.location.protocol}//${window.location.host}`;
+          console.log("Sử dụng base URL dự phòng:", window.baseUrl);
         }
-    }
+      }
 
-        function showToast(message, type = 'success') {
-            const toastContainer = document.querySelector('.toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
-            toast.innerHTML = `
-                <span class="toast-icon">${type === 'error' ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-check-circle"></i>'}</span>
+      function getRoleName(roleId) {
+        const roles = {
+          0: "Quản trị viên",
+          1: "Nhà sản xuất",
+          2: "Người tiêu dùng"
+        };
+        return roles[roleId] || "Vai trò không xác định";
+      }
+
+      // Hàm lấy và hiển thị nhật ký hoạt động
+      async function fetchAndDisplayActivities() {
+        const loadingSpinner = document.getElementById("loadingSpinner");
+        loadingSpinner.style.display = "block";
+        try {
+          const response = await fetch("/api/producer-activity-logs", {
+            credentials: "include"
+          });
+          if (!response.ok) {
+            throw new Error(
+              `Lỗi từ server: ${response.status} - ${response.statusText}`
+            );
+          }
+          const data = await response.json();
+          const activities = data.activityLogs || [];
+
+          const container = document.getElementById("activityLogsList");
+          let html = "";
+
+          activities.forEach((activity) => {
+            const product = activity.relatedProducts[0] || {};
+            // Kiểm tra xem URL có phải tuyệt đối không
+            const imageUrl =
+              activity.imageUrls && activity.imageUrls.length > 0
+                ? activity.imageUrls[0].replace(/\\/g, "/")
+                : "";
+            const productImageUrl = product.image_url
+              ? product.image_url.replace(/\\/g, "/")
+              : "";
+
+            // Hàm kiểm tra URL tuyệt đối
+            const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url);
+
+            // Chỉ thêm baseUrl nếu URL không phải tuyệt đối
+            const finalImageUrl = imageUrl
+              ? isAbsoluteUrl(imageUrl)
+                ? imageUrl
+                : `${window.baseUrl}${imageUrl}`
+              : "";
+            const finalProductImageUrl = productImageUrl
+              ? isAbsoluteUrl(productImageUrl)
+                ? productImageUrl
+                : `${window.baseUrl}${productImageUrl}`
+              : "";
+
+            // Chuyển đổi định dạng thời gian
+            let formattedTime = "Chưa có thời gian";
+            if (activity.timestamp) {
+              const date = new Date(activity.timestamp);
+              formattedTime = `${date.getDate().toString().padStart(2, "0")}/${(
+                date.getMonth() + 1
+              )
+                .toString()
+                .padStart(2, "0")}/${date.getFullYear()}, ${date
+                .getHours()
+                .toString()
+                .padStart(2, "0")}:${date
+                .getMinutes()
+                .toString()
+                .padStart(2, "0")}:${date
+                .getSeconds()
+                .toString()
+                .padStart(2, "0")}`;
+            }
+
+            html += `
+                <tr>
+                    <td>${formattedTime}</td>
+                    <td>${activity.activityName || "Chưa có tên"}</td>
+                    <td>${activity.description || "Chưa có mô tả"}</td>
+                    <td>
+                        ${
+                          finalImageUrl
+                            ? `<img src="${finalImageUrl}" alt="Hình ảnh" class="activity-image">`
+                            : "Chưa có hình ảnh"
+                        }
+                    </td>
+                    <td>${product.product_name || "Chưa có sản phẩm"}</td>
+                    <td>
+                        ${
+                          finalProductImageUrl
+                            ? `<img src="${finalProductImageUrl}" alt="Ảnh sản phẩm" class="activity-image">`
+                            : "Chưa có ảnh"
+                        }
+                    </td>
+                </tr>
+            `;
+          });
+
+          container.innerHTML = html;
+        } catch (error) {
+          console.error("Lỗi chi tiết:", error);
+          showToast(
+            `Không thể tải danh sách hoạt động. Lỗi: ${error.message}`,
+            "error"
+          );
+          document.getElementById("activityLogsList").style.display = "none";
+        } finally {
+          loadingSpinner.style.display = "none";
+        }
+      }
+
+      function showToast(message, type = "success") {
+        const toastContainer = document.querySelector(".toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type === "error" ? "error" : ""}`;
+        toast.innerHTML = `
+                <span class="toast-icon">${
+                  type === "error"
+                    ? '<i class="fas fa-exclamation-triangle"></i>'
+                    : '<i class="fas fa-check-circle"></i>'
+                }</span>
                 <p class="toast-message">${message}</p>
             `;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
 
-        function createImageModal() {
-            const modal = document.createElement('div');
-            modal.className = 'image-modal';
-            modal.innerHTML = `
+      function createImageModal() {
+        const modal = document.createElement("div");
+        modal.className = "image-modal";
+        modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close-modal">&times;</span>
                     <img src="" alt="Hình ảnh" class="modal-image">
@@ -514,323 +691,364 @@
                     <button class="download-btn"><i class="fas fa-download"></i> Tải ảnh</button>
                 </div>
             `;
-            document.body.appendChild(modal);
-            return modal;
+        document.body.appendChild(modal);
+        return modal;
+      }
+
+      function initializeImageViewer() {
+        const modal = createImageModal();
+        const modalImg = modal.querySelector(".modal-image");
+        const closeBtn = modal.querySelector(".close-modal");
+        const prevBtn = modal.querySelector(".prev-btn");
+        const nextBtn = modal.querySelector(".next-btn");
+        const downloadBtn = modal.querySelector(".download-btn");
+        let currentImageIndex = 0;
+        let currentImages = [];
+
+        document.addEventListener("click", function (e) {
+          const target = e.target;
+          if (target.classList.contains("activity-image")) {
+            currentImages = Array.from(
+              target.closest("td").querySelectorAll(".activity-image")
+            ).map((img) => img.src);
+            currentImageIndex = currentImages.indexOf(target.src);
+            if (currentImageIndex === -1) currentImageIndex = 0;
+            modal.style.display = "flex";
+            modalImg.src = currentImages[currentImageIndex] || "";
+            updateNavigationButtons();
+            document.body.style.overflow = "hidden";
+          }
+        });
+
+        function updateNavigationButtons() {
+          prevBtn.style.display =
+            currentImageIndex > 0 ? "inline-block" : "none";
+          nextBtn.style.display =
+            currentImageIndex < currentImages.length - 1
+              ? "inline-block"
+              : "none";
+          downloadBtn.style.display =
+            currentImages.length > 0 ? "inline-block" : "none";
         }
 
-        function initializeImageViewer() {
-            const modal = createImageModal();
-            const modalImg = modal.querySelector('.modal-image');
-            const closeBtn = modal.querySelector('.close-modal');
-            const prevBtn = modal.querySelector('.prev-btn');
-            const nextBtn = modal.querySelector('.next-btn');
-            const downloadBtn = modal.querySelector('.download-btn');
-            let currentImageIndex = 0;
-            let currentImages = [];
+        closeBtn.onclick = function () {
+          modal.style.display = "none";
+          document.body.style.overflow = "auto";
+        };
 
-            document.addEventListener('click', function(e) {
-                const target = e.target;
-                if (target.classList.contains('activity-image')) {
-                    currentImages = Array.from(target.closest('td').querySelectorAll('.activity-image')).map(img => img.src);
-                    currentImageIndex = currentImages.indexOf(target.src);
-                    if (currentImageIndex === -1) currentImageIndex = 0;
-                    modal.style.display = 'flex';
-                    modalImg.src = currentImages[currentImageIndex] || '';
-                    updateNavigationButtons();
-                    document.body.style.overflow = 'hidden';
-                }
+        prevBtn.onclick = function (e) {
+          e.stopPropagation();
+          if (currentImageIndex > 0) {
+            currentImageIndex--;
+            modalImg.src = currentImages[currentImageIndex];
+            updateNavigationButtons();
+          }
+        };
+
+        nextBtn.onclick = function (e) {
+          e.stopPropagation();
+          if (currentImageIndex < currentImages.length - 1) {
+            currentImageIndex++;
+            modalImg.src = currentImages[currentImageIndex];
+            updateNavigationButtons();
+          }
+        };
+
+        downloadBtn.onclick = function (e) {
+          e.stopPropagation();
+          const currentImage = currentImages[currentImageIndex];
+          if (currentImage) {
+            const fileName =
+              currentImage.split("/").pop() || `image-${Date.now()}.jpg`;
+            const link = document.createElement("a");
+            link.href = currentImage;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        };
+
+        modal.onclick = function (e) {
+          if (e.target === modal) {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+          }
+        };
+      }
+
+      function fetchProducts() {
+        fetch("/api/products", { credentials: "include" })
+          .then((response) => {
+            if (!response.ok) throw new Error("Lỗi tải sản phẩm");
+            return response.json();
+          })
+          .then((data) => {
+            const select = document.getElementById("relatedProductId");
+            select.innerHTML = "<option></option>";
+            data.forEach((product) => {
+              const option = document.createElement("option");
+              option.value = product.product_id;
+              option.textContent = product.product_name;
+              select.appendChild(option);
             });
+          })
+          .catch((error) => {
+            console.error("Lỗi khi lấy danh sách sản phẩm:", error);
+            showToast("Không thể tải danh sách sản phẩm", "error");
+          });
+      }
 
-            function updateNavigationButtons() {
-                prevBtn.style.display = currentImageIndex > 0 ? 'inline-block' : 'none';
-                nextBtn.style.display = currentImageIndex < currentImages.length - 1 ? 'inline-block' : 'none';
-                downloadBtn.style.display = currentImages.length > 0 ? 'inline-block' : 'none';
+      document.addEventListener("DOMContentLoaded", async function () {
+        await initializeBaseUrl();
+
+        $("#addActivityLogModal").modal("hide");
+        $(".modal-backdrop").remove();
+        $("body").removeClass("modal-open");
+
+        try {
+          const response = await fetch("/api/user-info", {
+            credentials: "include"
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.roleId !== 0) {
+              document.getElementById("userName").textContent = data.name;
+              document.getElementById(
+                "userRole"
+              ).textContent = `Vai trò: ${getRoleName(data.roleId)}`;
+              document.getElementById(
+                "userRegion"
+              ).textContent = `Khu vực: ${data.region}`;
+              fetchAndDisplayActivities();
+            } else {
+              throw new Error("Vai trò không hợp lệ");
             }
-
-            closeBtn.onclick = function() {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            };
-
-            prevBtn.onclick = function(e) {
-                e.stopPropagation();
-                if (currentImageIndex > 0) {
-                    currentImageIndex--;
-                    modalImg.src = currentImages[currentImageIndex];
-                    updateNavigationButtons();
-                }
-            };
-
-            nextBtn.onclick = function(e) {
-                e.stopPropagation();
-                if (currentImageIndex < currentImages.length - 1) {
-                    currentImageIndex++;
-                    modalImg.src = currentImages[currentImageIndex];
-                    updateNavigationButtons();
-                }
-            };
-
-            downloadBtn.onclick = function(e) {
-                e.stopPropagation();
-                const currentImage = currentImages[currentImageIndex];
-                if (currentImage) {
-                    const fileName = currentImage.split('/').pop() || `image-${Date.now()}.jpg`;
-                    const link = document.createElement('a');
-                    link.href = currentImage;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            };
-
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-            };
+          } else {
+            throw new Error("Không thể lấy thông tin người dùng");
+          }
+        } catch (error) {
+          console.error("Lỗi:", error);
+          showToast(
+            "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.",
+            "error"
+          );
+          setTimeout(
+            () => (window.location.href = "../account/dangnhap.html"),
+            2000
+          );
         }
 
-        function fetchProducts() {
-            fetch('/api/products', { credentials: 'include' })
-                .then(response => {
-                    if (!response.ok) throw new Error('Lỗi tải sản phẩm');
-                    return response.json();
-                })
-                .then(data => {
-                    const select = document.getElementById('relatedProductId');
-                    select.innerHTML = '<option></option>';
-                    data.forEach(product => {
-                        const option = document.createElement('option');
-                        option.value = product.product_id;
-                        option.textContent = product.product_name;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Lỗi khi lấy danh sách sản phẩm:', error);
-                    showToast('Không thể tải danh sách sản phẩm', 'error');
-                });
-        }
+        const statusFilter = document.getElementById("statusFilter");
+        statusFilter.addEventListener("change", function () {
+          const selectedStatus = this.value;
+          fetchAndDisplayActivities();
+        });
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            await initializeBaseUrl();
-            
-            $('#addActivityLogModal').modal('hide');
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open');
-            
-            try {
-                const response = await fetch('/api/user-info', { credentials: 'include' });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.roleId !== 0) {
-                        document.getElementById('userName').textContent = data.name;
-                        document.getElementById('userRole').textContent = `Vai trò: ${getRoleName(data.roleId)}`;
-                        document.getElementById('userRegion').textContent = `Khu vực: ${data.region}`;
-                        fetchAndDisplayActivities();
-                    } else {
-                        throw new Error('Vai trò không hợp lệ');
-                    }
-                } else {
-                    throw new Error('Không thể lấy thông tin người dùng');
-                }
-            } catch (error) {
-                console.error('Lỗi:', error);
-                showToast('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.', 'error');
-                setTimeout(() => window.location.href = '../account/dangnhap.html', 2000);
-            }
+        $("#relatedProductId").select2({
+          placeholder: "Chọn sản phẩm",
+          allowClear: true,
+          tags: true,
+          dropdownParent: $("#addActivityLogModal")
+        });
 
-            const statusFilter = document.getElementById('statusFilter');
-            statusFilter.addEventListener('change', function() {
-                const selectedStatus = this.value;
-                fetchAndDisplayActivities();
-            });
-
-            $('#relatedProductId').select2({
-                placeholder: "Chọn sản phẩm",
-                allowClear: true,
-                tags: true,
-                dropdownParent: $('#addActivityLogModal')
-            });
-
-            document.getElementById('addActivityBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                fetchProducts();
-                $('#addActivityLogModal').modal('show');
-            });
-
-            document.getElementById('fileUploadWrapper').addEventListener('click', function() {
-                document.getElementById('images').click();
-            });
-
-            document.getElementById('images').addEventListener('change', function(e) {
-                const previewContainer = document.querySelector('.preview-container');
-                previewContainer.innerHTML = '';
-                const files = e.target.files;
-                for (let file of files) {
-                    const img = document.createElement('img');
-                    img.src = URL.createObjectURL(file);
-                    img.className = 'activity-image';
-                    img.style.maxWidth = '100px';
-                    img.style.margin = '5px';
-                    previewContainer.appendChild(img);
-                }
-            });
-
-            // Cập nhật event listener form submit
-            document.getElementById('addActivityLogForm').addEventListener('submit', async function(e) {
+        document
+          .getElementById("addActivityBtn")
+          .addEventListener("click", function (e) {
             e.preventDefault();
-            const submitBtn = this.querySelector('.add-activity-btn');
+            e.stopPropagation();
+            fetchProducts();
+            $("#addActivityLogModal").modal("show");
+          });
+
+        document
+          .getElementById("fileUploadWrapper")
+          .addEventListener("click", function () {
+            document.getElementById("images").click();
+          });
+
+        document
+          .getElementById("images")
+          .addEventListener("change", function (e) {
+            const previewContainer =
+              document.querySelector(".preview-container");
+            previewContainer.innerHTML = "";
+            const files = e.target.files;
+            for (let file of files) {
+              const img = document.createElement("img");
+              img.src = URL.createObjectURL(file);
+              img.className = "activity-image";
+              img.style.maxWidth = "100px";
+              img.style.margin = "5px";
+              previewContainer.appendChild(img);
+            }
+          });
+
+        // Cập nhật event listener form submit
+        document
+          .getElementById("addActivityLogForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector(".add-activity-btn");
             submitBtn.disabled = true;
-            
+
             try {
-                // Kiểm tra dữ liệu form
-                const activityName = document.getElementById('activityName').value.trim();
-                const description = document.getElementById('description').value.trim();
-                const relatedProductId = $('#relatedProductId').val();
-                const images = document.getElementById('images').files;
-                
-                // Validate
-                if (!activityName) {
-                    showToast('Vui lòng nhập tên hoạt động', 'error');
-                    submitBtn.disabled = false;
-                    return;
-                }
-                
-                if (!description) {
-                    showToast('Vui lòng nhập mô tả', 'error');
-                    submitBtn.disabled = false;
-                    return;
-                }
-                
-                if (!relatedProductId || relatedProductId.length === 0) {
-                    showToast('Vui lòng chọn ít nhất một sản phẩm', 'error');
-                    submitBtn.disabled = false;
-                    return;
-                }
-                
-                if (images.length === 0) {
-                    showToast('Vui lòng chọn ít nhất một hình ảnh', 'error');
-                    submitBtn.disabled = false;
-                    return;
-                }
-                
-                if (images.length > 5) {
-                    showToast('Chỉ được chọn tối đa 5 hình ảnh', 'error');
-                    submitBtn.disabled = false;
-                    return;
-                }
-                
-                // Tạo FormData
-                const formData = new FormData();
-                formData.append('activityName', activityName);
-                formData.append('description', description);
-                formData.append('isSystemGenerated', 'false');
-                
-                // Thêm product IDs
-                relatedProductId.forEach(id => {
-                    formData.append('relatedProductIds', id);
-                });
-                
-                // Thêm images với tên field đúng: imageUrls
-                for (let i = 0; i < images.length; i++) {
-                    formData.append('imageUrls', images[i]); 
-                }
-                
-                // Log để debug
-                console.log('Submitting form data:');
-                console.log('Activity Name:', activityName);
-                console.log('Description:', description);
-                console.log('Product IDs:', relatedProductId);
-                console.log('Images count:', images.length);
-                
-                // Log tất cả entries trong FormData
-                console.log('FormData entries:');
-                for (let pair of formData.entries()) {
-                    console.log(pair[0] + ':', pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]);
-                }
-                
-                const response = await fetch('/createactivity', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include'
-                });
-                
-                // Log response để debug
-                console.log('Response status:', response.status);
-                const responseText = await response.text();
-                console.log('Response text:', responseText);
-                
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('Error parsing response:', parseError);
-                    throw new Error('Server trả về dữ liệu không hợp lệ');
-                }
-                
-                if (response.ok && data.success) {
-                    showToast('Thêm nhật ký hoạt động thành công!', 'success');
-                    $('#addActivityLogModal').modal('hide');
-                    this.reset();
-                    document.querySelector('.preview-container').innerHTML = '';
-                    $('#relatedProductId').val(null).trigger('change');
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    const errorMessage = data.error || data.message || 'Có lỗi xảy ra khi thêm hoạt động';
-                    showToast(errorMessage, 'error');
-                    console.error('Server error:', data);
-                }
-            } catch (error) {
-                console.error('Lỗi chi tiết:', error);
-                showToast(`Có lỗi xảy ra: ${error.message}`, 'error');
-            } finally {
+              // Kiểm tra dữ liệu form
+              const activityName = document
+                .getElementById("activityName")
+                .value.trim();
+              const description = document
+                .getElementById("description")
+                .value.trim();
+              const relatedProductId = $("#relatedProductId").val();
+              const images = document.getElementById("images").files;
+
+              // Validate
+              if (!activityName) {
+                showToast("Vui lòng nhập tên hoạt động", "error");
                 submitBtn.disabled = false;
+                return;
+              }
+
+              if (!description) {
+                showToast("Vui lòng nhập mô tả", "error");
+                submitBtn.disabled = false;
+                return;
+              }
+
+              if (!relatedProductId || relatedProductId.length === 0) {
+                showToast("Vui lòng chọn ít nhất một sản phẩm", "error");
+                submitBtn.disabled = false;
+                return;
+              }
+
+              if (images.length === 0) {
+                showToast("Vui lòng chọn ít nhất một hình ảnh", "error");
+                submitBtn.disabled = false;
+                return;
+              }
+
+              if (images.length > 5) {
+                showToast("Chỉ được chọn tối đa 5 hình ảnh", "error");
+                submitBtn.disabled = false;
+                return;
+              }
+
+              // Tạo FormData
+              const formData = new FormData();
+              formData.append("activityName", activityName);
+              formData.append("description", description);
+              formData.append("isSystemGenerated", "false");
+
+              // Thêm product IDs
+              relatedProductId.forEach((id) => {
+                formData.append("relatedProductIds", id);
+              });
+
+              // Thêm images với tên field đúng: imageUrls
+              for (let i = 0; i < images.length; i++) {
+                formData.append("imageUrls", images[i]);
+              }
+
+              // Log để debug
+              console.log("Submitting form data:");
+              console.log("Activity Name:", activityName);
+              console.log("Description:", description);
+              console.log("Product IDs:", relatedProductId);
+              console.log("Images count:", images.length);
+
+              // Log tất cả entries trong FormData
+              console.log("FormData entries:");
+              for (let pair of formData.entries()) {
+                console.log(
+                  pair[0] + ":",
+                  pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]
+                );
+              }
+
+              const response = await fetch("/createactivity", {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+              });
+
+              // Log response để debug
+              console.log("Response status:", response.status);
+              const responseText = await response.text();
+              console.log("Response text:", responseText);
+
+              let data;
+              try {
+                data = JSON.parse(responseText);
+              } catch (parseError) {
+                console.error("Error parsing response:", parseError);
+                throw new Error("Server trả về dữ liệu không hợp lệ");
+              }
+
+              if (response.ok && data.success) {
+                showToast("Thêm nhật ký hoạt động thành công!", "success");
+                $("#addActivityLogModal").modal("hide");
+                this.reset();
+                document.querySelector(".preview-container").innerHTML = "";
+                $("#relatedProductId").val(null).trigger("change");
+                setTimeout(() => window.location.reload(), 1000);
+              } else {
+                const errorMessage =
+                  data.error ||
+                  data.message ||
+                  "Có lỗi xảy ra khi thêm hoạt động";
+                showToast(errorMessage, "error");
+                console.error("Server error:", data);
+              }
+            } catch (error) {
+              console.error("Lỗi chi tiết:", error);
+              showToast(`Có lỗi xảy ra: ${error.message}`, "error");
+            } finally {
+              submitBtn.disabled = false;
             }
+          });
+
+        $("#addActivityLogModal").on("hidden.bs.modal", function () {
+          document.getElementById("addActivityLogForm").reset();
+          document.querySelector(".preview-container").innerHTML = "";
+          $("#relatedProductId").val(null).trigger("change");
         });
 
-            $('#addActivityLogModal').on('hidden.bs.modal', function () {
-                document.getElementById('addActivityLogForm').reset();
-                document.querySelector('.preview-container').innerHTML = '';
-                $('#relatedProductId').val(null).trigger('change');
-            });
+        initializeImageViewer();
 
-            initializeImageViewer();
+        function toggleChat() {
+          var chatbox = document.getElementById("chatbox");
+          if (chatbox.classList.contains("show")) {
+            chatbox.classList.remove("show");
+            chatbox.classList.add("hide");
+            setTimeout(() => {
+              chatbox.style.display = "none";
+              chatbox.classList.remove("hide");
+            }, 300);
+          } else {
+            chatbox.style.display = "block";
+            chatbox.offsetHeight;
+            chatbox.classList.add("show");
+          }
+        }
 
-            function toggleChat() {
-                var chatbox = document.getElementById("chatbox");
-                if (chatbox.classList.contains("show")) {
-                    chatbox.classList.remove("show");
-                    chatbox.classList.add("hide");
-                    setTimeout(() => {
-                        chatbox.style.display = "none";
-                        chatbox.classList.remove("hide");
-                    }, 300);
-                } else {
-                    chatbox.style.display = "block";
-                    chatbox.offsetHeight;
-                    chatbox.classList.add("show");
-                }
+        document
+          .getElementById("messageForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value.trim();
+            if (message) {
+              const messages = document.getElementById("messages");
+              const li = document.createElement("li");
+              li.className = "list-group-item";
+              li.innerHTML = `<strong>Bạn: </strong>${message}`;
+              messages.appendChild(li);
+              messageInput.value = "";
+              messages.scrollTop = messages.scrollHeight;
             }
-
-            document.getElementById('messageForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const messageInput = document.getElementById('messageInput');
-                const message = messageInput.value.trim();
-                if (message) {
-                    const messages = document.getElementById('messages');
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item';
-                    li.innerHTML = `<strong>Bạn: </strong>${message}`;
-                    messages.appendChild(li);
-                    messageInput.value = '';
-                    messages.scrollTop = messages.scrollHeight;
-                }
-            });
-        });
+          });
+      });
     </script>
-</body>
+  </body>
 </html>

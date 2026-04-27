@@ -1,0 +1,73 @@
+{
+  "timestamp": "2026-04-12T11:16:41.550Z",
+  "testType": "access-control",
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "warnings": 0,
+    "total": 10,
+    "score": 100
+  },
+  "results": [
+    {
+      "test": "Farmer2 không được sửa cây farmer1 ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Farmer2 không được deactivate cây farmer1 ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Owner/farmer1 được deactivate cây của mình ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block approve producerId sai ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Owner approve batch hợp lệ ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block double approval ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block mua batch chưa approve ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block duplicate QR cây ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "ActivityLog revert với attacker ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block truy cập batch không tồn tại ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    }
+  ]
+}

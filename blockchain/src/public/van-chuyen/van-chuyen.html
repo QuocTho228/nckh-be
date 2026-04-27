@@ -1,224 +1,960 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
     <title>Trang chủ - Vận chuyển</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; frame-src *; style-src * 'self' 'unsafe-inline'; media-src * 'self' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval';">
-    <meta http-equiv="Permissions-Policy" content="camera=self">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; frame-src *; style-src * 'self' 'unsafe-inline'; media-src * 'self' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval';"
+    />
+    <meta http-equiv="Permissions-Policy" content="camera=self" />
 
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="../css/nav-bar.css">
-    <link rel="stylesheet" href="../css/van-chuyen.css">
-    <link rel="stylesheet" href="../css/thongbao.css">
-    <link rel="stylesheet" href="../css/chatbox.css">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../css/nav-bar.css" />
+    <link rel="stylesheet" href="../css/van-chuyen.css" />
+    <link rel="stylesheet" href="../css/thongbao.css" />
+    <link rel="stylesheet" href="../css/chatbox.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-</head>
-<style>
-    #qr-reader {
-        width: 100%;
-        max-width: 640px;
-        margin: 0 auto;
-        background: #f8f9fa;
-        padding: 10px;
-        border-radius: 8px;
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+  </head>
+  <style>
+    /* Căn giữa các nút trong transportActions */
+    #transportActions {
+      display: flex;
+      justify-content: center; /* Căn giữa theo chiều ngang */
+      align-items: center; /* Căn giữa theo chiều dọc */
+      gap: 15px; /* Khoảng cách giữa các nút */
+      margin-top: 20px; /* Khoảng cách phía trên */
+      flex-wrap: wrap; /* Cho phép xuống dòng trên màn hình nhỏ */
     }
-    
-    #qr-reader video {
+
+    /* Đảm bảo nút có kích thước đồng đều */
+    #transportActions button {
+      min-width: 150px; /* Chiều rộng tối thiểu */
+      padding: 10px 20px; /* Khoảng cách bên trong */
+      font-size: 16px; /* Kích thước chữ */
+      text-align: center; /* Căn giữa nội dung trong nút */
+    }
+
+    /* Responsive cho mobile */
+    @media (max-width: 768px) {
+      #transportActions {
+        flex-direction: column; /* Xếp dọc trên mobile */
+        align-items: center; /* Căn giữa theo chiều ngang */
+      }
+
+      #transportActions button {
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+        max-width: 300px; /* Giới hạn chiều rộng tối đa */
+      }
+    }
+
+    /* Định dạng bảng lịch sử vận chuyển */
+    .transport-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .transport-history-table th,
+    .transport-history-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .transport-history-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .transport-history-table tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* Responsive cho mobile */
+    @media (max-width: 768px) {
+      .transport-history-table {
+        font-size: 14px;
+      }
+
+      .transport-history-table th,
+      .transport-history-table td {
+        padding: 8px;
+      }
+    }
+
+    /* Timeline Container */
+    .timeline {
+      position: relative;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 40px 20px;
+    }
+
+    /* Đường thẳng giữa */
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      background: linear-gradient(
+        180deg,
+        #3498db 0%,
+        #2ecc71 50%,
+        #e74c3c 100%
+      );
+      transform: translateX(-50%);
+      box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Timeline Item */
+    .timeline-item {
+      position: relative;
+      margin-bottom: 50px;
+      width: 50%;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .timeline-item:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    .timeline-item:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .timeline-item:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+    .timeline-item:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+    .timeline-item:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Timeline Left & Right */
+    .timeline-left {
+      left: 0;
+      padding-right: 40px;
+    }
+
+    .timeline-right {
+      left: 50%;
+      padding-left: 40px;
+    }
+
+    /* Timeline Content Card */
+    .timeline-content {
+      position: relative;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(52, 152, 219, 0.1);
+    }
+
+    .timeline-content:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(52, 152, 219, 0.2);
+      border-color: rgba(52, 152, 219, 0.3);
+    }
+
+    /* Timeline Dot - Điểm tròn giữa */
+    .timeline-dot {
+      position: absolute;
+      top: 25px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      border-radius: 50%;
+      border: 4px solid #fff;
+      box-shadow:
+        0 0 0 4px rgba(52, 152, 219, 0.2),
+        0 0 20px rgba(52, 152, 219, 0.4);
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-content:hover .timeline-dot {
+      transform: scale(1.3);
+      box-shadow:
+        0 0 0 6px rgba(52, 152, 219, 0.3),
+        0 0 30px rgba(52, 152, 219, 0.6);
+    }
+
+    .timeline-left .timeline-dot {
+      right: -50px;
+    }
+
+    .timeline-right .timeline-dot {
+      left: -50px;
+    }
+
+    /* Timeline Arrow - Mũi tên chỉ về giữa */
+    .timeline-content::before {
+      content: "";
+      position: absolute;
+      top: 30px;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+
+    .timeline-left .timeline-content::before {
+      right: -15px;
+      border-width: 10px 0 10px 15px;
+      border-color: transparent transparent transparent #ffffff;
+    }
+
+    .timeline-right .timeline-content::before {
+      left: -15px;
+      border-width: 10px 15px 10px 0;
+      border-color: transparent #ffffff transparent transparent;
+    }
+
+    /* Timeline Details */
+    .timeline-details {
+      position: relative;
+      z-index: 1;
+    }
+
+    .timeline-details h4 {
+      margin: 0 0 15px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .timeline-details h4::before {
+      content: "📦";
+      font-size: 24px;
+    }
+
+    .timeline-details p {
+      margin: 8px 0;
+      font-size: 15px;
+      color: #555;
+      line-height: 1.6;
+      display: flex;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .timeline-details p strong {
+      color: #34495e;
+      min-width: 140px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timeline-details p strong::before {
+      font-family: "Font Awesome 5 Free";
+      font-weight: 900;
+      font-size: 14px;
+      color: #3498db;
+    }
+
+    /* Icon cho các trường thông tin */
+    .timeline-details p:has(strong:contains("Thời gian")) strong::before {
+      content: "\f017"; /* clock */
+    }
+
+    .timeline-details p:has(strong:contains("Loại")) strong::before {
+      content: "\f007"; /* user */
+    }
+
+    .timeline-details
+      p:has(strong:contains("Người vận chuyển"))
+      strong::before {
+      content: "\f4d7"; /* id-card */
+    }
+
+    .timeline-details p:has(strong:contains("Số điện thoại")) strong::before {
+      content: "\f095"; /* phone */
+    }
+
+    .timeline-details p:has(strong:contains("Địa chỉ")) strong::before {
+      content: "\f3c5"; /* map-marker-alt */
+    }
+
+    /* Header cho Timeline */
+    #transportHistory h3 {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 40px;
+      position: relative;
+      padding-bottom: 15px;
+    }
+
+    #transportHistory h3::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      border-radius: 2px;
+    }
+
+    /* Responsive cho Tablet */
+    @media (max-width: 992px) {
+      .timeline {
+        padding: 30px 15px;
+      }
+
+      .timeline-details h4 {
+        font-size: 18px;
+      }
+
+      .timeline-details p {
+        font-size: 14px;
+      }
+    }
+
+    /* Responsive cho Mobile */
+    @media (max-width: 768px) {
+      .timeline {
+        padding: 20px 10px;
+      }
+
+      .timeline::before {
+        left: 30px;
+      }
+
+      .timeline-item {
         width: 100% !important;
-        height: auto !important;
-        border-radius: 4px;
-        transform: scaleX(-1); /* Flip camera if needed */
+        left: 0 !important;
+        padding-left: 70px !important;
+        padding-right: 10px !important;
+      }
+
+      .timeline-dot {
+        left: 21px !important;
+        right: auto !important;
+        width: 18px;
+        height: 18px;
+      }
+
+      .timeline-content::before {
+        left: -15px !important;
+        right: auto !important;
+        border-width: 10px 15px 10px 0 !important;
+        border-color: transparent #ffffff transparent transparent !important;
+      }
+
+      .timeline-details h4 {
+        font-size: 17px;
+      }
+
+      .timeline-details h4::before {
+        font-size: 20px;
+      }
+
+      .timeline-details p {
+        font-size: 13px;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .timeline-details p strong {
+        min-width: auto;
+        margin-bottom: 2px;
+      }
+
+      #transportHistory h3 {
+        font-size: 22px;
+        margin-bottom: 30px;
+      }
     }
-    
+
+    @media (max-width: 480px) {
+      .timeline-content {
+        padding: 18px;
+      }
+
+      .timeline-details h4 {
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+
+      .timeline-details p {
+        font-size: 12px;
+      }
+
+      #transportHistory h3 {
+        font-size: 20px;
+      }
+    }
+
+    /* QR Code Scanner Styles */
+    #start-camera i,
+    #scan-button i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .custom-file-upload i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    #qr-reader {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    #qr-reader video {
+      width: 100% !important;
+      height: auto !important;
+      border-radius: 4px;
+      transform: scaleX(-1);
+    }
+
     #qr-reader__scan_region {
-        min-height: 300px;
+      min-height: 300px;
     }
-    
+
     /* Mobile optimizations */
     @media (max-width: 768px) {
-        #qr-reader {
-            max-width: 100%;
-            margin: 0;
-        }
+      #qr-reader {
+        max-width: 100%;
+        margin: 0;
+      }
     }
+
     .qr-scanner-container {
-        margin-bottom: 20px;
+      margin-bottom: 20px;
     }
+
     .loading-spinner {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 2000;
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000;
     }
 
     .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid transparent;
-        border-radius: 50%;
-        border-top: 3px solid #3498db;
-        transform-origin: center;
-        animation: spinner 0.8s linear infinite;
+      width: 40px;
+      height: 40px;
+      border: 3px solid transparent;
+      border-radius: 50%;
+      border-top: 3px solid #3498db;
+      transform-origin: center;
+      animation: spinner 0.8s linear infinite;
     }
 
     @keyframes spinner {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
     }
-</style>
-<body>
+
+    /* Modal Image Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .modal-content {
+      position: relative;
+      margin: 3% auto;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 95%;
+      max-width: 800px;
+      z-index: 10; /* Đảm bảo modal-content ở trên modal-overlay */
+    }
+
+    .modal-image-container {
+      width: 100%;
+      max-width: 700px;
+      height: 500px; /* Cố định khung chứa */
+      background-color: white;
+      border-radius: 15px;
+      margin-top: 40px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative; /* Để nút đóng nằm trong khung này */
+    }
+
+    #modalImage {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .close {
+      color: red;
+      background-color: rgba(136, 136, 136, 0.9);
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1001;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .close:hover,
+    .close:focus {
+      background-color: white;
+      color: #333;
+    }
+
+    .download-btn {
+      margin-top: 20px;
+      padding: 14px 50px;
+      font-size: 17px;
+      font-weight: 300;
+      margin: 20px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 25px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      z-index: 1001; /* Đảm bảo nút tải về ở trên các phần tử khác */
+      position: relative; /* Đảm bảo nút tải về không bị che */
+    }
+
+    .download-btn:hover {
+      background-color: #218838;
+    }
+
+    .download-btn:active {
+      background-color: #1e7e34;
+    }
+
+    .gallery-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 5px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .gallery-image:hover {
+      transform: scale(1.05);
+    }
+
+    .image-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 700px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Nút điều hướng gallery */
+    .prev-btn,
+    .next-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      color: #333;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1001; /* Đảm bảo nút điều hướng ở trên */
+    }
+
+    .prev-btn {
+      left: 20px;
+    }
+
+    .next-btn {
+      right: 20px;
+    }
+
+    .prev-btn:hover,
+    .next-btn:hover {
+      background: white;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Responsive cho tablet */
+    @media (max-width: 992px) {
+      .modal-content {
+        width: 85%;
+      }
+
+      .modal-image-container {
+        height: 500px;
+        padding: 30px;
+      }
+    }
+
+    /* Responsive cho mobile */
+    @media (max-width: 768px) {
+      .modal-content {
+        width: 100%;
+        margin: 10% auto;
+        max-height: fit-content;
+      }
+
+      .modal-image-container {
+        height: 400px; /* Giảm chiều cao để vừa màn hình */
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      #modalImage {
+        max-height: 100%;
+        width: auto;
+        height: auto;
+      }
+
+      .close {
+        font-size: 24px; /* Giảm kích thước cho mobile */
+        width: 30px;
+        height: 30px;
+        top: 5px;
+        right: 5px;
+      }
+
+      .download-btn {
+        padding: 12px 40px;
+        font-size: 16px;
+        margin-top: 15px;
+        z-index: 1001; /* Đảm bảo nút tải về ở trên */
+      }
+
+      .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        padding: 15px;
+      }
+
+      .gallery-image {
+        width: 80px;
+        height: 80px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modal-image-container {
+        height: 320px;
+        padding: 15px;
+      }
+
+      .download-btn {
+        padding: 10px 35px;
+        font-size: 15px;
+        z-index: 1001; /* Đảm bảo nút tải về ở trên */
+      }
+
+      .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 6px;
+        padding: 10px;
+      }
+
+      .gallery-image {
+        width: 70px;
+        height: 70px;
+      }
+    }
+  </style>
+  <body>
     <div id="logoutMessage"></div>
     <!-- Thanh điều hướng -->
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="vanchuyen.html">
-                <img src="..\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png" alt="Logo"
-                    class="logo-image">
-                <span>Vận chuyển</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="vanchuyen.html">Quản lí lô hàng</a>
-                    </li>
-                    <!-- <li class="nav-item">
+      <div class="container">
+        <a class="navbar-brand" href="vanchuyen.html">
+          <img
+            src="..\hinhanh\Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+            alt="Logo"
+            class="logo-image"
+          />
+          <span>Vận chuyển</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="vanchuyen.html">Quản lý lô hàng</a>
+            </li>
+            <!-- <li class="nav-item">
                         <a class="nav-link" href="nhatky-hoatdong.html">Quản lí hoạt động</a>
                     </li> -->
-                    <li class="nav-item dropdown notification-dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge badge-danger" id="notification-count">0</span>
-                        </a>
-                        <div class="dropdown-menu notification-menu">
-                            <div class="notification-header">
-                                <h6 class="dropdown-header">Thông báo</h6>
-                                <button class="btn btn-sm" id="markAllRead">
-                                    <i class="fas fa-check-double mr-1"></i>
-                                    Đánh dấu tất cả đã đọc
-                                </button>
-                            </div>
-                            <div class="notification-list" id="notificationList"></div>
-                        </div>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" 
-                           role="button" 
-                           data-toggle="dropdown" 
-                           aria-haspopup="true" 
-                           aria-expanded="false">
-                            <span id="userName">Vận chuyển</span>
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#" id="userRole">Vai trò: Người vận chuyển</a>
-                            <a class="dropdown-item" href="#" id="userRegion">Khu vực: Vùng Thốt Nốt</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="../account/dangnhap.html" id="logoutButton">Đăng xuất</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+            <li class="nav-item dropdown notification-dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="notificationDropdown"
+                role="button"
+              >
+                <i class="fas fa-bell"></i>
+                <span class="badge badge-danger" id="notification-count"
+                  >0</span
+                >
+              </a>
+              <div class="dropdown-menu notification-menu">
+                <div class="notification-header">
+                  <h6 class="dropdown-header">Thông báo</h6>
+                  <button class="btn btn-sm" id="markAllRead">
+                    <i class="fas fa-check-double mr-1"></i>
+                    Đánh dấu tất cả đã đọc
+                  </button>
+                </div>
+                <div class="notification-list" id="notificationList"></div>
+              </div>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <span id="userName">Vận chuyển</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#" id="userRole"
+                  >Vai trò: Người vận chuyển</a
+                >
+                <a class="dropdown-item" href="#" id="userRegion"
+                  >Khu vực: Vùng Thốt Nốt</a
+                >
+                <div class="dropdown-divider"></div>
+                <a
+                  class="dropdown-item"
+                  href="../account/dangnhap.html"
+                  id="logoutButton"
+                  >Đăng xuất</a
+                >
+              </div>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
-    
-    <!-- Thm div overlay ngay sau nav -->
+
+    <!-- Thêm div overlay ngay sau nav -->
     <div class="menu-overlay"></div>
 
     <main>
-        <div class="container mt-4">
-            <div class="table-title">
-                <h5><b>Quản lí lô hàng</b></h5>
-            </div>
-            <br>
-            
-            <div class="qr-scanner-container">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <button id="start-camera" class="btn btn-primary btn-block">Quét QR bằng camera</button>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="qr-input" class="custom-file-upload btn btn-secondary btn-block">
-                            <i class="fas fa-upload"></i> Chọn ảnh QR
-                        </label>
-                        <input type="file" id="qr-input" accept="image/*" style="display: none;">
-                    </div>
-                </div>
-                <div id="qr-reader" style="display: none; width: 100%; max-width: 600px; margin: 0 auto;"></div>
-                <div id="file-selected" class="mt-2 mb-2" style="display: none;">Đã chọn 1 hình ảnh</div>
-                <button id="scan-button" class="btn btn-success btn-block mt-3" disabled>Quét mã QR</button>
-            </div>
-
-            <div id="batchInfo" style="display: none;">
-                <h5>Thông tin lô hàng</h5>
-                <div id="batchDetails"></div>
-            </div>
-            
-            <!-- Thêm các nút mới vào phần hiển thị thông tin lô hàng -->
-            <div id="transportActions" style="display: none;">
-                <button id="start-transport" class="btn btn-primary">
-                    <span class="button-text">Bắt đầu vận chuyển</span>
-                    <div class="loading-spinner"></div>
-                </button>
-                <button id="pause-transport" class="btn btn-warning" style="display: none;">
-                    <span class="button-text">Tạm dừng vận chuyển</span>
-                    <div class="loading-spinner"></div>
-                </button>
-                <button id="resume-transport" class="btn btn-info" style="display: none;">
-                    <span class="button-text">Tiếp tục vận chuyển</span>
-                    <div class="loading-spinner"></div>
-                </button>
-                <button id="complete-transport" class="btn btn-success" style="display: none;">
-                    <span class="button-text">Hoàn thành vận chuyển</span>
-                    <div class="loading-spinner"></div>
-                </button>
-            </div>
+      <div class="container mt-4">
+        <div class="table-title">
+          <h5><b>Quản lý lô hàng</b></h5>
         </div>
+        <br />
+
+        <div class="qr-scanner-container">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <button id="start-camera" class="btn btn-primary btn-block">
+                <i class="fas fa-camera"></i> Quét QR bằng camera
+              </button>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label
+                for="qr-input"
+                class="custom-file-upload btn btn-secondary btn-block"
+              >
+                <i class="fas fa-upload"></i> Chọn ảnh QR
+              </label>
+              <input
+                type="file"
+                id="qr-input"
+                accept="image/*"
+                style="display: none"
+              />
+            </div>
+          </div>
+          <div
+            id="qr-reader"
+            style="display: none; width: 100%; max-width: 600px; margin: 0 auto"
+          ></div>
+          <div id="file-selected" class="mt-2 mb-2" style="display: none">
+            Đã chọn 1 hình ảnh
+          </div>
+          <button
+            id="scan-button"
+            class="btn btn-success btn-block mt-3"
+            disabled
+          >
+            <i class="fas fa-qrcode"></i> Quét mã QR
+          </button>
+        </div>
+
+        <div id="batchInfo" style="display: none">
+          <h5>Thông tin lô hàng</h5>
+          <div id="batchDetails"></div>
+        </div>
+
+        <!-- Đặt transportActions trước transportHistory -->
+        <div id="transportActions" style="display: none"></div>
+        <div id="transportHistory" style="margin-top: 20px"></div>
+      </div>
     </main>
 
-
     <!-- Modal -->
-  
+
     <div class="chat-icon" id="openChat" onclick="toggleChat()">
-        <i class="fas fa-comments"></i>
-        <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
+      <i class="fas fa-comments"></i>
+      <div class="tooltip">Đặt câu hỏi cho chúng tôi</div>
     </div>
 
     <!-- Khung chat -->
     <div id="chatbox" class="chatbox">
-        <div class="chatbox-header">
-            <strong>Hỗ trợ</strong>
-            <button id="closeChat" class="btn-close" onclick="toggleChat()">x</button>
-        </div>
-        <div class="chatbox-body">
-            <ul id="messages" class="list-group">
-                <li class="list-group-item system-message"><strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.</li>
-            </ul>
-        </div>
-        <div class="chatbox-footer">
-            <form id="messageForm" class="d-flex">
-                <input id="messageInput" type="text" class="form-control" placeholder="type message">
-                <button type="submit" class="btn btn-primary">Gửi</button>
-            </form>
-        </div>
+      <div class="chatbox-header">
+        <strong>Hỗ trợ</strong>
+        <button id="closeChat" class="btn-close" onclick="toggleChat()">
+          x
+        </button>
+      </div>
+      <div class="chatbox-body">
+        <ul id="messages" class="list-group">
+          <li class="list-group-item system-message">
+            <strong>Hệ thống: </strong> Chào bạn, hãy đặt câu hỏi của bạn.
+          </li>
+        </ul>
+      </div>
+      <div class="chatbox-footer">
+        <form id="messageForm" class="d-flex">
+          <input
+            id="messageInput"
+            type="text"
+            class="form-control"
+            placeholder="type message"
+          />
+          <button type="submit" class="btn btn-primary">Gửi</button>
+        </form>
+      </div>
     </div>
-
 
     <div id="actionMessage" class="action-message"></div>
 
@@ -227,151 +963,168 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script>AOS.init();</script>
+    <script>
+      AOS.init();
+    </script>
     <script src="../chatbox/chatbox.js"></script>
 
     <script>
-       function toggleChat() {
-            var chatbox = document.getElementById("chatbox");
-            if (chatbox.classList.contains("show")) {
-                chatbox.classList.remove("show");
-                chatbox.classList.add("hide");
-                setTimeout(() => {
-                    chatbox.style.display = "none";
-                    chatbox.classList.remove("hide");
-                }, 300); // Match this to the animation duration
-            } else {
-                chatbox.style.display = "block";
-                // Force a reflow before adding the 'show' class
-                chatbox.offsetHeight;
-                chatbox.classList.add("show");
-            }
+      function toggleChat() {
+        var chatbox = document.getElementById("chatbox");
+        if (chatbox.classList.contains("show")) {
+          chatbox.classList.remove("show");
+          chatbox.classList.add("hide");
+          setTimeout(() => {
+            chatbox.style.display = "none";
+            chatbox.classList.remove("hide");
+          }, 300); // Match this to the animation duration
+        } else {
+          chatbox.style.display = "block";
+          // Force a reflow before adding the 'show' class
+          chatbox.offsetHeight;
+          chatbox.classList.add("show");
         }
+      }
     </script>
-    
+
     <script>
-    document.addEventListener('DOMContentLoaded', async function() {
+      document.addEventListener("DOMContentLoaded", async function () {
         try {
-            const response = await fetch('/api/user-info');
-            if (response.ok) {
-                const data = await response.json();
-                document.getElementById('userName').textContent = data.name;
-                document.getElementById('userRole').textContent = `Vai trò: ${getRoleName(data.roleId)}`;
-            } else {
-                console.error('Không thể lấy thông tin người dùng');
-                alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-                window.location.href = '../account/dangnhap.html';
-            }
+          const response = await fetch("/api/user-info");
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById("userName").textContent = data.name;
+            document.getElementById("userRole").textContent =
+              `Vai trò: ${getRoleName(data.roleId)}`;
+          } else {
+            console.error("Không thể lấy thông tin người dùng");
+            alert(
+              "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.",
+            );
+            window.location.href = "../account/dangnhap.html";
+          }
         } catch (error) {
-            console.error('Lỗi:', error);
-            alert('Có lỗi xảy ra khi kiểm tra thông tin đăng nhập. Vui lòng thử lại sau.');
+          console.error("Lỗi:", error);
+          alert(
+            "Có lỗi xảy ra khi kiểm tra thông tin đăng nhập. Vui lòng thử lại sau.",
+          );
         }
 
         // Xử lý đăng xuất
-        document.getElementById('logoutButton').addEventListener('click', async function(e) {
+        document
+          .getElementById("logoutButton")
+          .addEventListener("click", async function (e) {
             e.preventDefault();
             try {
-                const response = await fetch('/api/dangxuat', { 
-                    method: 'POST',
-                    credentials: 'same-origin'
-                });
-                if (response.ok) {
-                    const logoutMessage = document.getElementById('logoutMessage');
-                    logoutMessage.textContent = 'Đăng xuất thành công';
-                    logoutMessage.style.display = 'block';
-                    
-                    // Force a reflow to ensure the transition works
-                    void logoutMessage.offsetWidth;
-                    
-                    logoutMessage.style.opacity = '1';
+              const response = await fetch("/api/dangxuat", {
+                method: "POST",
+                credentials: "same-origin",
+              });
+              if (response.ok) {
+                const logoutMessage = document.getElementById("logoutMessage");
+                logoutMessage.textContent = "Đăng xuất thành công";
+                logoutMessage.style.display = "block";
 
-                    // Scroll to top to ensure message is visible
-                    window.scrollTo(0, 0);
+                // Force a reflow to ensure the transition works
+                void logoutMessage.offsetWidth;
 
-                    // Fade out the message after 1.5 seconds
-                    setTimeout(() => {
-                        logoutMessage.style.opacity = '0';
-                    }, 1500);
+                logoutMessage.style.opacity = "1";
 
-                    // Redirect after message has faded out
-                    setTimeout(() => {
-                        window.location.href = '../account/dangnhap.html';
-                    }, 2000);
-                } else {
-                    console.error('Không thể đăng xuất');
-                    alert('Đăng xuất không thành công. Vui lòng thử lại.');
-                }
+                // Scroll to top to ensure message is visible
+                window.scrollTo(0, 0);
+
+                // Fade out the message after 1.5 seconds
+                setTimeout(() => {
+                  logoutMessage.style.opacity = "0";
+                }, 1500);
+
+                // Redirect after message has faded out
+                setTimeout(() => {
+                  window.location.href = "../account/dangnhap.html";
+                }, 2000);
+              } else {
+                console.error("Không thể đăng xuất");
+                alert("Đăng xuất không thành công. Vui lòng thử lại.");
+              }
             } catch (error) {
-                console.error('Lỗi khi đăng xuất:', error);
-                alert('Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại sau.');
+              console.error("Lỗi khi đăng xuất:", error);
+              alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại sau.");
             }
-        });
+          });
 
         // Gọi hàm mặc định khi trang được tải
-    });
+      });
 
-    function getRoleName(roleId) {
+      function getRoleName(roleId) {
         switch (roleId) {
-            case 1: return 'Người sản xuất';
-            case 2: return 'Người kiểm duyệt';
-            case 6: return 'Người vận chuyển';
-            case 8: return 'Nhà kho';
-            case 3: return 'Admin';
-            default: return 'Không xác định';
+          case 1:
+            return "Người sản xuất";
+          case 2:
+            return "Người kiểm duyệt";
+          case 6:
+            return "Người vận chuyển";
+          case 8:
+            return "Nhà kho";
+          case 3:
+            return "Admin";
+          default:
+            return "Không xác định";
         }
-    }
+      }
     </script>
-    
+
     <script type="text/javascript" src="van-chuyen.js"></script>
-    
+
     <!-- Thêm đoạn này vào cuối body -->
     <div id="imageModal" class="modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modalContent"></div>
-            <img class="modal-image" id="modalImage">
+      <div class="modal-overlay"></div>
+
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-image-container">
+          <img class="modal-image" id="modalImage" />
         </div>
+        <div id="modalContent"></div>
+      </div>
     </div>
 
     <!-- Thêm modal vào cuối body -->
     <div id="completionModal" class="modal">
-        <div class="modal-content">
-            <h2>Hoàn thành vận chuyển</h2>
-            <p>Bạn đã hoàn thành vận chuyển lô hàng này.</p>
-            <button id="closeCompletionModal" class="btn btn-primary">Đóng</button>
-        </div>
+      <div class="modal-content">
+        <h2>Hoàn thành vận chuyển</h2>
+        <p>Bạn đã hoàn thành vận chuyển lô hàng này.</p>
+        <button id="closeCompletionModal" class="btn btn-primary">Đóng</button>
+      </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const transportButtons = document.querySelectorAll('#transportActions button');
+      document.addEventListener("DOMContentLoaded", function () {
+        const transportButtons = document.querySelectorAll(
+          "#transportActions button",
+        );
 
-            transportButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Thêm class loading
-                    this.classList.add('btn-loading');
-                    
-                    // Vô hiệu hóa nút
-                    this.disabled = true;
+        transportButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            // Thêm class loading
+            this.classList.add("btn-loading");
 
-                    // Giả lập một thao tác bất đồng bộ
-                    setTimeout(() => {
-                        // Xóa class loading
-                        this.classList.remove('btn-loading');
-                        // Kích hoạt lại nút
-                        this.disabled = false;
-                    }, 2000);
-                });
-            });
+            // Vô hiệu hóa nút
+            this.disabled = true;
+
+            // Giả lập một thao tác bất đồng bộ
+            setTimeout(() => {
+              // Xóa class loading
+              this.classList.remove("btn-loading");
+              // Kích hoạt lại nút
+              this.disabled = false;
+            }, 2000);
+          });
         });
+      });
     </script>
+  </body>
 
-</body>
+  <div id="logoutMessage"></div>
 
-
-
-<div id="logoutMessage"></div>
-
-<script src="../js_giaodien/nav-bar.js"></script>
+  <script src="../js_giaodien/nav-bar.js"></script>
 </html>

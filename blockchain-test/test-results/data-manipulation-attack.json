@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-02-28T11:33:06.359Z",
+  "testType": "data-manipulation-attack",
+  "summary": {
+    "blocked": 5,
+    "vulnerable": 2,
+    "total": 7,
+    "securityScore": 71
+  },
+  "results": [
+    {
+      "test": "SSCC tự sinh unique — attacker không trùng SSCC ✓",
+      "status": "FAIL",
+      "severity": "HIGH",
+      "detail": "fakeSSCC=000000010058708407"
+    },
+    {
+      "test": "Injection payloads không được thực thi ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "Blockchain lưu as-is, không execute code"
+    },
+    {
+      "test": "CẢNH BÁO: Attacker ghi được log giả!",
+      "status": "FAIL",
+      "severity": "CRITICAL",
+      "detail": "Cần onlyAuthorized modifier cho addActivityLog"
+    },
+    {
+      "test": "Block replay approval ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block double purchase ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "keccak256 không có collision (qty khác → hash khác) ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block duplicate tree QR ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    }
+  ],
+  "attackLog": [
+    {
+      "name": "SSCC Duplicate",
+      "result": "BLOCKED_UNIQUE_AUTO"
+    },
+    {
+      "name": "Fake Log",
+      "result": "SUCCESS_ATTACK"
+    }
+  ]
+}

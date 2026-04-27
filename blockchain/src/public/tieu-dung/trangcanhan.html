@@ -29,6 +29,25 @@
             width: 100%;
             height: auto;
         }
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        body > .container.w-100 {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .footer {
+            margin-top: auto;
+        }
     </style>
 </head>
 <body>
@@ -114,16 +133,7 @@
                 </div>
             </div>
         </div>
-        
-         
-            <div id="activityLogsContainer" class="mt-4">
-                <h2 class="text-danger">Nhật ký hoạt động</h2>
-                <div id="activityLogs"></div>
-            </div>
-        
-            <button id="loadMore" class="load-more-btn" aria-label="Xem thêm">
-                <i class="fas fa-chevron-down"></i>
-            </button>
+    
         </div>
        
         <div class="chat-icon" id="openChat" onclick="toggleChat()">

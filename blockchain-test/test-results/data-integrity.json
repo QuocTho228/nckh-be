@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-02-28T11:33:01.618Z",
+  "testType": "data-integrity",
+  "summary": {
+    "passed": 12,
+    "failed": 1,
+    "total": 13,
+    "score": 92
+  },
+  "results": [
+    {
+      "test": "Dữ liệu batch không thay đổi sau khi ghi ✓",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "detail": ""
+    },
+    {
+      "test": "verifyBatchDataHash đúng với dữ liệu thật ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "verifyBatchDataHash phát hiện qty giả mạo ✓",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "detail": ""
+    },
+    {
+      "test": "verifyBatchDataHash phát hiện SSCC giả mạo ✓",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "detail": ""
+    },
+    {
+      "test": "verifyActivityDataHash đúng ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "verifyActivityDataHash phát hiện log giả mạo ✓",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "detail": ""
+    },
+    {
+      "test": "Timestamp log > 0 ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Timestamp chính xác (±5 phút) ✓",
+      "status": "FAIL",
+      "severity": "MEDIUM",
+      "detail": "diff=1799s"
+    },
+    {
+      "test": "Status=Approved(1) ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block re-approve ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "ID tăng đơn điệu: 1 < 2 ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": ""
+    },
+    {
+      "test": "Logs nhất quán: 3 ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Dữ liệu tồn tại sau nhiều block ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-02-28T11:33:35.463Z",
+  "testType": "dos-attack",
+  "summary": {
+    "resistant": 4,
+    "vulnerable": 0,
+    "total": 4
+  },
+  "results": [
+    {
+      "test": "Block stuffing không block hệ thống ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": "2.9s"
+    },
+    {
+      "test": "O(n) scan <5s ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": "1235ms"
+    },
+    {
+      "test": "getActivityLogs read <3s ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": "292ms"
+    },
+    {
+      "test": "15 concurrent scans <30s ✓",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "detail": "12924ms"
+    }
+  ],
+  "metrics": {
+    "blockStuffing": {
+      "attempted": 20,
+      "ok": 20,
+      "durationSec": "2.90",
+      "tps": "6.89"
+    },
+    "arrayGrowth": {
+      "batchCount": 31,
+      "avgScanMs": 1235.220980001986
+    },
+    "logSpam": {
+      "spamOk": 30,
+      "totalLogs": 31,
+      "readMs": 291.62780000269413
+    },
+    "heavyRead": {
+      "requests": 15,
+      "durationMs": 12924.292300000787
+    }
+  }
+}

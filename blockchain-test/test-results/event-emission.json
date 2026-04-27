@@ -1,0 +1,527 @@
+{
+  "timestamp": "2026-02-28T11:34:14.756Z",
+  "testType": "event-emission",
+  "summary": {
+    "passed": 83,
+    "failed": 0,
+    "total": 83,
+    "score": 100
+  },
+  "eventsCovered": [
+    "TreeRegistered",
+    "TreeDetailsStored",
+    "ActivityLogAdded",
+    "ActivityLogDetailsStored",
+    "TreeDeactivated",
+    "BatchCreated",
+    "BatchDetailsStored",
+    "BatchApproved",
+    "BatchRejected",
+    "StageUpdated(×5 transitions)",
+    "PurchaseRecorded",
+    "TransportStatusUpdated",
+    "ProcessingRecorded",
+    "QualityTestRecorded(pass+fail)",
+    "WarehouseConfirmed"
+  ],
+  "results": [
+    {
+      "test": "TreeRegistered được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "treeQRCode đúng",
+      "status": "PASS",
+      "got": "QR-EV-1772278451517",
+      "expect": "QR-EV-1772278451517"
+    },
+    {
+      "test": "farmerId = 1",
+      "status": "PASS",
+      "got": "1",
+      "expect": "1"
+    },
+    {
+      "test": "regionId = 1",
+      "status": "PASS",
+      "got": "1",
+      "expect": "1"
+    },
+    {
+      "test": "treeType đúng",
+      "status": "PASS",
+      "got": "Musang King",
+      "expect": "Musang King"
+    },
+    {
+      "test": "plantedDate = block.timestamp (>0)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "TreeDetailsStored được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "variety đúng",
+      "status": "PASS",
+      "got": "Premium D197",
+      "expect": "Premium D197"
+    },
+    {
+      "test": "coordinates đúng",
+      "status": "PASS",
+      "got": "10.45,106.32",
+      "expect": "10.45,106.32"
+    },
+    {
+      "test": "ActivityLogAdded được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 1",
+      "status": "PASS",
+      "got": "1",
+      "expect": "1"
+    },
+    {
+      "test": "participantId = 1",
+      "status": "PASS",
+      "got": "1",
+      "expect": "1"
+    },
+    {
+      "test": "logId > 0 (auto-increment)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "timestamp = block.timestamp (>0)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "isSystemGenerated = false",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "ActivityLogDetailsStored được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "activityName đúng",
+      "status": "PASS",
+      "got": "Thu hoạch lô Musang King",
+      "expect": "Thu hoạch lô Musang King"
+    },
+    {
+      "test": "description đúng",
+      "status": "PASS",
+      "got": "Đạt chuẩn VietGAP, thu hoạch thủ công",
+      "expect": "Đạt chuẩn VietGAP, thu hoạch thủ công"
+    },
+    {
+      "test": "TreeDeactivated được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "treeId = 1",
+      "status": "PASS",
+      "got": "1",
+      "expect": "1"
+    },
+    {
+      "test": "farmerId = 1",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "reason đúng",
+      "status": "PASS",
+      "got": "Hết vòng đời kinh tế 20 năm",
+      "expect": "Hết vòng đời kinh tế 20 năm"
+    },
+    {
+      "test": "BatchCreated được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "producerId = 2",
+      "status": "PASS",
+      "got": "2",
+      "expect": "2"
+    },
+    {
+      "test": "productTypeId = 1",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "sscc auto-generated (không rỗng)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId > 0",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "productionDate = block.timestamp",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "dataHash là bytes32 hợp lệ (non-zero)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "BatchDetailsStored được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "name đúng",
+      "status": "PASS",
+      "got": "Musang King Premium — Vụ Hè Thu",
+      "expect": "Musang King Premium — Vụ Hè Thu"
+    },
+    {
+      "test": "quantity đúng",
+      "status": "PASS",
+      "got": "850",
+      "expect": "850"
+    },
+    {
+      "test": "startDate đúng",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(Created) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 0 (Created)",
+      "status": "PASS",
+      "got": "0",
+      "expect": "0"
+    },
+    {
+      "test": "BatchApproved được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "producerId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "sscc = sscc gốc khi tạo batch",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "BatchRejected được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 3",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "reason đúng",
+      "status": "PASS",
+      "got": "Không đạt tiêu chuẩn TCVN 1857:2009",
+      "expect": "Không đạt tiêu chuẩn TCVN 1857:2009"
+    },
+    {
+      "test": "PurchaseRecorded được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "purchaserId = 3",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "totalQuantity = 850",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "purchaseId > 0",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "totalPrice = 850 × 95000 = 80,750,000",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(Purchased) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 1 (Purchased)",
+      "status": "PASS",
+      "got": "1",
+      "expect": "1"
+    },
+    {
+      "test": "TransportStatusUpdated (start) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "actionCode = 0 (start)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStatus = 1 (InTransit)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(Transported1) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 2 (Transported1)",
+      "status": "PASS",
+      "got": "2",
+      "expect": "2"
+    },
+    {
+      "test": "newStatus = 3 (Delivered) khi actionCode=3",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "ProcessingRecorded được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "processorId = 5",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "method = 0 (Washing)",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "processingId > 0",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(Processed) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 3 (Processed)",
+      "status": "PASS",
+      "got": "3",
+      "expect": "3"
+    },
+    {
+      "test": "QualityTestRecorded được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "inspectorId = 6",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "passed = true",
+      "status": "PASS",
+      "got": "true",
+      "expect": "true"
+    },
+    {
+      "test": "testId > 0",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(QualityInspected) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 4 (QualityInspected)",
+      "status": "PASS",
+      "got": "4",
+      "expect": "4"
+    },
+    {
+      "test": "passed = false khi không đạt ✓",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "KHÔNG emit StageUpdated khi failed ✓",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(Transported2) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 5 (Transported2)",
+      "status": "PASS",
+      "got": "5",
+      "expect": "5"
+    },
+    {
+      "test": "WarehouseConfirmed được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "batchId = 2",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "warehouseId = 7",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "StageUpdated(Warehoused) được emit",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "newStage = 6 (Warehoused)",
+      "status": "PASS",
+      "got": "6",
+      "expect": "6"
+    },
+    {
+      "test": "getPastEvents BatchCreated filter producerId=2 → 1 kết quả ✓",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "getPastEvents BatchApproved → 2 kết quả ✓",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    },
+    {
+      "test": "getPastEvents TreeRegistered filter farmerId=1 → 1 kết quả ✓",
+      "status": "PASS",
+      "got": "",
+      "expect": ""
+    }
+  ]
+}

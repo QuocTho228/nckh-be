@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Scan QR Bán Hàng - Phân Phối</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/distributor/index.html"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+              >
+                <i class="fas fa-qrcode text-white"></i>
+              </div>
+              <span
+                class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >
+                Scan QR Bán Hàng
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <div x-data="scanSellData()" x-init="init()" class="max-w-4xl mx-auto">
+        <!-- Scan Methods Card -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-qrcode text-blue-600"></i>
+            Quét Mã QR Sản Phẩm
+          </h3>
+
+          <!-- Tab Buttons -->
+          <div class="flex gap-2 mb-6">
+            <button
+              @click="scanMethod = 'manual'"
+              :class="scanMethod === 'manual' ? 'btn-primary' : 'btn-secondary'"
+              class="flex-1"
+            >
+              <i class="fas fa-keyboard mr-2"></i> Nhập thủ công
+            </button>
+            <button
+              @click="scanMethod = 'camera'; startCamera()"
+              :class="scanMethod === 'camera' ? 'btn-primary' : 'btn-secondary'"
+              class="flex-1"
+            >
+              <i class="fas fa-camera mr-2"></i> Quét camera
+            </button>
+            <button
+              @click="scanMethod = 'upload'"
+              :class="scanMethod === 'upload' ? 'btn-primary' : 'btn-secondary'"
+              class="flex-1"
+            >
+              <i class="fas fa-upload mr-2"></i> Tải ảnh lên
+            </button>
+          </div>
+
+          <!-- Manual Input -->
+          <div x-show="scanMethod === 'manual'" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Nhập hoặc quét mã QR sản phẩm
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  x-model="qrCode"
+                  @keyup.enter="scanProduct()"
+                  placeholder="VD: SRCA2026-12345678"
+                  class="input-gradient flex-1"
+                  :disabled="loading || scannedProduct !== null"
+                />
+                <button
+                  @click="scanProduct()"
+                  :disabled="!qrCode.trim() || loading || scannedProduct !== null"
+                  class="btn-primary px-6"
+                >
+                  <i class="fas fa-search mr-2"></i>
+                  <span x-text="loading ? 'Đang tìm...' : 'Tìm'"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Camera Scanner -->
+          <div x-show="scanMethod === 'camera'" class="space-y-4">
+            <div class="bg-gray-100 rounded-lg overflow-hidden">
+              <div id="qr-reader" class="w-full"></div>
+            </div>
+            <div class="flex gap-2">
+              <button @click="stopCamera()" class="btn-secondary flex-1">
+                <i class="fas fa-stop mr-2"></i> Dừng camera
+              </button>
+              <button
+                @click="switchCamera()"
+                class="btn-secondary flex-1"
+                x-show="cameras.length > 1"
+              >
+                <i class="fas fa-sync mr-2"></i> Đổi camera
+              </button>
+            </div>
+            <p class="text-sm text-gray-600 text-center">
+              <i class="fas fa-info-circle mr-1"></i>
+              Đưa mã QR vào khung hình để quét tự động
+            </p>
+          </div>
+
+          <!-- Upload Image -->
+          <div x-show="scanMethod === 'upload'" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Chọn ảnh QR code từ thiết bị
+              </label>
+              <input
+                type="file"
+                @change="handleFileUpload($event)"
+                accept="image/*"
+                class="input-gradient"
+              />
+            </div>
+            <div x-show="uploadPreview" class="bg-gray-100 rounded-lg p-4">
+              <img :src="uploadPreview" class="max-w-full max-h-64 mx-auto" />
+            </div>
+            <p class="text-sm text-gray-600">
+              <i class="fas fa-info-circle mr-1"></i>
+              Hỗ trợ định dạng: JPG, PNG, WebP
+            </p>
+          </div>
+        </div>
+
+        <!-- Product Info Card (After Scan) -->
+        <div
+          x-show="scannedProduct"
+          class="bg-white rounded-xl shadow-md p-6 mb-6"
+        >
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-box text-green-600"></i>
+            Thông Tin Sản Phẩm
+          </h3>
+
+          <template x-if="scannedProduct">
+            <div>
+              <!-- Product Details -->
+              <div class="bg-green-50 rounded-lg p-4 mb-4">
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span class="text-gray-600">Mã QR:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="scannedProduct.product_qr_code"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Trạng thái:</span>
+                    <span class="badge badge-success ml-2">Sẵn sàng bán</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Lô hàng:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="scannedProduct.batch_name"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">SSCC:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="scannedProduct.sscc || 'N/A'"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Sản phẩm:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="scannedProduct.product_name || 'N/A'"
+                    ></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Nông dân:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="scannedProduct.farmer_name || 'N/A'"
+                    ></span>
+                  </div>
+                  <div x-show="scannedProduct.weight">
+                    <span class="text-gray-600">Trọng lượng:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="(scannedProduct.weight / 1000) + ' kg'"
+                    ></span>
+                  </div>
+                  <div x-show="scannedProduct.package_type">
+                    <span class="text-gray-600">Loại gói:</span>
+                    <span
+                      class="font-medium ml-2"
+                      x-text="scannedProduct.package_type"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Traceability Info -->
+              <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold mb-2 flex items-center gap-2">
+                  <i class="fas fa-route text-blue-600"></i>
+                  Truy xuất nguồn gốc
+                </h4>
+                <div class="space-y-2 text-sm">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span>Đã qua kiểm nghiệm chất lượng</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span>Đã nhập kho</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span>Sẵn sàng phân phối</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Packaging Date -->
+              <div class="text-sm text-gray-600 mb-4">
+                <i class="fas fa-calendar-alt mr-2"></i>
+                Đóng gói:
+                <span
+                  class="font-medium"
+                  x-text="Utils.formatDate(scannedProduct.packaged_date_iso)"
+                ></span>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-4">
+                <button
+                  @click="confirmSale()"
+                  :disabled="submitting"
+                  class="btn-primary flex-1"
+                >
+                  <i class="fas fa-check-double mr-2"></i>
+                  <span
+                    x-text="submitting ? 'Đang xử lý...' : 'Xác nhận bán'"
+                  ></span>
+                </button>
+                <button
+                  @click="resetScan()"
+                  :disabled="submitting"
+                  class="btn-secondary"
+                >
+                  <i class="fas fa-times mr-2"></i> Hủy
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Recent Scans -->
+        <div
+          x-show="recentScans.length > 0"
+          class="bg-white rounded-xl shadow-md p-6"
+        >
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="fas fa-history text-purple-600"></i>
+            Vừa Bán (<span x-text="recentScans.length"></span>)
+          </h3>
+
+          <div class="space-y-3">
+            <template x-for="scan in recentScans" :key="scan.qrCode">
+              <div
+                class="border border-gray-200 rounded-lg p-3 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center"
+                  >
+                    <i class="fas fa-check text-green-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold" x-text="scan.qrCode"></p>
+                    <p
+                      class="text-sm text-gray-600"
+                      x-text="scan.timestamp"
+                    ></p>
+                  </div>
+                </div>
+                <span class="badge badge-success">Đã bán</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/scan-sell-enhanced.js"></script>
+  </body>
+</html>

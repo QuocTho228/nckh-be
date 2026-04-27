@@ -1,0 +1,109 @@
+{
+  "timestamp": "2026-02-28T11:34:26.666Z",
+  "summary": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "totalDurationSec": "127.6"
+  },
+  "suiteResults": [
+    {
+      "name": "Write Performance",
+      "file": "test/performance/write-performance.test.js",
+      "category": "performance",
+      "status": "PASSED",
+      "duration": "8.2"
+    },
+    {
+      "name": "Read Performance",
+      "file": "test/performance/read-performance.test.js",
+      "category": "performance",
+      "status": "PASSED",
+      "duration": "15.1"
+    },
+    {
+      "name": "Load Test",
+      "file": "test/performance/load-test.test.js",
+      "category": "performance",
+      "status": "PASSED",
+      "duration": "16.4"
+    },
+    {
+      "name": "Access Control",
+      "file": "test/security/access-control.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.4"
+    },
+    {
+      "name": "Data Integrity",
+      "file": "test/security/data-integrity.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.4"
+    },
+    {
+      "name": "Overflow/Underflow",
+      "file": "test/security/overflow-underflow.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.6"
+    },
+    {
+      "name": "Timestamp Manipulation",
+      "file": "test/security/timestamp-manipulation.test.js",
+      "category": "security",
+      "status": "PASSED",
+      "duration": "1.7"
+    },
+    {
+      "name": "Data Manipulation",
+      "file": "test/attacks/data-manipulation.test.js",
+      "category": "attacks",
+      "status": "PASSED",
+      "duration": "1.5"
+    },
+    {
+      "name": "DoS Attack",
+      "file": "test/attacks/dos-attack.test.js",
+      "category": "attacks",
+      "status": "PASSED",
+      "duration": "29.1"
+    },
+    {
+      "name": "Front-running",
+      "file": "test/attacks/frontrunning.test.js",
+      "category": "attacks",
+      "status": "PASSED",
+      "duration": "1.4"
+    },
+    {
+      "name": "Large Dataset",
+      "file": "test/scalability/large-dataset.test.js",
+      "category": "scalability",
+      "status": "PASSED",
+      "duration": "34.2"
+    },
+    {
+      "name": "Event Emission",
+      "file": "test/events/event-emission.test.js",
+      "category": "events",
+      "status": "PASSED",
+      "duration": "3.6"
+    },
+    {
+      "name": "Static Analysis",
+      "file": "test/static-analysis/static-analysis.test.js",
+      "category": "static-analysis",
+      "status": "PASSED",
+      "duration": "9.0"
+    },
+    {
+      "name": "E2E Full Lifecycle",
+      "file": "test/e2e/full-lifecycle.test.js",
+      "category": "e2e",
+      "status": "PASSED",
+      "duration": "2.8"
+    }
+  ]
+}

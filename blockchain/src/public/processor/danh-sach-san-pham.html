@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Danh Sách Sản Phẩm - Processor</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+      .qr-container {
+        display: inline-block;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-industry text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Sơ Chế
+            </span>
+          </div>
+
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/processor/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Danh sách sản phẩm</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Processor&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Processor</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/processor/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="productList()"
+      x-init="init()"
+    >
+      <!-- Header -->
+      <div class="mb-8">
+        <h1
+          class="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3"
+        >
+          <i class="fas fa-box text-green-600"></i>
+          Danh Sách Sản Phẩm Đã Đóng Gói
+        </h1>
+        <p class="text-gray-600">
+          Sản phẩm đơn lẻ có mã QR truy xuất nguồn gốc
+        </p>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            x-model="searchQuery"
+            placeholder="Tìm kiếm theo mã QR, lô hàng..."
+            class="input-gradient"
+          />
+          <select x-model="filterStatus" class="input-gradient">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Đang bán</option>
+            <option value="sold">Đã bán</option>
+          </select>
+          <button @click="loadProducts()" class="btn-primary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div x-show="loading" x-cloak class="flex justify-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Stats -->
+      <div
+        x-show="!loading && products.length > 0"
+        x-cloak
+        class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+      >
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="text-sm text-gray-500 mb-1">Tổng sản phẩm</div>
+          <div
+            class="text-3xl font-bold text-blue-600"
+            x-text="stats.total"
+          ></div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="text-sm text-gray-500 mb-1">Đang bán</div>
+          <div
+            class="text-3xl font-bold text-green-600"
+            x-text="stats.active"
+          ></div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="text-sm text-gray-500 mb-1">Đã bán</div>
+          <div
+            class="text-3xl font-bold text-gray-600"
+            x-text="stats.sold"
+          ></div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="text-sm text-gray-500 mb-1">Tổng khối lượng</div>
+          <div
+            class="text-3xl font-bold text-purple-600"
+            x-text="stats.totalWeight.toFixed(2) + ' kg'"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        x-show="!loading && filteredProducts.length === 0"
+        x-cloak
+        class="text-center py-12"
+      >
+        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">Chưa có sản phẩm nào</p>
+      </div>
+
+      <!-- Products Grid -->
+      <div
+        x-show="!loading && filteredProducts.length > 0"
+        x-cloak
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <template x-for="product in filteredProducts" :key="product.product_id">
+          <div
+            class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+          >
+            <!-- QR Code -->
+            <div class="flex justify-center mb-4">
+              <div class="qr-container">
+                <canvas
+                  :id="'qr-' + product.product_id"
+                  class="w-48 h-48"
+                ></canvas>
+              </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="space-y-3">
+              <div class="text-center">
+                <h3
+                  class="text-lg font-bold mb-1"
+                  x-text="product.product_qr_code"
+                ></h3>
+                <span
+                  class="badge"
+                  :class="product.is_active ? 'badge-success' : 'badge-secondary'"
+                  x-text="product.is_active ? 'Đang bán' : 'Đã bán'"
+                ></span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p class="text-gray-600">Khối lượng</p>
+                  <p
+                    class="font-semibold"
+                    x-text="(product.weight / 1000).toFixed(2) + ' kg'"
+                  ></p>
+                </div>
+                <div>
+                  <p class="text-gray-600">Bao bì</p>
+                  <p class="font-semibold" x-text="product.package_type"></p>
+                </div>
+                <div class="col-span-2">
+                  <p class="text-gray-600">Ngày đóng gói</p>
+                  <p
+                    class="font-semibold"
+                    x-text="Utils.formatDate(product.packaged_date_iso)"
+                  ></p>
+                </div>
+                <div class="col-span-2" x-show="product.batch_name">
+                  <p class="text-gray-600">Lô hàng</p>
+                  <p
+                    class="font-semibold text-xs"
+                    x-text="product.batch_name"
+                  ></p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-2 pt-3 border-t">
+                <button
+                  @click="downloadQR(product)"
+                  class="btn-secondary flex-1 text-sm"
+                >
+                  <i class="fas fa-download mr-1"></i> Tải QR
+                </button>
+                <button
+                  @click="viewProduct(product)"
+                  class="btn-primary flex-1 text-sm"
+                >
+                  <i class="fas fa-eye mr-1"></i> Chi tiết
+                </button>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Pagination Info -->
+      <div
+        x-show="!loading && filteredProducts.length > 0"
+        x-cloak
+        class="mt-8 text-center text-gray-600"
+      >
+        Hiển thị <strong x-text="filteredProducts.length"></strong> sản phẩm
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/product-list.js"></script>
+  </body>
+</html>

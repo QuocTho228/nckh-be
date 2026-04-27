@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Lịch Sử Sơ Chế - Processor</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-industry text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Sơ Chế
+            </span>
+          </div>
+
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/processor/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Lịch sử sơ chế</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Processor&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Processor</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/processor/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="historyList()"
+      x-init="init()"
+    >
+      <!-- Header -->
+      <div class="mb-8">
+        <h1
+          class="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3"
+        >
+          <i class="fas fa-history text-green-600"></i>
+          Lịch Sử Sơ Chế
+        </h1>
+        <p class="text-gray-600">Các lô hàng đã sơ chế và đóng gói</p>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="flex gap-4">
+          <input
+            type="text"
+            x-model="searchQuery"
+            placeholder="Tìm kiếm theo tên lô, SSCC, sản phẩm..."
+            class="input-gradient flex-1"
+          />
+          <button @click="loadBatches()" class="btn-primary">
+            <i class="fas fa-sync mr-2"></i> Làm mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div x-show="loading" x-cloak class="flex justify-center py-12">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        x-show="!loading && filteredBatches.length === 0"
+        x-cloak
+        class="text-center py-12"
+      >
+        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">Chưa có lô hàng nào được sơ chế</p>
+      </div>
+
+      <!-- Batches Grid -->
+      <div
+        x-show="!loading && filteredBatches.length > 0"
+        x-cloak
+        class="grid grid-cols-1 gap-6"
+      >
+        <template x-for="batch in filteredBatches" :key="batch.batch_id">
+          <div
+            class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+          >
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-xl font-bold" x-text="batch.batch_name"></h3>
+                  <span class="badge badge-success">Đã sơ chế</span>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <div>
+                    <i class="fas fa-barcode mr-2"></i>
+                    <button
+                      @click="Utils.copyToClipboard(batch.sscc)"
+                      class="hover:underline"
+                      x-text="batch.sscc"
+                    ></button>
+                  </div>
+                  <div>
+                    <i class="fas fa-calendar mr-2"></i>
+                    <span
+                      x-text="'Sơ chế: ' + Utils.formatDate(batch.processing_date_iso)"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Processing Info -->
+            <div
+              class="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg mb-4"
+            >
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Phương pháp</p>
+                <p class="font-semibold" x-text="batch.method"></p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Đầu vào</p>
+                <p
+                  class="font-semibold"
+                  x-text="batch.input_weight + ' kg'"
+                ></p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Đầu ra</p>
+                <p
+                  class="font-semibold text-green-600"
+                  x-text="batch.output_weight + ' kg'"
+                ></p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Hiệu suất</p>
+                <p
+                  class="font-semibold text-blue-600"
+                  x-text="
+                    ((batch.output_weight / batch.input_weight) * 100).toFixed(2) +
+                    '%'
+                  "
+                ></p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Sản phẩm</p>
+                <p
+                  class="font-semibold"
+                  x-text="batch.total_products + ' sản phẩm'"
+                ></p>
+              </div>
+            </div>
+
+            <!-- Batch Info -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
+              <div>
+                <p class="text-gray-600 mb-1">
+                  <i class="fas fa-user mr-2"></i>Nông dân
+                </p>
+                <p
+                  class="font-semibold"
+                  x-text="batch.farmer_name || 'N/A'"
+                ></p>
+              </div>
+              <div>
+                <p class="text-gray-600 mb-1">
+                  <i class="fas fa-leaf mr-2"></i>Sản phẩm
+                </p>
+                <p
+                  class="font-semibold"
+                  x-text="batch.product_name || 'N/A'"
+                ></p>
+              </div>
+              <div>
+                <p class="text-gray-600 mb-1">
+                  <i class="fas fa-calendar mr-2"></i>Ngày sản xuất
+                </p>
+                <p
+                  class="font-semibold"
+                  x-text="Utils.formatDate(batch.production_date_iso)"
+                ></p>
+              </div>
+            </div>
+
+            <!-- Remaining weight indicator -->
+            <div
+              x-show="batch.remaining_weight > 0.01"
+              class="mb-4 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2 text-sm text-orange-800">
+                <i class="fas fa-exclamation-triangle text-orange-500"></i>
+                <span
+                  >Còn
+                  <strong
+                    x-text="parseFloat(batch.remaining_weight || 0).toFixed(2)"
+                  ></strong>
+                  kg chưa đóng gói</span
+                >
+              </div>
+              <div class="w-40 bg-orange-200 rounded-full h-2">
+                <div
+                  class="bg-orange-500 h-2 rounded-full"
+                  :style="`width: ${Math.min(100, ((batch.output_weight - (batch.remaining_weight || 0)) / batch.output_weight * 100)).toFixed(0)}%`"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-4 border-t flex justify-between items-center">
+              <div class="flex gap-2">
+                <button
+                  @click="viewProducts(batch.batch_id)"
+                  class="btn-secondary text-sm px-4 py-2"
+                >
+                  <i class="fas fa-box mr-1"></i> Xem sản phẩm
+                </button>
+
+                <!-- ✅ NÚT ĐÓNG GÓI TIẾP: hiện khi còn khối lượng chưa đóng gói -->
+                <a
+                  x-show="batch.remaining_weight > 0.01"
+                  :href="`/processor/dong-goi-san-pham.html?id=${batch.batch_id}`"
+                  class="btn-primary text-sm px-4 py-2"
+                >
+                  <i class="fas fa-box-open mr-1"></i>
+                  Đóng gói tiếp
+                  <span
+                    class="bg-white/30 rounded px-1 ml-1 text-xs font-bold"
+                    x-text="parseFloat(batch.remaining_weight || 0).toFixed(1) + ' kg'"
+                  ></span>
+                </a>
+              </div>
+
+              <div class="text-sm text-gray-600">
+                <i class="fas fa-cogs mr-2"></i>
+                <span
+                  x-text="'Sơ chế: ' + Utils.formatDate(batch.processing_date_iso)"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Pagination Info -->
+      <div
+        x-show="!loading && filteredBatches.length > 0"
+        x-cloak
+        class="mt-8 text-center text-gray-600"
+      >
+        Hiển thị <strong x-text="filteredBatches.length"></strong> lô hàng
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script>
+      /**
+       * History List Component
+       */
+      function historyList() {
+        return {
+          batches: [],
+          loading: true,
+          searchQuery: "",
+
+          get filteredBatches() {
+            if (!this.searchQuery.trim()) {
+              return this.batches;
+            }
+
+            const query = this.searchQuery.toLowerCase();
+            return this.batches.filter(
+              (batch) =>
+                batch.batch_name?.toLowerCase().includes(query) ||
+                batch.sscc?.toLowerCase().includes(query) ||
+                batch.farmer_name?.toLowerCase().includes(query) ||
+                batch.product_name?.toLowerCase().includes(query),
+            );
+          },
+
+          async init() {
+            const isAuthorized = await Auth.requireProcessor();
+            if (!isAuthorized) return;
+
+            await this.loadBatches();
+            Auth.updateNavbar();
+          },
+
+          async loadBatches() {
+            this.loading = true;
+
+            try {
+              const result = await API.get("/api/processor/my-batches");
+
+              if (result.success) {
+                this.batches = result.data.data || [];
+
+                // ✅ Tính remaining_weight nếu backend chưa cung cấp
+                for (const batch of this.batches) {
+                  if (batch.remaining_weight === undefined) {
+                    const outputW = parseFloat(batch.output_weight) || 0;
+                    const packedW =
+                      parseFloat(batch.packed_weight) ||
+                      (parseFloat(batch.total_products || 0) > 0
+                        ? outputW * 0 // fallback: không biết → 0
+                        : 0);
+                    batch.remaining_weight = Math.max(0, outputW - packedW);
+                  }
+                }
+
+                console.log(
+                  `✅ Loaded ${this.batches.length} processed batches`,
+                );
+              } else {
+                Utils.toast.error(result.error || "Lỗi khi tải danh sách");
+              }
+            } catch (error) {
+              console.error("Load batches error:", error);
+              Utils.toast.error("Lỗi khi tải danh sách: " + error.message);
+            } finally {
+              this.loading = false;
+            }
+          },
+
+          async viewProducts(batchId) {
+            Utils.loading.show();
+
+            try {
+              const result = await API.get(
+                `/api/processor/products/by-batch/${batchId}`,
+              );
+
+              Utils.loading.hide();
+
+              if (result.success) {
+                const products = result.data.data;
+                const stats = result.data.stats;
+
+                await Swal.fire({
+                  title: "Danh sách sản phẩm",
+                  html: `
+                    <div class="text-left space-y-3">
+                      <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span class="text-gray-600">Tổng sản phẩm:</span>
+                            <span class="font-semibold ml-2">${stats.total}</span>
+                          </div>
+                          <div>
+                            <span class="text-gray-600">Khối lượng:</span>
+                            <span class="font-semibold ml-2">${stats.totalWeight.toFixed(2)} kg</span>
+                          </div>
+                          <div>
+                            <span class="text-gray-600">Đang bán:</span>
+                            <span class="font-semibold ml-2 text-green-600">${stats.active}</span>
+                          </div>
+                          <div>
+                            <span class="text-gray-600">Đã bán:</span>
+                            <span class="font-semibold ml-2 text-gray-600">${stats.sold}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="max-h-96 overflow-y-auto space-y-2">
+                        ${products
+                          .map(
+                            (p, i) => `
+                          <div class="bg-gray-50 p-3 rounded text-sm">
+                            <div class="font-semibold">Sản phẩm ${i + 1}</div>
+                            <div class="text-gray-600 text-xs">QR: ${p.product_qr_code}</div>
+                            <div class="text-gray-600 text-xs">Khối lượng: ${(p.weight / 1000).toFixed(2)} kg</div>
+                            <div class="text-gray-600 text-xs">Bao bì: ${p.package_type}</div>
+                            <div class="text-gray-600 text-xs">
+                              Trạng thái: 
+                              <span class="${p.is_active ? "text-green-600" : "text-gray-500"}">${p.is_active ? "Đang bán" : "Đã bán"}</span>
+                            </div>
+                          </div>
+                        `,
+                          )
+                          .join("")}
+                      </div>
+                    </div>
+                  `,
+                  width: 700,
+                  confirmButtonColor: "#028040",
+                });
+              } else {
+                Utils.toast.error(
+                  result.error || "Lỗi khi tải danh sách sản phẩm",
+                );
+              }
+            } catch (error) {
+              Utils.loading.hide();
+              console.error("View products error:", error);
+              Utils.toast.error(
+                "Lỗi khi tải danh sách sản phẩm: " + error.message,
+              );
+            }
+          },
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await Auth.init();
+      });
+    </script>
+  </body>
+</html>

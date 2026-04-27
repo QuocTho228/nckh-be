@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Yêu cầu đính chính lô hàng</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+  </head>
+
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- ── Navbar ── -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-leaf text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+              >Nông Trại</span
+            >
+          </div>
+
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/farmer/index.html" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Đính chính lô hàng</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Farmer"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Nông dân</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+            <div
+              x-show="open"
+              x-cloak
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/farmer/index.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Main ── -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="correctionPage()"
+      x-init="init()"
+    >
+      <!-- Page Header -->
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between mb-8"
+      >
+        <div>
+          <h1
+            class="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3"
+          >
+            <i class="fas fa-file-pen text-green-600"></i>
+            Đính chính lô hàng
+          </h1>
+          <p class="text-gray-600 flex items-center gap-2">
+            <i class="fas fa-shield-halved text-blue-400 text-sm"></i>
+            Dữ liệu gốc vẫn lưu trên blockchain. Mọi đính chính phải được Admin
+            phê duyệt.
+          </p>
+        </div>
+        <div class="flex gap-3 mt-4 md:mt-0">
+          <button @click="activeTab = 'new'" class="btn-primary">
+            <i class="fas fa-plus mr-2"></i> Tạo yêu cầu mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Chờ duyệt</p>
+              <p
+                class="text-3xl font-bold text-yellow-600"
+                x-text="stats.pending"
+              ></p>
+            </div>
+            <div
+              class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center"
+            >
+              <i class="fas fa-hourglass-half text-xl text-yellow-600"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Đã duyệt</p>
+              <p
+                class="text-3xl font-bold text-green-600"
+                x-text="stats.approved"
+              ></p>
+            </div>
+            <div
+              class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-check-circle text-xl text-green-600"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Từ chối</p>
+              <p
+                class="text-3xl font-bold text-red-600"
+                x-text="stats.rejected"
+              ></p>
+            </div>
+            <div
+              class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center"
+            >
+              <i class="fas fa-times-circle text-xl text-red-600"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-xl shadow-md mb-6">
+        <div class="flex border-b border-gray-200">
+          <button
+            @click="activeTab = 'new'"
+            :class="activeTab === 'new' ? 'border-b-2 border-green-600 text-green-700 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+            class="px-6 py-4 text-sm transition"
+          >
+            <i class="fas fa-plus mr-2"></i>Tạo yêu cầu
+          </button>
+          <button
+            @click="activeTab = 'history'; loadMyRequests()"
+            :class="activeTab === 'history' ? 'border-b-2 border-green-600 text-green-700 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+            class="px-6 py-4 text-sm transition flex items-center gap-2"
+          >
+            <i class="fas fa-clock-rotate-left"></i>Lịch sử yêu cầu
+            <span
+              x-show="stats.pending > 0"
+              x-cloak
+              class="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full"
+              x-text="stats.pending"
+            ></span>
+          </button>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             TAB: TẠO YÊU CẦU
+        ══════════════════════════════════════════ -->
+        <div x-show="activeTab === 'new'" class="p-6">
+          <!-- Bước 1: Chọn lô hàng -->
+          <div class="mb-6">
+            <h2
+              class="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2"
+            >
+              <span
+                class="w-6 h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                >1</span
+              >
+              Chọn lô hàng cần đính chính
+            </h2>
+
+            <div x-show="loadingBatches" class="py-6 text-center text-gray-400">
+              <div class="spinner mx-auto mb-2"></div>
+              <p class="text-sm">Đang tải danh sách lô hàng...</p>
+            </div>
+
+            <!-- Lỗi tải lô hàng -->
+            <div
+              x-show="!loadingBatches && batchLoadError"
+              x-cloak
+              class="bg-red-50 border border-red-200 rounded-xl p-4 mb-3 text-sm text-red-700 flex items-start gap-2"
+            >
+              <i class="fas fa-exclamation-circle mt-0.5"></i>
+              <div>
+                <p class="font-semibold mb-1">
+                  Không thể tải danh sách lô hàng
+                </p>
+                <p x-text="batchLoadError"></p>
+                <button
+                  @click="loadMyBatches()"
+                  class="mt-2 text-xs underline hover:no-underline"
+                >
+                  Thử lại
+                </button>
+              </div>
+            </div>
+
+            <div x-show="!loadingBatches">
+              <select
+                x-model="selectedBatchId"
+                @change="onBatchSelect()"
+                class="input-gradient w-full"
+              >
+                <option value="">-- Chọn lô hàng --</option>
+                <template x-for="b in myBatches" :key="b.batch_id">
+                  <option
+                    :value="b.batch_id"
+                    x-text="`${b.batch_name}  |  SSCC: ${b.sscc}  |  ${b.status}`"
+                  ></option>
+                </template>
+              </select>
+
+              <!-- Thông tin lô đã chọn -->
+              <div
+                x-show="selectedBatch"
+                x-cloak
+                class="mt-4 bg-gray-50 rounded-xl border border-gray-200 p-4"
+              >
+                <p
+                  class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-3"
+                >
+                  Thông tin hiện tại trên hệ thống
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400 mb-0.5">Tên lô</span>
+                    <span
+                      class="font-semibold text-gray-700"
+                      x-text="selectedBatch?.batch_name"
+                    ></span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400 mb-0.5">Số lượng</span>
+                    <span
+                      class="font-semibold text-gray-700"
+                      x-text="selectedBatch?.quantity || '—'"
+                    ></span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400 mb-0.5"
+                      >Số mảnh vườn</span
+                    >
+                    <span
+                      class="font-semibold text-gray-700"
+                      x-text="selectedBatch?.farm_plot_number || 'Chưa có'"
+                    ></span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400 mb-0.5">Trạng thái</span>
+                    <span
+                      class="font-semibold text-gray-700"
+                      x-text="selectedBatch?.status"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bước 2: Thông tin sửa -->
+          <div x-show="selectedBatch" x-cloak class="mb-6">
+            <h2
+              class="text-base font-semibold text-gray-700 mb-1 flex items-center gap-2"
+            >
+              <span
+                class="w-6 h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                >2</span
+              >
+              Thông tin muốn đính chính
+            </h2>
+            <p class="text-xs text-blue-500 mb-4 ml-8">
+              Chỉ điền ô nào bạn muốn thay đổi. Để trống = giữ nguyên giá trị
+              cũ.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <!-- Tên lô hàng -->
+              <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+                <label
+                  class="block text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide"
+                >
+                  <i class="fas fa-tag mr-1 text-green-500"></i> Tên lô hàng
+                </label>
+                <div class="mb-2">
+                  <p class="text-xs text-gray-400 mb-1">Hiện tại</p>
+                  <div
+                    class="text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-700 line-through"
+                    x-text="selectedBatch?.batch_name"
+                  ></div>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-400 mb-1">Muốn sửa thành</p>
+                  <input
+                    type="text"
+                    x-model="form.batch_name"
+                    :placeholder="selectedBatch?.batch_name"
+                    class="input-gradient w-full text-sm"
+                  />
+                </div>
+              </div>
+
+              <!-- Số lượng -->
+              <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+                <label
+                  class="block text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide"
+                >
+                  <i class="fas fa-weight-hanging mr-1 text-green-500"></i> Số
+                  lượng
+                </label>
+                <div class="mb-2">
+                  <p class="text-xs text-gray-400 mb-1">Hiện tại</p>
+                  <div
+                    class="text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-700 line-through"
+                    x-text="selectedBatch?.quantity || '—'"
+                  ></div>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-400 mb-1">Muốn sửa thành</p>
+                  <input
+                    type="text"
+                    x-model="form.quantity"
+                    :placeholder="selectedBatch?.quantity || 'Nhập số lượng'"
+                    class="input-gradient w-full text-sm"
+                  />
+                </div>
+              </div>
+
+              <!-- Số mảnh vườn -->
+              <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+                <label
+                  class="block text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide"
+                >
+                  <i class="fas fa-map-marked-alt mr-1 text-green-500"></i> Số
+                  mảnh vườn
+                </label>
+                <div class="mb-2">
+                  <p class="text-xs text-gray-400 mb-1">Hiện tại</p>
+                  <div
+                    class="text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-700 line-through"
+                    x-text="selectedBatch?.farm_plot_number || 'Chưa có'"
+                  ></div>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-400 mb-1">Muốn sửa thành</p>
+                  <input
+                    type="text"
+                    x-model="form.farm_plot_number"
+                    :placeholder="selectedBatch?.farm_plot_number || 'Nhập số mảnh vườn'"
+                    class="input-gradient w-full text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bước 3: Lý do -->
+          <div x-show="selectedBatch" x-cloak class="mb-6">
+            <h2
+              class="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2"
+            >
+              <span
+                class="w-6 h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                >3</span
+              >
+              Lý do đính chính <span class="text-red-500 text-sm">*</span>
+            </h2>
+            <textarea
+              x-model="form.reason"
+              rows="3"
+              placeholder="Ví dụ: Nhập nhầm số lượng, thực tế thu hoạch được 150kg không phải 100kg..."
+              class="input-gradient w-full text-sm"
+            ></textarea>
+            <p
+              class="text-xs mt-1 transition-colors"
+              :class="form.reason.length > 0 && form.reason.length < 10 ? 'text-red-400' : 'text-gray-400'"
+              x-text="`${form.reason.length} ký tự (tối thiểu 10)`"
+            ></p>
+          </div>
+
+          <!-- Submit -->
+          <div x-show="selectedBatch" x-cloak class="flex justify-end gap-3">
+            <button @click="resetForm()" class="btn-secondary">
+              <i class="fas fa-undo mr-2"></i>Đặt lại
+            </button>
+            <button
+              @click="submitRequest()"
+              :disabled="submitting"
+              class="btn-primary"
+            >
+              <i class="fas fa-paper-plane mr-2"></i>
+              <span
+                x-text="submitting ? 'Đang gửi...' : 'Gửi yêu cầu đính chính'"
+              ></span>
+            </button>
+          </div>
+
+          <!-- Empty state khi chưa chọn lô -->
+          <div
+            x-show="!selectedBatch && !loadingBatches"
+            x-cloak
+            class="text-center py-12"
+          >
+            <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 mb-2">
+              Chọn một lô hàng để bắt đầu yêu cầu đính chính
+            </p>
+            <p class="text-sm text-gray-400">
+              Chỉ các lô hàng chưa bị từ chối mới có thể đính chính
+            </p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             TAB: LỊCH SỬ
+        ══════════════════════════════════════════ -->
+        <div x-show="activeTab === 'history'" class="p-6">
+          <!-- Loading -->
+          <div
+            x-show="loadingHistory"
+            x-cloak
+            class="flex justify-center py-12"
+          >
+            <div class="spinner"></div>
+          </div>
+
+          <!-- Empty -->
+          <div
+            x-show="!loadingHistory && myRequests.length === 0"
+            x-cloak
+            class="text-center py-12"
+          >
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 mb-2">Chưa có yêu cầu đính chính nào</p>
+            <button @click="activeTab = 'new'" class="btn-primary mt-2">
+              <i class="fas fa-plus mr-2"></i>Tạo yêu cầu đầu tiên
+            </button>
+          </div>
+
+          <!-- Request cards -->
+          <div
+            x-show="!loadingHistory && myRequests.length > 0"
+            x-cloak
+            class="space-y-4"
+          >
+            <template x-for="req in myRequests" :key="req.id">
+              <div
+                class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition border border-gray-100"
+              >
+                <!-- Card header -->
+                <div
+                  class="p-5 flex items-start justify-between border-b border-gray-50"
+                  :class="{
+                    'bg-yellow-50': req.status === 'pending',
+                    'bg-green-50': req.status === 'approved',
+                    'bg-red-50': req.status === 'rejected'
+                  }"
+                >
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <p
+                        class="font-bold text-gray-800"
+                        x-text="req.current_batch_name"
+                      ></p>
+                      <span
+                        class="text-xs font-semibold px-3 py-1 rounded-full"
+                        :class="{
+                          'bg-yellow-200 text-yellow-800': req.status === 'pending',
+                          'bg-green-200 text-green-800': req.status === 'approved',
+                          'bg-red-200 text-red-800': req.status === 'rejected'
+                        }"
+                        x-text="statusLabel(req.status)"
+                      ></span>
+                    </div>
+                    <div
+                      class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500"
+                    >
+                      <span
+                        ><i class="fas fa-barcode mr-1"></i>SSCC:
+                        <strong x-text="req.sscc"></strong
+                      ></span>
+                      <span
+                        ><i class="fas fa-clock mr-1"></i>Gửi lúc:
+                        <span x-text="formatDateTime(req.requested_at)"></span
+                      ></span>
+                    </div>
+                  </div>
+                  <!-- Blockchain status badge -->
+                  <div class="flex flex-col items-end gap-1">
+                    <span
+                      x-show="req.blockchain_tx_hash"
+                      x-cloak
+                      class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1"
+                    >
+                      <i class="fas fa-link text-xs"></i> On-chain
+                    </span>
+                    <span
+                      x-show="!req.blockchain_tx_hash"
+                      x-cloak
+                      class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full flex items-center gap-1"
+                    >
+                      <i class="fas fa-database text-xs"></i> Off-chain
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Card body -->
+                <div class="p-5">
+                  <!-- Lý do -->
+                  <div class="mb-4">
+                    <p
+                      class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
+                    >
+                      Lý do đính chính
+                    </p>
+                    <p
+                      class="text-sm text-gray-700 bg-gray-50 rounded-lg px-4 py-2 border-l-4 border-yellow-400"
+                      x-text="req.reason"
+                    ></p>
+                  </div>
+
+                  <!-- Changed fields chips -->
+                  <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="text-xs text-gray-500 font-medium"
+                      >Trường thay đổi:</span
+                    >
+                    <template x-for="f in req.changed_fields" :key="f">
+                      <span
+                        class="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium"
+                        x-text="fieldLabel(f)"
+                      ></span>
+                    </template>
+                  </div>
+
+                  <!-- Diff table -->
+                  <div
+                    class="overflow-x-auto rounded-xl border border-gray-200 mb-4"
+                  >
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th
+                            class="px-4 py-2.5 text-left text-xs text-gray-500 font-semibold uppercase"
+                          >
+                            Trường
+                          </th>
+                          <th
+                            class="px-4 py-2.5 text-left text-xs text-gray-500 font-semibold uppercase"
+                          >
+                            Giá trị cũ
+                          </th>
+                          <th
+                            class="px-4 py-2.5 text-left text-xs text-gray-500 font-semibold uppercase"
+                          >
+                            Giá trị mới
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template x-for="f in req.changed_fields" :key="f">
+                          <tr class="border-t border-gray-100">
+                            <td
+                              class="px-4 py-2.5 font-medium text-gray-600"
+                              x-text="fieldLabel(f)"
+                            ></td>
+                            <td class="px-4 py-2.5">
+                              <span
+                                class="bg-red-50 text-red-600 text-xs px-2 py-1 rounded line-through"
+                                x-text="req.original_data[f] ?? 'Chưa có'"
+                              ></span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <span
+                                class="bg-green-50 text-green-700 text-xs px-2 py-1 rounded font-semibold"
+                                x-text="req.corrected_data[f] ?? 'N/A'"
+                              ></span>
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Admin result -->
+                  <div
+                    x-show="req.status !== 'pending'"
+                    x-cloak
+                    class="border rounded-xl px-4 py-3 text-sm"
+                    :class="req.status === 'approved'
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : 'bg-red-50 border-red-200 text-red-800'"
+                  >
+                    <p
+                      class="font-semibold mb-1"
+                      x-text="req.status === 'approved'
+                        ? '✓ Được phê duyệt bởi ' + (req.reviewed_by_name || 'Admin')
+                        : '✗ Bị từ chối bởi ' + (req.reviewed_by_name || 'Admin')"
+                    ></p>
+                    <p
+                      x-show="req.review_note"
+                      class="opacity-80 mb-1"
+                      x-text="req.review_note"
+                    ></p>
+                    <p
+                      class="text-xs opacity-60"
+                      x-text="formatDateTime(req.reviewed_at)"
+                    ></p>
+                    <p
+                      x-show="req.blockchain_logged_at"
+                      x-cloak
+                      class="text-xs opacity-50 mt-1 flex items-center gap-1"
+                    >
+                      <i class="fas fa-link"></i>
+                      Đã ghi blockchain:
+                      <span
+                        x-text="formatDateTime(req.blockchain_logged_at)"
+                      ></span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /container -->
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+
+    <script>
+      // ─── Helper: gọi API an toàn ─────────────────────────────────────────────
+      async function safeGet(url) {
+        try {
+          const res = await fetch(url, { credentials: "include" });
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            return {
+              success: false,
+              error: errJson.error || `HTTP ${res.status}`,
+              data: [],
+            };
+          }
+          return await res.json();
+        } catch (e) {
+          console.warn("safeGet error:", url, e.message);
+          return { success: false, error: e.message, data: [] };
+        }
+      }
+
+      async function safePost(url, body) {
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          const json = await res.json();
+          if (!res.ok && json.success === undefined) {
+            return {
+              success: false,
+              error: json.error || `HTTP ${res.status}`,
+            };
+          }
+          return json;
+        } catch (e) {
+          console.warn("safePost error:", url, e.message);
+          return { success: false, error: e.message };
+        }
+      }
+
+      // ─── Toast helper ─────────────────────────────────────────────────────────
+      function showToast(msg, type = "error") {
+        if (typeof Utils !== "undefined" && Utils.toast) {
+          return type === "error"
+            ? Utils.toast.error(msg)
+            : Utils.toast.success(msg);
+        }
+        if (typeof Swal !== "undefined") {
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: type,
+            title: msg,
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true,
+          });
+        } else {
+          alert(msg);
+        }
+      }
+
+      // ─── Confirm helper ───────────────────────────────────────────────────────
+      async function showConfirm(title, text, confirmText = "Xác nhận") {
+        if (
+          typeof Utils !== "undefined" &&
+          typeof Utils.confirm === "function"
+        ) {
+          return await Utils.confirm(title, text, confirmText);
+        }
+        if (typeof Swal !== "undefined") {
+          const result = await Swal.fire({
+            title,
+            text,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: confirmText,
+            cancelButtonText: "Hủy",
+            confirmButtonColor: "#16a34a",
+          });
+          return result.isConfirmed;
+        }
+        return confirm(`${title}\n${text}`);
+      }
+
+      // ─── Alpine component ─────────────────────────────────────────────────────
+      function correctionPage() {
+        return {
+          activeTab: "new",
+          loadingBatches: true,
+          loadingHistory: false,
+          submitting: false,
+          batchLoadError: "",
+
+          myBatches: [],
+          selectedBatchId: "",
+          selectedBatch: null,
+          myRequests: [],
+
+          stats: { pending: 0, approved: 0, rejected: 0 },
+
+          form: {
+            batch_name: "",
+            quantity: "",
+            farm_plot_number: "",
+            reason: "",
+          },
+
+          // ── Khởi tạo ─────────────────────────────────────────────────────────
+          async init() {
+            try {
+              if (typeof Auth !== "undefined") {
+                if (typeof Auth.init === "function") await Auth.init();
+                if (typeof Auth.requireFarmer === "function") {
+                  const ok = await Auth.requireFarmer();
+                  if (!ok) return;
+                }
+                if (typeof Auth.updateNavbar === "function")
+                  Auth.updateNavbar();
+              }
+            } catch (e) {
+              console.warn("Auth error (ignored):", e.message);
+            }
+
+            // Load song song
+            await Promise.all([
+              this.loadMyBatches(),
+              this.loadMyRequests(),
+              this.loadMyStats(),
+            ]);
+          },
+
+          // ── Load stats riêng từ endpoint /api/correction/my-stats ─────────────
+          // (nhanh hơn, không cần tải toàn bộ lịch sử)
+          async loadMyStats() {
+            try {
+              const result = await safeGet("/api/correction/my-stats");
+              if (result && result.success && result.data) {
+                this.stats.pending = Number(result.data.pending || 0);
+                this.stats.approved = Number(result.data.approved || 0);
+                this.stats.rejected = Number(result.data.rejected || 0);
+              }
+            } catch (e) {
+              console.warn("loadMyStats error:", e.message);
+              // fallback: tính từ myRequests (sẽ được cập nhật sau loadMyRequests)
+            }
+          },
+
+          // ── Tính lại stats từ myRequests (fallback) ───────────────────────────
+          _recalcStats() {
+            this.stats.pending = this.myRequests.filter(
+              (r) => r.status === "pending",
+            ).length;
+            this.stats.approved = this.myRequests.filter(
+              (r) => r.status === "approved",
+            ).length;
+            this.stats.rejected = this.myRequests.filter(
+              (r) => r.status === "rejected",
+            ).length;
+          },
+
+          // ── Load danh sách lô hàng ────────────────────────────────────────────
+          async loadMyBatches() {
+            this.loadingBatches = true;
+            this.batchLoadError = "";
+            try {
+              let result;
+              if (
+                typeof API !== "undefined" &&
+                typeof API.getMyBatches === "function"
+              ) {
+                result = await API.getMyBatches();
+              } else {
+                result = await safeGet("/api/farmer/my-batches");
+              }
+
+              if (result && result.success) {
+                // /api/farmer/my-batches trả về { success, count, data: [...] }
+                // data là array thẳng, KHÔNG có .data bên trong
+                const raw = Array.isArray(result.data)
+                  ? result.data
+                  : result.data?.data || [];
+                this.myBatches = raw.filter((b) => b.status !== "Rejected");
+              } else {
+                const errMsg = result?.error || "Lỗi không xác định";
+                console.warn("Không tải được danh sách lô:", errMsg);
+                this.batchLoadError = errMsg;
+                this.myBatches = [];
+              }
+            } catch (e) {
+              console.error("loadMyBatches error:", e);
+              this.batchLoadError = e.message;
+              this.myBatches = [];
+            } finally {
+              this.loadingBatches = false;
+            }
+          },
+
+          // ── Load lịch sử yêu cầu ─────────────────────────────────────────────
+          async loadMyRequests() {
+            this.loadingHistory = true;
+            try {
+              const result = await safeGet("/api/correction/my-requests");
+
+              if (result && result.success) {
+                const raw = Array.isArray(result.data) ? result.data : [];
+                this.myRequests = raw.map((r) => ({
+                  ...r,
+                  changed_fields: this._parseJson(r.changed_fields, []),
+                  original_data: this._parseJson(r.original_data, {}),
+                  corrected_data: this._parseJson(r.corrected_data, {}),
+                }));
+              } else {
+                console.warn(
+                  "API correction/my-requests:",
+                  result?.error || "no data",
+                );
+                this.myRequests = [];
+              }
+              // Luôn tính lại stats từ dữ liệu trả về
+              this._recalcStats();
+            } catch (e) {
+              console.error("loadMyRequests error:", e);
+              this.myRequests = [];
+              this._recalcStats();
+            } finally {
+              this.loadingHistory = false;
+            }
+          },
+
+          // ── Parse JSON an toàn ────────────────────────────────────────────────
+          _parseJson(val, fallback) {
+            if (val === null || val === undefined) return fallback;
+            if (typeof val === "object") return val;
+            try {
+              return JSON.parse(val);
+            } catch {
+              return fallback;
+            }
+          },
+
+          // ── Khi chọn lô hàng ──────────────────────────────────────────────────
+          onBatchSelect() {
+            this.selectedBatch =
+              this.myBatches.find(
+                (b) => String(b.batch_id) === String(this.selectedBatchId),
+              ) || null;
+            this.form = {
+              batch_name: "",
+              quantity: "",
+              farm_plot_number: "",
+              reason: "",
+            };
+          },
+
+          // ── Reset form ────────────────────────────────────────────────────────
+          resetForm() {
+            this.selectedBatchId = "";
+            this.selectedBatch = null;
+            this.form = {
+              batch_name: "",
+              quantity: "",
+              farm_plot_number: "",
+              reason: "",
+            };
+          },
+
+          // ── Gửi yêu cầu đính chính ────────────────────────────────────────────
+          async submitRequest() {
+            if (!this.selectedBatchId) {
+              showToast("Vui lòng chọn lô hàng", "error");
+              return;
+            }
+            if (this.form.reason.trim().length < 10) {
+              showToast("Lý do đính chính phải có ít nhất 10 ký tự", "error");
+              return;
+            }
+
+            const correctedData = {};
+            if (this.form.batch_name.trim())
+              correctedData.batch_name = this.form.batch_name.trim();
+            if (this.form.quantity.trim())
+              correctedData.quantity = this.form.quantity.trim();
+            if (this.form.farm_plot_number.trim())
+              correctedData.farm_plot_number =
+                this.form.farm_plot_number.trim();
+
+            if (Object.keys(correctedData).length === 0) {
+              showToast(
+                "Vui lòng nhập ít nhất 1 trường muốn đính chính",
+                "error",
+              );
+              return;
+            }
+
+            const confirmed = await showConfirm(
+              "Xác nhận gửi yêu cầu",
+              "Yêu cầu sẽ được gửi đến Admin để phê duyệt.",
+              "Gửi yêu cầu",
+            );
+            if (!confirmed) return;
+
+            this.submitting = true;
+            try {
+              const result = await safePost("/api/correction/request", {
+                batchId: this.selectedBatchId,
+                reason: this.form.reason.trim(),
+                correctedData,
+              });
+
+              if (result && result.success) {
+                await Swal.fire({
+                  icon: "success",
+                  title: "Đã gửi yêu cầu!",
+                  text: "Admin sẽ xem xét và phản hồi sớm.",
+                  confirmButtonColor: "#16a34a",
+                });
+                this.resetForm();
+                this.activeTab = "history";
+                // Reload cả requests lẫn stats
+                await Promise.all([this.loadMyRequests(), this.loadMyStats()]);
+              } else {
+                const errMsg = result?.error || "Gửi yêu cầu thất bại";
+                // Hiển thị lỗi chi tiết hơn nếu là lỗi auth
+                if (
+                  errMsg.includes("Không có quyền") ||
+                  errMsg.includes("Chưa đăng nhập")
+                ) {
+                  showToast(
+                    "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+                    "error",
+                  );
+                } else {
+                  showToast(errMsg, "error");
+                }
+              }
+            } catch (e) {
+              showToast(e.message || "Lỗi kết nối", "error");
+            } finally {
+              this.submitting = false;
+            }
+          },
+
+          // ── Formatters ────────────────────────────────────────────────────────
+          formatDateTime(d) {
+            if (!d) return "—";
+            try {
+              return new Date(d).toLocaleString("vi-VN");
+            } catch {
+              return d;
+            }
+          },
+          statusLabel(s) {
+            return (
+              {
+                pending: "Chờ duyệt",
+                approved: "Đã duyệt",
+                rejected: "Bị từ chối",
+              }[s] || s
+            );
+          },
+          fieldLabel(f) {
+            return (
+              {
+                batch_name: "Tên lô hàng",
+                quantity: "Số lượng",
+                farm_plot_number: "Số mảnh vườn",
+              }[f] || f
+            );
+          },
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          if (typeof Auth !== "undefined" && typeof Auth.init === "function") {
+            await Auth.init();
+          }
+        } catch (e) {
+          console.warn("Auth.init error:", e.message);
+        }
+      });
+    </script>
+  </body>
+</html>

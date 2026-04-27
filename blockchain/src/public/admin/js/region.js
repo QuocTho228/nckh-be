@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const baseUrl =
     window.location.hostname === "localhost"
       ? "http://localhost:3000/api"
-      : "https://truyxuatbuoi.xyz/api";
+      : "https://truyxuatsaurieng.xyz/api";
 
   window.RegionManager = {
     regionData: [],
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
     deleteRegion: async function (regionId) {
       try {
         const response = await fetch(`/api/regions/${regionId}`, {
-          method: "DELETE"
+          method: "DELETE",
         });
         if (!response.ok) {
           throw new Error("Lỗi khi xóa vùng sản xuất");
@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "error"
         );
       }
-    }
+    },
   };
 
   // Event Listeners

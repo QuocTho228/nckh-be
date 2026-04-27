@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Dashboard - Nông Dân</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-leaf text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Nông Trại
+            </span>
+          </div>
+
+          <!-- User Menu -->
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Farmer"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Nông dân</div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/tieu-dung/trangcanhan.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-user mr-2"></i> Trang cá nhân
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8">
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fas fa-hand-wave mr-2"></i>
+          Xin chào, <span id="welcomeName">Nông dân</span>!
+        </h1>
+        <p class="opacity-90">Quản lý trang trại và lô hàng của bạn</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div
+        x-data="dashboardData()"
+        x-init="init()"
+        class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+      >
+        <!-- Tổng số cây -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng số cây</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.totalTrees"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-seedling text-3xl text-green-600"></i>
+            </div>
+          </div>
+          <a
+            href="/farmer/quan-ly-cay.html"
+            class="text-sm text-green-600 hover:text-green-700 mt-4 inline-block"
+          >
+            Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Lô hàng đang chờ -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Lô chờ duyệt</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.pendingBatches"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center"
+            >
+              <i class="fas fa-clock text-3xl text-yellow-600"></i>
+            </div>
+          </div>
+          <a
+            href="#batches"
+            class="text-sm text-yellow-600 hover:text-yellow-700 mt-4 inline-block"
+          >
+            Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Lô đã duyệt -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Lô đã duyệt</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.approvedBatches"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-check-circle text-3xl text-green-600"></i>
+            </div>
+          </div>
+          <a
+            href="#batches"
+            class="text-sm text-green-600 hover:text-green-700 mt-4 inline-block"
+          >
+            Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-yellow-500"></i> Thao tác nhanh
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <a href="/farmer/quan-ly-cay.html" class="btn-primary text-center">
+            <i class="fas fa-tree mr-2"></i> Quản lý cây trồng
+          </a>
+          <a href="/farmer/tao-lo-hang.html" class="btn-secondary text-center">
+            <i class="fas fa-box mr-2"></i> Tạo lô hàng mới
+          </a>
+          <a
+            href="/farmer/yeu-cau-dinh-chinh.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-edit mr-2"></i> Yêu cầu đính chính
+          </a>
+          <button onclick="location.reload()" class="btn-secondary text-center">
+            <i class="fas fa-sync mr-2"></i> Làm mới dữ liệu
+          </button>
+        </div>
+      </div>
+
+      <!-- Danh sách lô hàng -->
+      <div
+        id="batches"
+        x-data="batchesData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-boxes text-green-600"></i> Lô hàng của tôi
+          </h2>
+
+          <!-- Filter Tabs -->
+          <div class="flex gap-2">
+            <button
+              @click="filterStatus = 'all'"
+              :class="filterStatus === 'all' ? 'badge-success' : 'badge'"
+              class="badge"
+            >
+              Tất cả
+            </button>
+            <button
+              @click="filterStatus = 'pending'"
+              :class="filterStatus === 'pending' ? 'badge-warning' : 'badge'"
+              class="badge"
+            >
+              Chờ duyệt
+            </button>
+            <button
+              @click="filterStatus = 'approved'"
+              :class="filterStatus === 'approved' ? 'badge-success' : 'badge'"
+              class="badge"
+            >
+              Đã duyệt
+            </button>
+            <button
+              @click="filterStatus = 'rejected'"
+              :class="filterStatus === 'rejected' ? 'badge-error' : 'badge'"
+              class="badge"
+            >
+              Bị từ chối
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          x-show="!loading && filteredBatches.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Chưa có lô hàng nào</p>
+          <a
+            href="/farmer/tao-lo-hang.html"
+            class="btn-primary inline-block mt-4"
+          >
+            <i class="fas fa-plus mr-2"></i> Tạo lô hàng mới
+          </a>
+        </div>
+
+        <!-- Batches List -->
+        <div x-show="!loading && filteredBatches.length > 0" class="space-y-4">
+          <template x-for="batch in filteredBatches" :key="batch.batch_id">
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3
+                      class="font-bold text-lg"
+                      x-text="batch.batch_name"
+                    ></h3>
+                    <span
+                      :class="Utils.getStatusBadge(batch.status)"
+                      class="badge"
+                      x-text="Utils.getStatusText(batch.status)"
+                    ></span>
+                  </div>
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600"
+                  >
+                    <div>
+                      <i class="fas fa-barcode mr-2"></i>
+                      <span x-text="batch.sscc"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-box mr-2"></i>
+                      <span x-text="batch.quantity + ' kg'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-2"></i>
+                      <span
+                        x-text="Utils.formatDate(batch.production_date_iso)"
+                      ></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-leaf mr-2"></i>
+                      <span x-text="batch.product_name || 'N/A'"></span>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  :href="`/farmer/chi-tiet-lo.html?id=${batch.batch_id}`"
+                  class="btn-secondary text-sm ml-4"
+                >
+                  <i class="fas fa-eye mr-1"></i> Chi tiết
+                </a>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

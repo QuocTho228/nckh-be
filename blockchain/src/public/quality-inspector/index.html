@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Dashboard - Kiểm Nghiệm Chất Lượng</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="../shared/css/theme.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="bg-gradient-bg min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center"
+            >
+              <i class="fas fa-microscope text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent"
+            >
+              Kiểm Nghiệm
+            </span>
+          </div>
+
+          <!-- User Menu -->
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Inspector"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">
+                  Kiểm nghiệm viên
+                </div>
+                <div id="userEmail" class="text-xs text-gray-500"></div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a
+                href="/quality-inspector/lich-su-test.html"
+                class="block px-4 py-2 hover:bg-gray-50 text-sm"
+              >
+                <i class="fas fa-history mr-2"></i> Lịch sử kiểm nghiệm
+              </a>
+              <button
+                onclick="Auth.logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-primary rounded-xl shadow-lg p-6 text-white mb-8">
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fas fa-flask mr-2"></i>
+          Xin chào, <span id="welcomeName">Kiểm nghiệm viên</span>!
+        </h1>
+        <p class="opacity-90">Kiểm nghiệm chất lượng sản phẩm nông sản</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div
+        x-data="dashboardData()"
+        x-init="init()"
+        class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+      >
+        <!-- Tổng số test -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng số test</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.totalTests"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <i class="fas fa-vial text-3xl text-blue-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lô chờ kiểm -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Chờ kiểm nghiệm</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.pendingBatches"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center"
+            >
+              <i class="fas fa-hourglass-half text-3xl text-yellow-600"></i>
+            </div>
+          </div>
+          <a
+            href="/quality-inspector/danh-sach-lo-can-kiem.html"
+            class="text-sm text-yellow-600 hover:text-yellow-700 mt-4 inline-block"
+          >
+            Xem danh sách <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Đạt chuẩn -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Đạt chuẩn</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.passedTests"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-check-circle text-3xl text-green-600"></i>
+            </div>
+          </div>
+          <p class="text-sm text-gray-500 mt-2">
+            Tỷ lệ:
+            <span class="font-semibold" x-text="stats.passRate + '%'"></span>
+          </p>
+        </div>
+
+        <!-- Không đạt -->
+        <div
+          class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Không đạt</p>
+              <p
+                class="text-3xl font-bold text-gray-900"
+                x-text="stats.failedTests"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center"
+            >
+              <i class="fas fa-times-circle text-3xl text-red-600"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-yellow-500"></i> Thao tác nhanh
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a
+            href="/quality-inspector/danh-sach-lo-can-kiem.html"
+            class="btn-primary text-center"
+          >
+            <i class="fas fa-tasks mr-2"></i> Lô cần kiểm nghiệm
+          </a>
+          <a
+            href="/quality-inspector/lich-su-test.html"
+            class="btn-secondary text-center"
+          >
+            <i class="fas fa-history mr-2"></i> Lịch sử kiểm nghiệm
+          </a>
+          <button onclick="location.reload()" class="btn-secondary text-center">
+            <i class="fas fa-sync mr-2"></i> Làm mới dữ liệu
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Tests -->
+      <div
+        x-data="recentTestsData()"
+        x-init="init()"
+        class="bg-white rounded-xl shadow-md p-6"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-clipboard-list text-blue-600"></i> Kiểm nghiệm gần
+            đây
+          </h2>
+          <a
+            href="/quality-inspector/lich-su-test.html"
+            class="text-sm text-blue-600 hover:text-blue-700"
+          >
+            Xem tất cả <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Loading -->
+        <div x-show="loading" class="flex justify-center py-12">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!loading && tests.length === 0" class="text-center py-12">
+          <i class="fas fa-flask text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">Chưa có kiểm nghiệm nào</p>
+        </div>
+
+        <!-- Tests List -->
+        <div x-show="!loading && tests.length > 0" class="space-y-4">
+          <template x-for="test in tests.slice(0, 5)" :key="test.test_id">
+            <div
+              class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="font-bold text-lg" x-text="test.batch_name"></h3>
+                    <span
+                      :class="Utils.getTestResultBadge(test.passed)"
+                      class="badge"
+                      x-text="Utils.getTestResultText(test.passed)"
+                    ></span>
+                  </div>
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600"
+                  >
+                    <div>
+                      <i class="fas fa-hashtag mr-2"></i>
+                      Lô: <span x-text="test.batch_id"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-vial mr-2"></i>
+                      <span x-text="test.test_type || 'N/A'"></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-calendar mr-2"></i>
+                      <span
+                        x-text="Utils.formatDate(test.test_date_iso)"
+                      ></span>
+                    </div>
+                    <div>
+                      <i class="fas fa-user mr-2"></i>
+                      <span x-text="test.farmer_name || 'N/A'"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

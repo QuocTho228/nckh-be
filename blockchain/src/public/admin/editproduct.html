@@ -223,13 +223,13 @@ Sản phẩm A là...</textarea
                       </div>
                     </div>
                     <div class="form-group">
-                      <label for="product-uses">Công dụng</label>
+                      <label for="product-uses">Xuất xứ</label>
                       <textarea
                         id="product-uses"
                         name="uses"
                         class="form-control"
                         rows="3"
-                        data-original="Công dụng 1, Công dụng 2..."
+                        data-original="Xuất xứ 1, Xuất xứ 2..."
                         required
                       >
 Công đoạn 1, Công đoạn 2...</textarea
@@ -355,7 +355,7 @@ Quy trình sản xuất...</textarea
             const baseUrl =
               window.location.hostname === "localhost"
                 ? "http://localhost:3000"
-                : "https://truyxuatbuoi.xyz";
+                : "https://truyxuatsaurieng.xyz";
 
             // Thêm các trường original vào formData
             formData.append(
@@ -397,7 +397,7 @@ Quy trình sản xuất...</textarea
 
             fetch(`${baseUrl}/api/products/update`, {
               method: "POST",
-              body: formData
+              body: formData,
             })
               .then((response) => {
                 if (!response.ok) {

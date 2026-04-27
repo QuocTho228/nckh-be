@@ -1,19 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="../hinhanh/favicon.png"> 
+    <link rel="icon" type="image/png" href="../hinhanh/favicon.png" />
     <title>Trang chủ</title>
     <!-- Bootstrap CSS -->
     <link
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../css/trangchu.css">
-    <link rel="stylesheet" href="../css/chatbox.css">
-    <link rel="stylesheet" href="../css/nav-bar.css">
-    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/trangchu.css" />
+    <link rel="stylesheet" href="../css/chatbox.css" />
+    <link rel="stylesheet" href="../css/nav-bar.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
     <!-- <link rel="stylesheet" href="../css/trangcanhan.css" /> -->
     <link
       rel="stylesheet"
@@ -52,21 +52,31 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
+          <li class></li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Trang chủ</a>
-          </li> 
-          <li class="nav-item">
-            <a class="nav-link" href="./allsanpham.html">Sản phẩm</a>
+            <a class="nav-link" href="./truy-xuat.html"
+              ><i class="fas fa-qrcode mr-1"></i>Truy xuất nguồn gốc</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="./allnongdan.html">Nhà sản xuất</a>
+            <a class="nav-link" href="./allsanpham.html"
+              ><i class="fas fa-tree mr-1"></i>Sản phẩm</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="./allnhakiemduyet.html">Nhà kiểm duyệt</a>
+            <a class="nav-link" href="./allnongdan.html"
+              ><i class="fas fa-leaf mr-1"></i>Nhà sản xuất</a
+            >
           </li>
-          
           <li class="nav-item">
-            <a class="nav-link" href="./account/dangnhap.html">Đăng nhập</a>
+            <a class="nav-link" href="./allnhakiemduyet.html"
+              ><i class="fas fa-check-circle mr-1"></i>Nhà kiểm duyệt</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./account/dangnhap.html"
+              ><i class="fas fa-sign-in-alt mr-1"></i>Đăng nhập</a
+            >
           </li>
         </ul>
       </div>
@@ -76,30 +86,197 @@
         <div id="bannerCarousel" class="carousel slide" data-ride="carousel">
           <div class="carousel-inner">
             <div class="carousel-item active">
-              <img src=".\hinhanh\banner-1.jpg" class="img-fluid custom-img" alt="Banner 1">
+              <img
+                src="../hinhanh/banner-1.jpg"
+                class="img-fluid custom-img"
+                alt="Banner 1"
+              />
             </div>
             <!-- <div class="carousel-item">
-              <img src=".\hinhanh\advanced-1.png" class="img-fluid custom-img" alt="Banner 2">
-            </div> -->
-            <!-- <div class="carousel-item">
-              <img src=".\hinhanh\banner3.jpg" class="img-fluid custom-img" alt="Banner 3">
+              <img
+                src=".\hinhanh\banner-2.jpg"
+                class="img-fluid custom-img"
+                alt="Banner 2"
+              />
+            </div>
+            <div class="carousel-item">
+              <img
+                src=".\hinhanh\banner-3.jpg"
+                class="img-fluid custom-img"
+                alt="Banner 3"
+              />
             </div> -->
           </div>
         </div>
       </div>
 
       <div class="sanpham">
-        <h2 class="highlighted-heading" data-aos="fade-up">Sản phẩm nổi bật</h2>
-        <div class="row">
+        <h2 class="highlighted-heading" data-aos="fade-up">SẢN PHẨM NỔI BẬT</h2>
+        <div class="row justify-content-center">
           <!-- Các sản phẩm sẽ được thêm vào đây bởi JavaScript -->
         </div>
       </div>
 
+      <!-- Durian AI Section -->
+      <div data-durian-ai></div>
+
+      <!-- ==================== PHẦN GIỚI THIỆU VỀ CHÚNG TÔI ==================== -->
+      <section class="about-intro py-5 bg-white">
+        <div class="container">
+          <div class="row align-items-center">
+            <!-- Ảnh sầu riêng bên trái -->
+            <div class="col-lg-6 text-center mb-5 mb-lg-0">
+              <img
+                src="../hinhanh/ve-chung-toi-saurieng.png"
+                alt="Sầu riêng Blockchain"
+                class="img-fluid about-main-img"
+              />
+            </div>
+
+            <!-- Nội dung bên phải -->
+            <div class="col-lg-6">
+              <h5 class="text-success font-italic mb-2">Về Chúng tôi</h5>
+              <h2 class="display-4 font-weight-bold text-success mb-4">
+                VỀ CHÚNG TÔI
+              </h2>
+              <p class="lead text-muted mb-4">
+                CÔNG TY TNHH TM NÔNG SẢN với mong muốn trở thành một trong những
+                Công ty mạnh hàng đầu về xuất khẩu Sầu Riêng Việt Nam sang các
+                nước khác...
+              </p>
+              <a
+                href="./about.html"
+                class="btn btn-success btn-lg rounded-pill px-5 shadow-sm"
+              >
+                <i class="fas fa-arrow-right"></i> Xem thêm
+              </a>
+            </div>
+          </div>
+
+          <!-- 4 CAM KẾT - ĐẶT DƯỚI ẢNH SẦU RIÊNG (trên mobile cũng vậy) -->
+          <div class="commitments mt-5 pt-4">
+            <div class="row justify-content-center">
+              <div class="col-6 col-md-3 mb-4">
+                <div class="commitment-item text-center">
+                  <img
+                    src="../hinhanh/icon-chatluong.png"
+                    alt="Chất lượng cao"
+                    class="commitment-icon mb-3"
+                  />
+                  <h1 class="text-success">01</h1>
+                  <h5 class="font-weight-bold mt-2">CHẤT LƯỢNG CAO</h5>
+                  <p class="text-muted small">
+                    Chất lượng song hành luôn đi theo, đảm bảo sản phẩm tốt nhất
+                  </p>
+                </div>
+              </div>
+              <div class="col-6 col-md-3 mb-4">
+                <div class="commitment-item text-center">
+                  <img
+                    src="../hinhanh/icon-uytin.png"
+                    alt="Uy tín hàng đầu"
+                    class="commitment-icon mb-3"
+                  />
+                  <h1 class="text-success">02</h1>
+                  <h5 class="font-weight-bold mt-2">UY TÍN HÀNG ĐẦU</h5>
+                  <p class="text-muted small">
+                    Với kim chỉ nam lấy chữ tín làm đầu, chúng tôi tự tin là đơn
+                    vị uy tín
+                  </p>
+                </div>
+              </div>
+              <div class="col-6 col-md-3 mb-4">
+                <div class="commitment-item text-center">
+                  <img
+                    src="../hinhanh/icon-tuoinon.png"
+                    alt="Đạt chuẩn tươi mới"
+                    class="commitment-icon mb-3"
+                  />
+                  <h1 class="text-success">03</h1>
+                  <h5 class="font-weight-bold mt-2">ĐẠT CHUẨN TƯƠI MỚI</h5>
+                  <p class="text-muted small">
+                    Sản phẩm luôn đảm bảo độ tươi đến tay người tiêu dùng
+                  </p>
+                </div>
+              </div>
+              <div class="col-6 col-md-3 mb-4">
+                <div class="commitment-item text-center">
+                  <img
+                    src="../hinhanh/icon-tunhien.png"
+                    alt="100% tự nhiên"
+                    class="commitment-icon mb-3"
+                  />
+                  <h1 class="text-success">04</h1>
+                  <h5 class="font-weight-bold mt-2">100% TỰ NHIÊN</h5>
+                  <p class="text-muted small">
+                    Sản phẩm từ những trái sầu riêng tươi ngon được tuyển chọn
+                    kỹ
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== PHẦN CHỨNG NHẬN - RIÊNG BIỆT ==================== -->
+      <section class="certificates-section py-5 bg-light">
+        <div class="container text-center">
+          <h5 class="text-success font-italic mb-2">Chứng nhận</h5>
+          <h2 class="display-4 font-weight-bold text-success mb-5">
+            SẦU RIÊNG BLOCKCHAIN
+          </h2>
+
+          <div class="row justify-content-center align-items-end">
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+              <img
+                src="../hinhanh/cert-organic.png"
+                alt="Organic"
+                class="cert-img img-fluid mb-3"
+              />
+              <p class="mt-2 font-weight-bold text-dark">TỰ NHIÊN 100%</p>
+            </div>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+              <img
+                src="../hinhanh/cert-vietgap.png"
+                alt="VietGAP"
+                class="cert-img img-fluid mb-3"
+              />
+              <p class="mt-2 font-weight-bold text-dark">CHỨNG NHẬN VIET GAP</p>
+            </div>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+              <img
+                src="../hinhanh/cert-gmp.png"
+                alt="GMP"
+                class="cert-img img-fluid mb-3"
+              />
+              <p class="mt-2 font-weight-bold text-dark">GMP</p>
+            </div>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+              <img
+                src="../hinhanh/cert-iso.png"
+                alt="ISO"
+                class="cert-img img-fluid mb-3"
+              />
+              <p class="mt-2 font-weight-bold text-dark">CHỨNG NHẬN ISO</p>
+            </div>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+              <img
+                src="../hinhanh/cert-globalgap.png"
+                alt="GlobalGAP"
+                class="cert-img img-fluid mb-3"
+              />
+              <p class="mt-2 font-weight-bold text-dark">GLOBALGAP</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div class="thanhvien">
         <h2 class="highlighted-heading" data-aos="fade-up">
-          Thành viên tiêu biểu
+          THÀNH VIÊN TIÊU BIỂU
         </h2>
-        <div class="row">
+        <div class="row justify-content-center">
           <!-- Các thành viên sẽ được thêm vào đây bởi JavaScript -->
         </div>
       </div>
@@ -110,14 +287,19 @@
         <div class="row">
           <div class="col-md-4">
             <h3>Thông tin liên hệ</h3>
-              <p>Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ</p>
-              <p>Điện thoại: 0337267892</p>
-              <p>Email: thob2203474@student.ctu.edu.vn</p>
-            </div>
-            <div class="col-md-4 d-none d-md-block">
-              <h3>Về chúng tôi</h3>
-              <p> Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng bằng công nghệ Blockchain.</p>
-            </div>
+            <p>
+              Địa chỉ: CTU, đường 3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ
+            </p>
+            <p>Điện thoại: 0337267892</p>
+            <p>Email: thob2203474@student.ctu.edu.vn</p>
+          </div>
+          <div class="col-md-4 d-none d-md-block">
+            <h3>Về chúng tôi</h3>
+            <p>
+              Sản phẩm này được dùng để truy xuất nguồn gốc sản phẩm sầu riêng
+              bằng công nghệ Blockchain.
+            </p>
+          </div>
           <div class="col-md-4 d-none d-md-block">
             <h3>Theo dõi chúng tôi</h3>
             <div class="social-links">
@@ -177,7 +359,7 @@
     <script src="https://cdn.jsdelivr.net/npm/babel-standalone/babel.min.js"></script>
     <script src="../../components/tieu-dung/trang-chu.js"></script>
     <script src="../chatbox/chatbox.js"></script>
-    <script src="../js_giaodien/loaditem.js"></script>
+    <script src="../tieu-dung/js/loaditem.js"></script>
 
     <script>
       function toggleChat() {
@@ -201,20 +383,20 @@
       document.addEventListener("DOMContentLoaded", async () => {
         // Load sản phẩm
         await loadItems(
-            '/api/products-home',
-            '.sanpham .row',
-            8,
-            createProductCard
+          "/api/products-home",
+          ".sanpham .row",
+          8,
+          createProductCard,
         );
-        
+
         // Load người dùng
         await loadItems(
-            '/api/users-home',
-            '.thanhvien .row',
-            8,
-            createUserCard
+          "/api/users-home",
+          ".thanhvien .row",
+          8,
+          createUserCard,
         );
-        
+
         // Thêm sự kiện click cho user cards
         addUserCardClickEvents();
       });
@@ -234,12 +416,13 @@
       });
     </script>
     <script>
-      $(document).ready(function(){
-        $('#bannerCarousel').carousel({
-          interval: 2000,  // Thời gian chuyển đổi (3 giây)
-          ride: 'carousel' // Tự động chạy
+      $(document).ready(function () {
+        $("#bannerCarousel").carousel({
+          interval: 2000, // Thời gian chuyển đổi (3 giây)
+          ride: "carousel", // Tự động chạy
         });
       });
     </script>
+    <script src="../shared/js/durian-ai.js"></script>
   </body>
 </html>

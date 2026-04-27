@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-02-28T11:33:03.208Z",
+  "testType": "overflow-underflow",
+  "summary": {
+    "passed": 6,
+    "failed": 1,
+    "total": 7,
+    "score": 86
+  },
+  "results": [
+    {
+      "test": "Solidity 0.8 chấp nhận uint256 max ✓",
+      "status": "PASS",
+      "severity": "INFO",
+      "detail": "Không overflow"
+    },
+    {
+      "test": "Revert MAX price ✓",
+      "status": "PASS",
+      "severity": "INFO",
+      "detail": "Transaction has been reverted by the EVM:\n {\"transactionHash"
+    },
+    {
+      "test": "Block endDate < startDate ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Block startDate=0 ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Nên reject string quá dài",
+      "status": "FAIL",
+      "severity": "MEDIUM",
+      "detail": "5000 chars được chấp nhận"
+    },
+    {
+      "test": "Block invalid enum ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": ""
+    },
+    {
+      "test": "Counter không tăng khi fail ✓",
+      "status": "PASS",
+      "severity": "HIGH",
+      "detail": "Before:4 After:4"
+    }
+  ]
+}

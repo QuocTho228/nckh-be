@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Tem QR - Bộ Công An</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #028040;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #028040 0%, #059669 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+      }
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(2, 128, 64, 0.3);
+      }
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: white;
+        color: #028040;
+        border: 2px solid #028040;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+      }
+      .btn-secondary:hover:not(:disabled) {
+        background: #028040;
+        color: white;
+      }
+      .btn-secondary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .input-gradient {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+      }
+      .input-gradient:focus {
+        outline: none;
+        border-color: #028040;
+        box-shadow: 0 0 0 3px rgba(2, 128, 64, 0.1);
+      }
+      .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      .badge-secondary {
+        background: #f3f4f6;
+        color: #6b7280;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center"
+            >
+              <i class="fas fa-shield-alt text-white"></i>
+            </div>
+            <span
+              class="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent"
+            >
+              Quản Lý Tem QR
+            </span>
+          </div>
+
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-600">
+            <a href="/" class="hover:text-green-600">
+              <i class="fas fa-home"></i> Dashboard
+            </a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-gray-900 font-semibold">Quản lý tem QR</span>
+          </div>
+
+          <div x-data="{ open: false }" class="relative">
+            <button
+              @click="open = !open"
+              class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+            >
+              <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=Admin&background=028040&color=fff"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+              <div class="text-left hidden md:block">
+                <div id="userName" class="font-semibold text-sm">Government</div>
+                <div id="userEmail" class="text-xs text-gray-500">
+                  nhdung.government@nckh.vn
+                </div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <div
+              x-show="open"
+              @click.away="open = false"
+              x-transition
+              x-cloak
+              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
+            >
+              <a href="/" class="block px-4 py-2 hover:bg-gray-50 text-sm">
+                <i class="fas fa-home mr-2"></i> Dashboard
+              </a>
+              <button
+                onclick="logout()"
+                class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div
+      class="container mx-auto px-4 py-8"
+      x-data="stampManagement()"
+      x-init="init()"
+    >
+      <!-- Header -->
+      <div
+        class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl shadow-lg p-6 text-white mb-8"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">
+              <i class="fas fa-shield-alt mr-2"></i>
+              Hệ Thống Quản Lý Tem QR
+            </h1>
+            <p class="opacity-90">Bộ Công An - Truy Xuất Nguồn Gốc</p>
+          </div>
+          <div
+            class="text-right bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3"
+          >
+            <div class="text-sm opacity-90 mb-1">Theo quyết định</div>
+            <div class="text-xl font-bold">5272/QĐ-BNNMT</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Tổng tem đã cấp</p>
+              <p
+                class="text-3xl font-bold text-blue-600"
+                x-text="stats.total || 0"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center"
+            >
+              <i class="fas fa-qrcode text-3xl text-blue-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Đã sử dụng</p>
+              <p
+                class="text-3xl font-bold text-green-600"
+                x-text="stats.used || 0"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+            >
+              <i class="fas fa-check-circle text-3xl text-green-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Còn trống</p>
+              <p
+                class="text-3xl font-bold text-orange-600"
+                x-text="stats.available || 0"
+              ></p>
+            </div>
+            <div
+              class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center"
+            >
+              <i class="fas fa-box-open text-3xl text-orange-600"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="border-b border-gray-200 mb-6">
+          <nav class="flex space-x-8">
+            <button
+              @click="activeTab = 'generate'"
+              :class="activeTab === 'generate' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+              class="py-4 px-1 border-b-2 font-medium text-sm transition"
+            >
+              <i class="fas fa-plus-circle mr-2"></i> Tạo Tem QR
+            </button>
+            <button
+              @click="activeTab = 'list'"
+              :class="activeTab === 'list' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+              class="py-4 px-1 border-b-2 font-medium text-sm transition"
+            >
+              <i class="fas fa-list mr-2"></i> Danh Sách Tem
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab: Generate Stamps -->
+        <div x-show="activeTab === 'generate'" x-cloak>
+          <h2 class="text-xl font-bold mb-6">Tạo Tem QR Mới</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-semibold mb-2">
+                Tiền tố <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                x-model="stampForm.prefix"
+                class="input-gradient"
+                placeholder="VD: SRCA"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                SRCA = Sầu Riêng Chống Giả
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">
+                Năm <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                x-model="stampForm.year"
+                class="input-gradient"
+                placeholder="VD: 2024"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">
+                Số bắt đầu <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                x-model="stampForm.startNumber"
+                class="input-gradient"
+                placeholder="VD: 1"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Mã sẽ tự động padding thành 8 chữ số
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">
+                Số lượng <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                x-model="stampForm.quantity"
+                class="input-gradient"
+                placeholder="VD: 100"
+              />
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div
+            class="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-green-500 rounded-lg p-6 mb-6"
+          >
+            <h3 class="font-semibold mb-3 text-green-900">Xem trước mã QR:</h3>
+            <div class="font-mono text-lg space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="text-gray-600">Từ:</span>
+                <span
+                  class="font-bold text-green-700"
+                  x-text="getPreviewStartCode()"
+                ></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-600">Đến:</span>
+                <span
+                  class="font-bold text-green-700"
+                  x-text="getPreviewEndCode()"
+                ></span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            @click="generateStamps()"
+            class="btn-primary w-full justify-center text-lg py-4"
+            :disabled="generating"
+          >
+            <i class="fas fa-magic mr-2"></i>
+            <span
+              x-text="generating ? 'Đang tạo...' : `Tạo ${stampForm.quantity} Tem QR`"
+            ></span>
+          </button>
+        </div>
+
+        <!-- Tab: List Stamps -->
+        <div x-show="activeTab === 'list'" x-cloak>
+          <!-- Filters & Actions -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <!-- Search -->
+            <div class="md:col-span-2 relative">
+              <i
+                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              ></i>
+              <input
+                type="text"
+                x-model="searchQuery"
+                @input="filterStamps()"
+                placeholder="Tìm kiếm theo mã QR..."
+                class="input-gradient pl-12"
+              />
+            </div>
+
+            <!-- Filter by Status -->
+            <div>
+              <select
+                x-model="filterStatus"
+                @change="filterStamps()"
+                class="input-gradient"
+              >
+                <option value="">Tất cả trạng thái</option>
+                <option value="AVAILABLE">Còn trống</option>
+                <option value="USED">Đã sử dụng</option>
+                <option value="EXPIRED">Hết hạn</option>
+                <option value="REVOKED">Đã thu hồi</option>
+              </select>
+            </div>
+
+            <!-- Limit -->
+            <div>
+              <select
+                x-model="filterLimit"
+                @change="applyLimit()"
+                class="input-gradient"
+              >
+                <option value="10">10 mã</option>
+                <option value="20">20 mã</option>
+                <option value="50">50 mã</option>
+                <option value="100">100 mã</option>
+                <option value="500">500 mã</option>
+                <option value="1000">Tất cả</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-3 mb-6">
+            <button
+              @click="downloadAllStamps()"
+              class="btn-secondary"
+              :disabled="displayStamps.length === 0"
+            >
+              <i class="fas fa-download mr-2"></i>
+              Tải <span x-text="displayStamps.length"></span> Tem
+            </button>
+            <button
+              @click="downloadAvailableStamps()"
+              class="btn-secondary"
+              :disabled="displayStamps.filter(s => s.status === 'AVAILABLE').length === 0"
+            >
+              <i class="fas fa-download mr-2"></i>
+              Tải Tem Còn Trống (<span
+                x-text="displayStamps.filter(s => s.status === 'AVAILABLE').length"
+              ></span
+              >)
+            </button>
+            <button @click="reloadStamps()" class="btn-secondary">
+              <i class="fas fa-sync-alt mr-2"></i> Làm mới
+            </button>
+          </div>
+
+          <!-- Filter Info -->
+          <div
+            x-show="searchQuery || filterStatus"
+            class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center justify-between"
+          >
+            <div class="text-sm text-blue-800">
+              <i class="fas fa-filter mr-2"></i>
+              Đang hiển thị <strong x-text="displayStamps.length"></strong> /
+              <strong x-text="stamps.length"></strong> tem
+              <span x-show="searchQuery">
+                - Tìm kiếm: "<span x-text="searchQuery"></span>"
+              </span>
+              <span x-show="filterStatus">
+                - Trạng thái: <span x-text="getStatusText(filterStatus)"></span>
+              </span>
+            </div>
+            <button
+              @click="clearFilters()"
+              class="text-blue-600 hover:text-blue-800 text-sm font-semibold"
+            >
+              <i class="fas fa-times mr-1"></i> Xóa bộ lọc
+            </button>
+          </div>
+
+          <!-- Loading -->
+          <div x-show="loading" x-cloak class="flex justify-center py-12">
+            <div class="spinner"></div>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            x-show="!loading && displayStamps.length === 0"
+            x-cloak
+            class="text-center py-12"
+          >
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500">Không tìm thấy tem QR nào</p>
+          </div>
+
+          <!-- Table -->
+          <div
+            x-show="!loading && displayStamps.length > 0"
+            x-cloak
+            class="overflow-x-auto"
+          >
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    STT
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Mã QR
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Trạng thái
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Ngày cấp
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <template
+                  x-for="(stamp, index) in displayStamps"
+                  :key="stamp.qr_code"
+                >
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm" x-text="index + 1"></td>
+                    <td class="px-6 py-4">
+                      <span
+                        class="font-mono font-semibold"
+                        x-text="stamp.qr_code"
+                      ></span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span
+                        :class="{
+                          'badge-success': stamp.status === 'AVAILABLE',
+                          'badge-secondary': stamp.status === 'USED',
+                          'badge-warning': stamp.status === 'EXPIRED',
+                          'badge-danger': stamp.status === 'REVOKED'
+                        }"
+                        x-text="getStatusText(stamp.status)"
+                      ></span>
+                    </td>
+                    <td
+                      class="px-6 py-4 text-sm text-gray-600"
+                      x-text="formatDate(stamp.issued_date)"
+                    ></td>
+                    <td class="px-6 py-4">
+                      <div class="flex gap-2">
+                        <button
+                          @click="viewStampDetails(stamp)"
+                          class="text-green-600 hover:text-green-800 font-semibold text-sm"
+                        >
+                          <i class="fas fa-eye mr-1"></i> Xem
+                        </button>
+                        <button
+                          @click="downloadStampImage(stamp.qr_code)"
+                          class="text-blue-600 hover:text-blue-800 font-semibold text-sm"
+                        >
+                          <i class="fas fa-download mr-1"></i> Tải
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Box -->
+      <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+        <h3 class="font-bold text-blue-900 mb-3 flex items-center gap-2">
+          <i class="fas fa-info-circle"></i>
+          Thông tin quan trọng
+        </h3>
+        <ul class="space-y-2 text-sm text-blue-800">
+          <li>• Tem QR do Bộ Công an cấp phát, có tính pháp lý cao</li>
+          <li>• Mỗi tem chỉ được sử dụng 1 lần, không thể tái sử dụng</li>
+          <li>• Processor sẽ quét/nhập mã này khi đóng gói sản phẩm</li>
+          <li>• Hệ thống tự động kiểm tra tính hợp lệ và trạng thái của tem</li>
+          <li>• Định dạng: SRCA + Năm + 8 chữ số (VD: SRCA2024-00000001)</li>
+        </ul>
+      </div>
+
+      <!-- Modal: Stamp Details -->
+      <div
+        x-show="showStampModal"
+        x-cloak
+        @click.self="showStampModal = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      >
+      <div
+        @click.stop
+        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <!-- Modal Header -->
+        <div
+          class="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-t-2xl"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold">
+              <i class="fas fa-qrcode mr-2"></i>
+              Chi Tiết Tem QR
+            </h2>
+            <button
+              @click="showStampModal = false"
+              class="text-white hover:text-gray-200 text-2xl"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6" x-show="selectedStamp">
+          <!-- QR Code Image -->
+          <div class="flex justify-center mb-6">
+            <div
+              class="bg-white border-4 border-green-600 rounded-lg p-4 shadow-lg"
+            >
+              <div id="qrCodeCanvas" class="w-64 h-64"></div>
+              <p
+                class="text-center mt-3 font-mono text-sm font-bold text-green-900"
+                x-text="selectedStamp?.qr_code"
+              ></p>
+            </div>
+          </div>
+
+          <!-- Stamp Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Mã QR</p>
+              <p
+                class="font-mono font-bold text-lg text-green-700"
+                x-text="selectedStamp?.qr_code"
+              ></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Trạng thái</p>
+              <span
+                :class="{
+                  'badge-success': selectedStamp?.status === 'AVAILABLE',
+                  'badge-secondary': selectedStamp?.status === 'USED',
+                  'badge-warning': selectedStamp?.status === 'EXPIRED',
+                  'badge-danger': selectedStamp?.status === 'REVOKED'
+                }"
+                x-text="getStatusText(selectedStamp?.status)"
+              ></span>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Tiền tố</p>
+              <p class="font-semibold" x-text="selectedStamp?.prefix"></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Năm cấp</p>
+              <p class="font-semibold" x-text="selectedStamp?.issue_year"></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Số serial</p>
+              <p
+                class="font-mono font-semibold"
+                x-text="selectedStamp?.serial_number"
+              ></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Loại sản phẩm</p>
+              <p class="font-semibold" x-text="selectedStamp?.product_type"></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Ngày cấp</p>
+              <p
+                class="font-semibold"
+                x-text="formatDate(selectedStamp?.issued_date)"
+              ></p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-500 mb-1">Cơ quan cấp</p>
+              <p class="font-semibold" x-text="selectedStamp?.issued_by"></p>
+            </div>
+          </div>
+
+          <!-- Usage Information (if used) -->
+          <div
+            x-show="selectedStamp?.status === 'USED'"
+            class="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-6"
+          >
+            <h3 class="font-bold text-yellow-900 mb-3">
+              <i class="fas fa-info-circle mr-2"></i>
+              Thông tin sử dụng
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div>
+                <p class="text-gray-600">Ngày sử dụng:</p>
+                <p
+                  class="font-semibold"
+                  x-text="formatDate(selectedStamp?.used_date)"
+                ></p>
+              </div>
+              <div>
+                <p class="text-gray-600">Người sử dụng:</p>
+                <p
+                  class="font-semibold"
+                  x-text="selectedStamp?.used_by_user_name || 'N/A'"
+                ></p>
+              </div>
+              <div>
+                <p class="text-gray-600">Lô hàng:</p>
+                <p
+                  class="font-semibold"
+                  x-text="selectedStamp?.used_for_batch_id || 'N/A'"
+                ></p>
+              </div>
+              <div>
+                <p class="text-gray-600">Sản phẩm:</p>
+                <p
+                  class="font-semibold"
+                  x-text="selectedStamp?.used_for_product_id || 'N/A'"
+                ></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3">
+            <button
+              @click="downloadStampImage(selectedStamp.qr_code)"
+              class="btn-primary flex-1 justify-center"
+            >
+              <i class="fas fa-download mr-2"></i>
+              Tải xuống tem QR
+            </button>
+            <button
+              @click="showStampModal = false"
+              class="btn-secondary flex-1 justify-center"
+            >
+              <i class="fas fa-times mr-2"></i>
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/js/config.js"></script>
+    <script src="../shared/js/utils.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/auth.js"></script>
+    <script src="quan-ly-tem-qr.js"></script>
+  </body>
+</html>

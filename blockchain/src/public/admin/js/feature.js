@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.hostname === "localhost"
       ? "http://localhost:3000/api"
       : //: "http://127.0.0.1:3000/api";
-        "https://truyxuatbuoi.xyz/api";
+        "https://truyxuatsaurieng.xyz/api";
 
   // Toggle dropdown menu
   if (profileIcon && dropdownMenu) {
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch("/api/dangxuat", {
           method: "POST",
-          credentials: "same-origin"
+          credentials: "same-origin",
         });
         if (response.ok) {
           window.location.href = "../account/dangnhap.html";
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmReadButton.addEventListener("click", async () => {
     try {
       const response = await fetch("/api/notifications/mark-all-read", {
-        method: "POST"
+        method: "POST",
       });
       if (response.ok) {
         const notificationList = document.getElementById("notificationList");
@@ -140,8 +140,8 @@ async function markNotificationAsRead(notificationId) {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
     if (response.ok) {
@@ -257,7 +257,7 @@ function time() {
     "Thứ Tư",
     "Thứ Năm",
     "Thứ Sáu",
-    "Thứ Bảy"
+    "Thứ Bảy",
   ];
   const day = weekday[today.getDay()];
   const dd = String(today.getDate()).padStart(2, "0");
@@ -391,7 +391,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString("vi-VN", {
     year: "numeric",
     month: "2-digit",
-    day: "2-digit"
+    day: "2-digit",
   });
 }
 

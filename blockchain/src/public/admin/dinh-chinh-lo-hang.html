@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../hinhanh/favicon.png" />
+    <title>Quản lý đính chính lô hàng - Admin</title>
+    <script>
+      (function () {
+        document.documentElement.classList.add(
+          localStorage.getItem("theme") || "light-theme",
+        );
+      })();
+    </script>
+
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/theme.css" />
+    <link rel="stylesheet" href="./css/header.css" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <link rel="stylesheet" href="./css/animation.css" />
+
+    <style>
+      .diff-row-old {
+        background: #fff5f5;
+      }
+      .diff-row-new {
+        background: #f0fdf4;
+      }
+      .val-old {
+        color: #dc2626;
+        text-decoration: line-through;
+      }
+      .val-new {
+        color: #16a34a;
+        font-weight: 600;
+      }
+      .badge-pending {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+      .badge-approved {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .badge-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+      .tab-btn.active {
+        border-bottom-color: #16a34a;
+        color: #16a34a;
+        font-weight: 600;
+      }
+      .request-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        margin-bottom: 16px;
+      }
+      .request-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .request-card-body {
+        padding: 16px 20px;
+      }
+      .status-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 9999px;
+      }
+      .diff-table {
+        width: 100%;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .diff-table th {
+        background: #f9fafb;
+        padding: 8px 14px;
+        text-align: left;
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
+      }
+      .diff-table td {
+        padding: 8px 14px;
+        border-top: 1px solid #f3f4f6;
+      }
+      .stat-box {
+        border-radius: 8px;
+        padding: 10px 18px;
+        text-align: center;
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.show {
+        display: flex;
+      }
+      .modal-box {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 460px;
+        margin: 16px;
+        padding: 24px;
+      }
+      .reason-box {
+        background: #fafafa;
+        border-left: 4px solid #f59e0b;
+        border-radius: 6px;
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        color: #374151;
+      }
+      .action-result {
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 0.875rem;
+        margin-top: 12px;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+      }
+      .spinner {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+
+  <body onload="time()">
+    <div id="messageContainer"></div>
+
+    <header class="text-white">
+      <div class="header-container">
+        <div class="header-left">
+          <a href="#" class="header-logo">
+            <img
+              src="../hinhanh/Bitcoin-Blockchain-Network-icon-on-transparent-background-PNG.png"
+              alt="Logo"
+            />
+          </a>
+        </div>
+        <div class="header-title">
+          <h2>QUẢN LÝ ĐÍNH CHÍNH LÔ HÀNG</h2>
+        </div>
+        <div class="header-right">
+          <div class="action-item notification-item">
+            <i class="fas fa-bell" id="notificationIcon" title="Thông báo"></i>
+            <span class="badge badge-danger noti_count"></span>
+          </div>
+          <div class="action-item">
+            <i class="fas fa-sun" id="themeIcon" title="Đổi giao diện"></i>
+          </div>
+          <div class="action-item">
+            <i
+              class="fas fa-sign-out-alt"
+              id="logoutIcon"
+              title="Đăng xuất"
+            ></i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <button class="sidebar-toggle">☰</button>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar giống user.html -->
+        <nav class="col-md-2 sidebar">
+          <div class="section-title"></div>
+          <a href="admintest.html" class="menu-item rounded mt-2"
+            ><i class="fas fa-home"></i> Trang chủ</a
+          >
+          <div class="divider"></div>
+          <div class="section-title">CHỨC NĂNG</div>
+          <a href="user.html" class="menu-item rounded"
+            ><i class="fas fa-users"></i> Quản lý người dùng</a
+          >
+          <a href="product.html" class="menu-item rounded"
+            ><i class="fas fa-box"></i> Sản phẩm</a
+          >
+          <a href="region.html" class="menu-item rounded"
+            ><i class="fas fa-map-marker-alt"></i> Vùng sản xuất</a
+          >
+          <a href="dinh-chinh-lo-hang.html" class="menu-item rounded active"
+            ><i class="fas fa-edit"></i> Đính chính lô hàng</a
+          >
+          <div class="divider"></div>
+          <div class="section-title">TIỆN ÍCH</div>
+          <a href="stats.html" class="menu-item rounded"
+            ><i class="fas fa-chart-bar"></i> Báo cáo và thống kê</a
+          >
+          <a href="reply.html" class="menu-item rounded">
+            <i class="fas fa-comments"></i> Phản hồi
+            <span
+              class="badge badge-danger ml-2 reply-count"
+              style="display: none"
+              >0</span
+            >
+          </a>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-10 col-12 px-2 offset-md-2 pt-5">
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="card card-custom">
+                <div
+                  class="card-body d-flex justify-content-between align-items-center"
+                  style="padding: 10px"
+                >
+                  <h5
+                    class="card-title"
+                    style="
+                      border-left: 5px solid yellow;
+                      padding-left: 10px;
+                      margin-bottom: 0;
+                    "
+                  >
+                    Quản lý đính chính lô hàng
+                  </h5>
+                  <div
+                    id="clock"
+                    class="text-right"
+                    style="font-size: 0.9rem"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="card card-custom">
+                <div class="card-body">
+                  <!-- Stats -->
+                  <div class="d-flex gap-3 mb-4" style="gap: 12px">
+                    <div
+                      class="stat-box"
+                      style="background: #fef9c3; border: 1px solid #fde68a"
+                    >
+                      <p
+                        class="mb-0"
+                        style="
+                          font-size: 1.4rem;
+                          font-weight: 700;
+                          color: #92400e;
+                        "
+                        id="stat-pending"
+                      >
+                        0
+                      </p>
+                      <p
+                        class="mb-0"
+                        style="font-size: 0.75rem; color: #92400e"
+                      >
+                        Chờ duyệt
+                      </p>
+                    </div>
+                    <div
+                      class="stat-box"
+                      style="background: #dcfce7; border: 1px solid #bbf7d0"
+                    >
+                      <p
+                        class="mb-0"
+                        style="
+                          font-size: 1.4rem;
+                          font-weight: 700;
+                          color: #166534;
+                        "
+                        id="stat-approved"
+                      >
+                        0
+                      </p>
+                      <p
+                        class="mb-0"
+                        style="font-size: 0.75rem; color: #166534"
+                      >
+                        Đã duyệt
+                      </p>
+                    </div>
+                    <div
+                      class="stat-box"
+                      style="background: #fee2e2; border: 1px solid #fca5a5"
+                    >
+                      <p
+                        class="mb-0"
+                        style="
+                          font-size: 1.4rem;
+                          font-weight: 700;
+                          color: #991b1b;
+                        "
+                        id="stat-rejected"
+                      >
+                        0
+                      </p>
+                      <p
+                        class="mb-0"
+                        style="font-size: 0.75rem; color: #991b1b"
+                      >
+                        Từ chối
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Tabs -->
+                  <div
+                    style="
+                      border-bottom: 1px solid #e5e7eb;
+                      margin-bottom: 20px;
+                    "
+                  >
+                    <button
+                      class="tab-btn active"
+                      onclick="switchTab('pending', this)"
+                    >
+                      <i class="fas fa-hourglass-half mr-1"></i>Chờ duyệt
+                      <span
+                        id="pending-badge"
+                        class="badge badge-warning ml-1"
+                        style="display: none; font-size: 0.7rem"
+                      ></span>
+                    </button>
+                    <button
+                      class="tab-btn"
+                      onclick="switchTab('approved', this)"
+                    >
+                      <i class="fas fa-check-circle mr-1"></i>Đã duyệt
+                    </button>
+                    <button
+                      class="tab-btn"
+                      onclick="switchTab('rejected', this)"
+                    >
+                      <i class="fas fa-times-circle mr-1"></i>Đã từ chối
+                    </button>
+                  </div>
+
+                  <!-- Loading -->
+                  <div id="loading-state" class="spinner">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                    <p>Đang tải...</p>
+                  </div>
+
+                  <!-- Empty -->
+                  <div
+                    id="empty-state"
+                    class="empty-state"
+                    style="display: none"
+                  >
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p id="empty-text">Không có yêu cầu nào đang chờ duyệt</p>
+                  </div>
+
+                  <!-- Request list -->
+                  <div id="request-list" style="display: none"></div>
+
+                  <!-- Pagination -->
+                  <div
+                    id="pagination-container"
+                    class="d-flex justify-content-center mt-4"
+                    style="gap: 8px; display: none !important"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Notification panel (giống user.html) -->
+    <div
+      class="notification-panel col-10 col-md-3 col-sm-10 offset-md-7 offset-1 offset-sm-1"
+      id="notificationPanel"
+    >
+      <div class="notification-header">
+        <h4 class="notification-title pl-1">Thông báo</h4>
+        <button id="confirmRead" class="btn-mark-read btn-sm">
+          <i class="fas fa-check-double"></i> Đánh dấu tất cả đã đọc
+        </button>
+      </div>
+      <ul id="notificationList"></ul>
+    </div>
+    <!-- Remove panel (feature.js cần element này) -->
+    <section class="remove">
+      <h1 class="remove-header">Cảnh báo</h1>
+      <p class="remove-warning">Bạn có chắc chắn muốn xóa?</p>
+      <div class="action-buttons btn-center">
+        <button class="btn btn-cancel mr-2" id="cancel-remove">Hủy bỏ</button>
+        <button class="btn btn-save" id="accept-remove">Đồng ý</button>
+      </div>
+    </section>
+
+    <div id="overlay"></div>
+
+    <!-- Modal từ chối -->
+    <div class="modal-overlay" id="reject-modal">
+      <div class="modal-box">
+        <h5 class="mb-1" style="font-weight: 600">
+          Từ chối yêu cầu đính chính
+        </h5>
+        <p class="text-muted mb-3" style="font-size: 0.875rem">
+          Lô: <strong id="modal-batch-name"></strong>
+        </p>
+        <label
+          style="font-size: 0.875rem; font-weight: 500"
+          class="mb-1 d-block"
+        >
+          Lý do từ chối <span style="color: #ef4444">*</span>
+        </label>
+        <textarea
+          id="reject-note"
+          rows="4"
+          placeholder="Ví dụ: Thông tin đính chính không hợp lệ..."
+          class="form-control mb-3"
+          style="font-size: 0.875rem"
+        ></textarea>
+        <div class="d-flex justify-content-end" style="gap: 10px">
+          <button class="btn btn-secondary btn-sm" onclick="closeRejectModal()">
+            Huỷ
+          </button>
+          <button
+            class="btn btn-danger btn-sm"
+            id="confirm-reject-btn"
+            onclick="confirmReject()"
+          >
+            <i class="fas fa-times mr-1"></i>Xác nhận từ chối
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script src="./js/admin-auth.js"></script>
+    <script src="./js/unread-count.js"></script>
+    <script src="./js/feature.js"></script>
+    <script src="./js/settings.js"></script>
+
+    <script>
+      // ─── State ────────────────────────────────────────────────────────
+      let currentTab = "pending";
+      let currentPage = 1;
+      let totalPages = 1;
+      let rejectTarget = null;
+
+      // ─── Init (theo đúng pattern admin-auth.js: chờ socket connect + getUserInfo) ──
+      document.addEventListener("DOMContentLoaded", () => {
+        applySettings && applySettings();
+        // admin-auth.js gọi checkAdminAuth() trong initAdminSocket() → onLogin
+        // Sau khi socket connect, ta mới load data
+        document.addEventListener("socketInitialized", () => {
+          loadStats();
+          loadRequests(1);
+        });
+        // Fallback: nếu không có socket (trang tải sau khi connect), thử sau 1.5s
+        setTimeout(() => {
+          if (
+            document.getElementById("loading-state").style.display !== "none" &&
+            document.getElementById("request-list").style.display === "none"
+          ) {
+            // Kiểm tra auth trực tiếp
+            fetch("/api/user-info")
+              .then((r) => r.json())
+              .then((data) => {
+                if (!data.isAdmin || data.roleId !== 3) {
+                  window.location.href = "../account/dangnhap.html";
+                } else {
+                  loadStats();
+                  loadRequests(1);
+                }
+              })
+              .catch(() => {
+                window.location.href = "../account/dangnhap.html";
+              });
+          }
+        }, 1500);
+      });
+
+      // ─── Tabs ─────────────────────────────────────────────────────────
+      function switchTab(tab, btn) {
+        currentTab = tab;
+        currentPage = 1;
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadRequests(1);
+      }
+
+      // ─── Stats ────────────────────────────────────────────────────────
+      async function loadStats() {
+        try {
+          const res = await axios.get("/api/correction/stats", {
+            withCredentials: true,
+          });
+          if (res.data.success) {
+            const s = res.data.data;
+            document.getElementById("stat-pending").textContent =
+              s.pending || 0;
+            document.getElementById("stat-approved").textContent =
+              s.approved || 0;
+            document.getElementById("stat-rejected").textContent =
+              s.rejected || 0;
+            const badge = document.getElementById("pending-badge");
+            if (s.pending > 0) {
+              badge.textContent = s.pending;
+              badge.style.display = "inline-block";
+            } else {
+              badge.style.display = "none";
+            }
+          }
+        } catch (e) {
+          console.error("Stats error:", e);
+        }
+      }
+
+      // ─── Load requests ────────────────────────────────────────────────
+      async function loadRequests(page = 1) {
+        currentPage = page;
+        document.getElementById("loading-state").style.display = "block";
+        document.getElementById("empty-state").style.display = "none";
+        document.getElementById("request-list").style.display = "none";
+        document.getElementById("pagination-container").style.display = "none";
+
+        try {
+          const res = await axios.get("/api/correction/pending", {
+            params: { status: currentTab, page, limit: 10 },
+            withCredentials: true,
+          });
+          document.getElementById("loading-state").style.display = "none";
+
+          if (!res.data.success) throw new Error(res.data.error);
+          const { data, pagination } = res.data;
+          totalPages = pagination.totalPages;
+
+          if (!data || data.length === 0) {
+            document.getElementById("empty-text").textContent =
+              currentTab === "pending"
+                ? "Không có yêu cầu nào đang chờ duyệt"
+                : "Không có dữ liệu";
+            document.getElementById("empty-state").style.display = "block";
+            return;
+          }
+
+          renderRequests(data);
+          renderPagination(pagination);
+          document.getElementById("request-list").style.display = "block";
+          if (pagination.totalPages > 1) {
+            document.getElementById("pagination-container").style.display =
+              "flex";
+          }
+        } catch (e) {
+          console.error("Load requests error:", e);
+          document.getElementById("loading-state").style.display = "none";
+          document.getElementById("empty-text").textContent =
+            "Lỗi tải dữ liệu: " + (e.message || "");
+          document.getElementById("empty-state").style.display = "block";
+        }
+      }
+
+      // ─── Render helpers ───────────────────────────────────────────────
+      function statusLabel(s) {
+        return (
+          { pending: "Chờ duyệt", approved: "Đã duyệt", rejected: "Từ chối" }[
+            s
+          ] || s
+        );
+      }
+      function statusBadgeClass(s) {
+        return (
+          {
+            pending: "badge-pending",
+            approved: "badge-approved",
+            rejected: "badge-rejected",
+          }[s] || ""
+        );
+      }
+      function fieldLabel(f) {
+        return (
+          {
+            batch_name: "Tên lô hàng",
+            quantity: "Số lượng (kg)",
+            farm_plot_number: "Số mảnh vườn",
+            harvest_notes: "Ghi chú thu hoạch",
+            start_date: "Ngày bắt đầu",
+            end_date: "Ngày kết thúc",
+          }[f] || f
+        );
+      }
+      function fmtDate(d) {
+        if (!d) return "";
+        return new Date(d).toLocaleString("vi-VN");
+      }
+      function esc(str) {
+        if (str == null) return "Chưa có";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderRequests(requests) {
+        const list = document.getElementById("request-list");
+        list.innerHTML = requests
+          .map((req) => {
+            const changedFields = req.changed_fields || [];
+            const orig = req.original_data || {};
+            const corr = req.corrected_data || {};
+
+            const diffRows = changedFields
+              .map(
+                (f) => `
+            <tr>
+              <td class="font-weight-bold text-muted">${fieldLabel(f)}</td>
+              <td><span class="val-old">${esc(orig[f])}</span></td>
+              <td><span class="val-new">${esc(corr[f])}</span></td>
+            </tr>`,
+              )
+              .join("");
+
+            const reviewResult =
+              req.correction_status !== "pending"
+                ? `
+            <div class="action-result ${
+              req.correction_status === "approved"
+                ? "border border-success text-success"
+                : "border border-danger text-danger"
+            }"
+              style="background: ${req.correction_status === "approved" ? "#f0fdf4" : "#fef2f2"}">
+              <p class="mb-1 font-weight-bold">
+                ${
+                  req.correction_status === "approved"
+                    ? "&#10003; Đã phê duyệt bởi "
+                    : "&#10007; Đã từ chối bởi "
+                }
+                ${esc(req.reviewed_by_name || "Admin")}
+              </p>
+              ${req.review_note ? `<p class="mb-1" style="opacity:.8">${esc(req.review_note)}</p>` : ""}
+              <p class="mb-0" style="font-size:.75rem; opacity:.6">${fmtDate(req.reviewed_at)}</p>
+            </div>`
+                : "";
+
+            const actions =
+              req.correction_status === "pending"
+                ? `
+            <div class="d-flex justify-content-end mt-3" style="gap:10px;">
+              <button class="btn btn-sm btn-outline-danger"
+                onclick="openRejectModal(${req.id}, '${esc(req.batch_name)}')">
+                <i class="fas fa-times mr-1"></i>Từ chối
+              </button>
+              <button class="btn btn-sm btn-success"
+                onclick="approveRequest(${req.id}, '${esc(req.batch_name)}')">
+                <i class="fas fa-check mr-1"></i>Phê duyệt
+              </button>
+            </div>`
+                : "";
+
+            return `
+            <div class="request-card">
+              <div class="request-card-header">
+                <div>
+                  <div class="d-flex align-items-center mb-1" style="gap:8px;">
+                    <strong>${esc(req.batch_name)}</strong>
+                    <span class="status-badge ${statusBadgeClass(req.correction_status)}">
+                      ${statusLabel(req.correction_status)}
+                    </span>
+                  </div>
+                  <div style="font-size:.8rem; color:#6b7280; display:flex; flex-wrap:wrap; gap:0 16px;">
+                    <span><i class="fas fa-barcode mr-1"></i>SSCC: <strong>${esc(req.sscc)}</strong></span>
+                    <span><i class="fas fa-user mr-1"></i>Nông dân: <strong>${esc(req.farmer_name)}</strong></span>
+                    <span><i class="fas fa-phone mr-1"></i>${esc(req.farmer_phone)}</span>
+                    <span><i class="fas fa-clock mr-1"></i>Gửi lúc: ${fmtDate(req.requested_at)}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="request-card-body">
+                <div class="mb-3">
+                  <p style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.05em;" class="mb-1">
+                    Lý do đính chính
+                  </p>
+                  <div class="reason-box">${esc(req.reason)}</div>
+                </div>
+                <div class="mb-3">
+                  <p style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.05em;" class="mb-2">
+                    Chi tiết thay đổi
+                  </p>
+                  <table class="diff-table">
+                    <thead>
+                      <tr>
+                        <th>Trường</th>
+                        <th>Giá trị cũ</th>
+                        <th>Giá trị mới</th>
+                      </tr>
+                    </thead>
+                    <tbody>${diffRows}</tbody>
+                  </table>
+                </div>
+                ${reviewResult}
+                ${actions}
+              </div>
+            </div>`;
+          })
+          .join("");
+      }
+
+      function renderPagination({ page, totalPages }) {
+        const container = document.getElementById("pagination-container");
+        container.innerHTML = `
+          <button class="btn btn-sm btn-outline-secondary" ${page <= 1 ? "disabled" : ""}
+            onclick="loadRequests(${page - 1})">← Trước</button>
+          <span class="btn btn-sm disabled">Trang ${page} / ${totalPages}</span>
+          <button class="btn btn-sm btn-outline-secondary" ${page >= totalPages ? "disabled" : ""}
+            onclick="loadRequests(${page + 1})">Sau →</button>`;
+      }
+
+      // ─── Approve ──────────────────────────────────────────────────────
+      async function approveRequest(id, batchName) {
+        const { value: note, isConfirmed } = await Swal.fire({
+          title: "Phê duyệt đính chính",
+          html: `<p style="font-size:.9rem;color:#6b7280;">Lô: <strong>${batchName}</strong></p>
+                 <p style="font-size:.9rem;color:#6b7280;">Dữ liệu MySQL sẽ được cập nhật ngay.</p>`,
+          input: "textarea",
+          inputLabel: "Ghi chú (tuỳ chọn)",
+          inputPlaceholder: "Nhập ghi chú nếu cần...",
+          showCancelButton: true,
+          confirmButtonText: "Phê duyệt",
+          cancelButtonText: "Huỷ",
+          confirmButtonColor: "#16a34a",
+        });
+        if (!isConfirmed) return;
+
+        try {
+          const res = await axios.post(
+            `/api/correction/${id}/approve`,
+            { note: note || "" },
+            { withCredentials: true },
+          );
+          if (res.data.success) {
+            await Swal.fire({
+              icon: "success",
+              title: "Đã phê duyệt!",
+              text: res.data.message,
+              confirmButtonColor: "#16a34a",
+            });
+            loadStats();
+            loadRequests(currentPage);
+          } else {
+            Swal.fire("Lỗi", res.data.error, "error");
+          }
+        } catch (e) {
+          Swal.fire("Lỗi", e.response?.data?.error || e.message, "error");
+        }
+      }
+
+      // ─── Reject modal ─────────────────────────────────────────────────
+      function openRejectModal(id, batchName) {
+        rejectTarget = id;
+        document.getElementById("modal-batch-name").textContent = batchName;
+        document.getElementById("reject-note").value = "";
+        document.getElementById("reject-modal").classList.add("show");
+      }
+      function closeRejectModal() {
+        rejectTarget = null;
+        document.getElementById("reject-modal").classList.remove("show");
+      }
+
+      async function confirmReject() {
+        const note = document.getElementById("reject-note").value.trim();
+        if (note.length < 5) {
+          Swal.fire(
+            "Thiếu thông tin",
+            "Vui lòng nhập lý do từ chối (ít nhất 5 ký tự)",
+            "warning",
+          );
+          return;
+        }
+        const btn = document.getElementById("confirm-reject-btn");
+        btn.disabled = true;
+        btn.innerHTML =
+          '<i class="fas fa-spinner fa-spin mr-1"></i>Đang xử lý...';
+
+        try {
+          const res = await axios.post(
+            `/api/correction/${rejectTarget}/reject`,
+            { note },
+            { withCredentials: true },
+          );
+          closeRejectModal();
+          if (res.data.success) {
+            await Swal.fire({
+              icon: "success",
+              title: "Đã từ chối",
+              text: "Yêu cầu đính chính đã bị từ chối.",
+              confirmButtonColor: "#16a34a",
+            });
+            loadStats();
+            loadRequests(currentPage);
+          } else {
+            Swal.fire("Lỗi", res.data.error, "error");
+          }
+        } catch (e) {
+          Swal.fire("Lỗi", e.response?.data?.error || e.message, "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-times mr-1"></i>Xác nhận từ chối';
+        }
+      }
+
+      // Đóng modal khi click ngoài
+      document
+        .getElementById("reject-modal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closeRejectModal();
+        });
+
+      document.addEventListener("DOMContentLoaded", applySettings);
+    </script>
+  </body>
+</html>

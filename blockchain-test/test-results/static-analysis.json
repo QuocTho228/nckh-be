@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-02-28T11:34:23.804Z",
+  "testType": "static-analysis",
+  "summary": {
+    "safe": 10,
+    "critical": 2,
+    "high": 0,
+    "medium": 1,
+    "low": 0
+  },
+  "findings": [
+    {
+      "severity": "SAFE",
+      "title": "Pragma Solidity ≥ 0.8 — arithmetic overflow protection built-in",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không có ETH transfer → Reentrancy không áp dụng",
+      "note": "contract không xử lý ETH trực tiếp"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "addActivityLog() KHÔNG có access control",
+      "detail": "Bất kỳ address nào cũng ghi được log giả vào bất kỳ batch nào.",
+      "fix": "Thêm: mapping(address=>bool) authorized;\n         modifier onlyAuthorized(){\n           require(authorized[msg.sender]||msg.sender==owner,\"Not authorized\");\n           _;\n         }"
+    },
+    {
+      "severity": "CRITICAL",
+      "title": "addDetailedActivityLog() KHÔNG có access control",
+      "detail": "Tương tự addActivityLog.",
+      "fix": "Áp dụng cùng modifier onlyAuthorized"
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không có payable function — contract không nhận ETH",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không dùng tx.origin → không bị phishing contract",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không có selfdestruct()",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không có delegatecall()",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không dùng blockhash() làm source of randomness",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "Không có inline assembly",
+      "note": ""
+    },
+    {
+      "severity": "SAFE",
+      "title": "block.timestamp chỉ dùng để logging — Rủi ro THẤP (miner ±15s không ảnh hưởng)",
+      "note": ""
+    },
+    {
+      "severity": "MEDIUM",
+      "title": "getBatchesByStage() là O(n) — gas tăng 2.0x khi double batch",
+      "detail": "Sẽ hit block gas limit (~30,000,000) khi khoảng 803 batches",
+      "fix": "Thêm index: mapping(SupplyChainStage => uint256[]) batchIdsByStage;\n         Hoặc dùng off-chain index (TheGraph / MySQL event listener đã có)"
+    },
+    {
+      "severity": "SAFE",
+      "title": "Hầu hết require() có message (21/21)",
+      "note": ""
+    }
+  ],
+  "gasGrowth": {
+    "batches_20": 746753,
+    "batches_40": 1474383,
+    "ratio": "1.97",
+    "proj_300": 11201295
+  }
+}

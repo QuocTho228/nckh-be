@@ -1,0 +1,374 @@
+{
+  "timestamp": "2026-02-28T11:34:26.643Z",
+  "testType": "e2e-full-lifecycle",
+  "summary": {
+    "passed": 68,
+    "failed": 0,
+    "total": 68,
+    "score": 100,
+    "totalSec": "2.4"
+  },
+  "batchInfo": {
+    "batchId": 1,
+    "sscc": "000000022457299721",
+    "treeIds": [
+      1,
+      2,
+      3
+    ],
+    "batchName": "Musang King Premium D197 — Vụ Hè Thu 2024",
+    "batchQty": "850",
+    "producerId": 2
+  },
+  "stagesCovered": [
+    "Created",
+    "Purchased",
+    "Transported1",
+    "Processed",
+    "QualityInspected",
+    "Transported2",
+    "Warehoused"
+  ],
+  "testResults": [
+    {
+      "test": "Cây 1: TreeRegistered emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Cây 1: plantedDate = block.timestamp",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Cây 2: TreeRegistered emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Cây 2: plantedDate = block.timestamp",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Cây 3: TreeRegistered emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Cây 3: plantedDate = block.timestamp",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "3 cây đã đăng ký: [1,2,3]",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Activity log chăm sóc cây ghi thành công",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "BatchCreated event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "BatchDetailsStored event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "StageUpdated event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "name đúng: Musang King Premium D197 — Vụ ...",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "quantity = 850kg",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Stage = Created (0)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "batchId = 1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SSCC auto-generated: 000000022457299721",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "status = PendingApproval (0)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SSCC on-chain khớp event",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "BatchRejected event emit khi reject",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "reason đúng trong event",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "BatchApproved event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "sscc trong BatchApproved khớp sscc gốc",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "status = Approved (1) on-chain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "PurchaseRecorded event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "purchaserId = 3",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "totalQuantity = 850kg",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "totalPrice = 80,750,000 VND",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Stage = Purchased (1)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "currentStage = Purchased on-chain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "TransportStatusUpdated (Start transport)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "newStatus = 1 (InTransit) khi start",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "TransportStatusUpdated (Pause (dừng nghỉ))",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "TransportStatusUpdated (Resume)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "TransportStatusUpdated (Complete → trigger StageUpdated)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "newStatus = 3 (Delivered) khi complete",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "StageUpdated(Transported1) emit khi actionCode=3",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "newStage = 2 (Transported1)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Transport history: 4 events (start+pause+resume+complete)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "ProcessingRecorded event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "processorId = 5",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "method = 0 (Washing)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Stage = Processed (3)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "inputWeight = 850kg on-chain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "outputWeight = 815kg (hao hụt 4.1%)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "QualityTestRecorded event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "inspectorId = 6",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "passed = true",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Stage = QualityInspected (4)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Quality tests on-chain: 1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Latest QT passed = true on-chain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "StageUpdated(Transported2) emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Stage = Transported2 (5)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "WarehouseConfirmed event emit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "batchId = 1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "warehouseId = 7",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Stage = Warehoused (6)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "currentStage = Warehoused on-chain (final)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "status = Approved (vẫn approved)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "SSCC bất biến suốt vòng đời ✓",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "verifyBatchDataHash — on-chain data nguyên vẹn sau toàn bộ vòng đời ✓",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Activity logs tích lũy: 15 logs (thủ công + system)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "PurchaseRecord.totalQuantity = 850kg",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "PurchaseRecord.pricePerUnit = 95,000 VND",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "getBatchBySSCC(\"000000022457299721\") → batchId=1 ✓",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Transport history: 6 events tổng cộng",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Block re-approve ✓",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Block purchase batch đã Warehoused ✓",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Block quality test batch đã Warehoused ✓",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}
