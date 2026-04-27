@@ -71,17 +71,29 @@ const TreeForm = {
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Vị trí / Tọa độ <span class="text-red-500">*</span>
           </label>
-          <textarea 
-            id="coordinates"
-            required
-            rows="2"
-            placeholder="Ví dụ: Thửa 15, Lô A2 hoặc 10.762622, 106.660172"
-            class="input-gradient"
-          ></textarea>
-          <p class="text-xs text-gray-500 mt-1">
-            <i class="fas fa-map-marker-alt mr-1"></i> 
-            Địa chỉ hoặc tọa độ GPS (lat, lng)
-          </p>
+          <div class="relative">
+            <textarea 
+              id="coordinates"
+              required
+              rows="2"
+              placeholder="Đang lấy vị trí GPS..."
+              readonly
+              class="input-gradient pr-12 bg-gray-50 cursor-not-allowed select-none"
+            ></textarea>
+            <button 
+              type="button" 
+              id="gpsBtn"
+              title="Lấy lại vị trí GPS"
+              class="absolute right-2 top-2 w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-700 transition"
+            >
+              <i class="fas fa-location-crosshairs text-sm"></i>
+            </button>
+          </div>
+          <!-- GPS status -->
+          <div id="gpsStatus" class="flex items-center gap-2 mt-1 text-xs text-gray-500">
+            <i class="fas fa-spinner fa-spin text-green-500"></i>
+            <span>Đang lấy vị trí GPS tự động...</span>
+          </div>
         </div>
 
         <!-- ✅ INFO BOX: QR Code sẽ tự động tạo -->
@@ -112,6 +124,117 @@ const TreeForm = {
         
       </form>
     `;
+
+    // ✅ GPS: Auto-detect location when form opens
+    const coordsField = document.getElementById("coordinates");
+    const gpsStatus = document.getElementById("gpsStatus");
+    const gpsBtn = document.getElementById("gpsBtn");
+
+    /**
+     * Lấy tên vị trí từ tọa độ (reverse geocoding) dùng Nominatim (miễn phí, không cần API key)
+     */
+    async function reverseGeocode(lat, lng) {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=vi`,
+          { headers: { "Accept-Language": "vi" } },
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        const addr = data.address || {};
+
+        // DEBUG: xem Nominatim trả về fields gì cho vị trí này
+        console.log(
+          "[GPS] Nominatim address fields:",
+          JSON.stringify(addr, null, 2),
+        );
+
+        // Phường/Xã: Nominatim VN thường trả về ở city_district, suburb, quarter, hoặc village
+        const ward =
+          addr.city_district ||
+          addr.quarter ||
+          addr.suburb ||
+          addr.neighbourhood ||
+          addr.village ||
+          addr.hamlet ||
+          addr.town ||
+          "";
+
+        // Tỉnh/TP trực thuộc TW
+        const city = addr.city || addr.state || "";
+
+        // Rút gọn: "Thành phố Cần Thơ" → "TP. Cần Thơ", "Tỉnh An Giang" → "An Giang"
+        const cityShort = city
+          .replace(/^Th\u00e0nh ph\u1ed1\s+/i, "TP. ")
+          .replace(/^T\u1ec9nh\s+/i, "");
+
+        const parts = [ward, cityShort].filter(Boolean);
+        console.log(
+          "[GPS] ward:",
+          ward,
+          "| city:",
+          city,
+          "| cityShort:",
+          cityShort,
+        );
+        return parts.length > 0 ? parts.join(", ") : null;
+      } catch (e) {
+        console.error("[GPS] reverseGeocode error:", e);
+        return null;
+      }
+    }
+
+    /**
+     * Lấy GPS và điền vào ô tọa độ
+     */
+    async function fetchGPS() {
+      if (!navigator.geolocation) {
+        gpsStatus.innerHTML = `<i class="fas fa-exclamation-circle text-red-500"></i> <span class="text-red-500">Trình duyệt không hỗ trợ GPS</span>`;
+        coordsField.placeholder = "Nhập thủ công: Ví dụ: 10.762622, 106.660172";
+        return;
+      }
+
+      gpsStatus.innerHTML = `<i class="fas fa-spinner fa-spin text-green-500"></i> <span>Đang lấy vị trí GPS tự động...</span>`;
+      gpsBtn.disabled = true;
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          const accuracy = Math.round(pos.coords.accuracy);
+
+          // Lấy tên địa điểm
+          gpsStatus.innerHTML = `<i class="fas fa-spinner fa-spin text-blue-500"></i> <span>Đang tra cứu tên vị trí...</span>`;
+          const placeName = await reverseGeocode(lat, lng);
+
+          if (placeName) {
+            coordsField.value = `${placeName}, ${lat}, ${lng}`;
+          } else {
+            coordsField.value = `${lat}, ${lng}`;
+          }
+
+          gpsStatus.innerHTML = `<i class="fas fa-check-circle text-green-500"></i> <span class="text-green-700">Đã lấy vị trí GPS (độ chính xác ~${accuracy}m)</span>`;
+          gpsBtn.disabled = false;
+        },
+        (err) => {
+          gpsBtn.disabled = false;
+          let msg = "Không lấy được GPS";
+          if (err.code === 1) msg = "Bạn đã từ chối quyền truy cập vị trí";
+          else if (err.code === 2) msg = "Không tìm thấy tín hiệu GPS";
+          else if (err.code === 3) msg = "Hết thời gian chờ GPS";
+          gpsStatus.innerHTML = `<i class="fas fa-exclamation-circle text-orange-500"></i> <span class="text-orange-600">${msg} — nhập thủ công bên dưới</span>`;
+          coordsField.placeholder =
+            "Ví dụ: Thửa 15, Lô A2 hoặc 10.762622, 106.660172";
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
+    }
+
+    // Tự động lấy GPS ngay khi form mở
+    fetchGPS();
+
+    // Nút lấy lại GPS
+    gpsBtn.addEventListener("click", fetchGPS);
 
     // Handle form submit
     const form = document.getElementById("addTreeForm");

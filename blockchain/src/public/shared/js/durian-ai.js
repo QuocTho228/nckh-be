@@ -48,10 +48,10 @@
   );
 
   // ── Roboflow ────────────────────────────────────────────────
-  const RF_API_KEY = "wxGFosaJU3sg7tw1zoQu";
-  const RF_MODEL = "durian-lq8ha";
-  const RF_VERSION = 1;
-  const RF_MIN_CONF = 30;
+  // const RF_API_KEY = "wxGFosaJU3sg7tw1zoQu";
+  // const RF_MODEL = "durian-lq8ha";
+  // const RF_VERSION = 1;
+  // const RF_MIN_CONF = 30;
 
   // ── Trạng thái nội bộ ───────────────────────────────────────
   let stream = null;
@@ -100,7 +100,7 @@
       border: "#bfdbfe",
     },
     "Semi-ripe": {
-      vi: "Sắp chín",
+      vi: "Gần chín",
       icon: "fas fa-leaf",
       color: "#b45309",
       bar: "#f59e0b",
@@ -613,24 +613,25 @@
       });
     }
 
-    async _detectDurian(file) {
-      const b64 = await this._fileToBase64(file);
-      const url = `https://serverless.roboflow.com/${RF_MODEL}/${RF_VERSION}?api_key=${RF_API_KEY}&confidence=${RF_MIN_CONF}`;
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: b64,
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!r.ok) throw new Error(`Roboflow HTTP ${r.status}`);
-      const data = await r.json();
-      const preds = data.predictions || [];
-      if (!preds.length) return null;
-      return preds.reduce(
-        (best, p) => (p.confidence > best.confidence ? p : best),
-        preds[0],
-      );
-    }
+    // ── Roboflow detect (đã tắt) ────────────────────────────
+    // async _detectDurian(file) {
+    //   const b64 = await this._fileToBase64(file);
+    //   const url = `https://serverless.roboflow.com/${RF_MODEL}/${RF_VERSION}?api_key=${RF_API_KEY}&confidence=${RF_MIN_CONF}`;
+    //   const r = await fetch(url, {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    //     body: b64,
+    //     signal: AbortSignal.timeout(15000),
+    //   });
+    //   if (!r.ok) throw new Error(`Roboflow HTTP ${r.status}`);
+    //   const data = await r.json();
+    //   const preds = data.predictions || [];
+    //   if (!preds.length) return null;
+    //   return preds.reduce(
+    //     (best, p) => (p.confidence > best.confidence ? p : best),
+    //     preds[0],
+    //   );
+    // }
 
     async _classifyRipeness(file, name) {
       const fd = new FormData();
@@ -661,21 +662,21 @@
         this.selectedModel;
       this._showLoad("Đang kiểm tra đối tượng...");
       try {
-        let detection = null;
-        try {
-          detection = await this._detectDurian(file);
-        } catch (e) {
-          console.warn("Roboflow detect lỗi, bỏ qua:", e.message);
-        }
-
-        if (detection === null && RF_API_KEY !== "THAY_API_KEY_CUA_BAN") {
-          this._showNotDurian();
-          return;
-        }
+        // ── Roboflow detect (đã tắt) ──────────────────────────
+        // let detection = null;
+        // try {
+        //   detection = await this._detectDurian(file);
+        // } catch (e) {
+        //   console.warn("Roboflow detect lỗi, bỏ qua:", e.message);
+        // }
+        // if (detection === null && RF_API_KEY !== "THAY_API_KEY_CUA_BAN") {
+        //   this._showNotDurian();
+        //   return;
+        // }
 
         this._showLoad(`${mLabel} đang phân tích...`);
         const result = await this._classifyRipeness(file, name);
-        if (detection) result._detection = detection;
+        // if (detection) result._detection = detection;
         this._showOk(result);
       } catch (e) {
         this._showErr(

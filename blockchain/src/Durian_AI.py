@@ -1,7 +1,6 @@
 # ============================================================
 # DURIAN AI SERVER — FIXED TO MATCH TRAINING CODE 100%
 # EfficientNet-B3 (384px) / EfficientNet-B4 (480px) / ResNet-50 (224px)
-# Run trên Colab, dùng FastAPI + pyngrok để tạo public API endpoint.
 # ============================================================
 
 # ── Cài đặt ──────────────────────────────────────────────────
@@ -9,7 +8,7 @@ import subprocess, sys
 subprocess.run([sys.executable, "-m", "pip", "install",
                 "fastapi", "uvicorn", "python-multipart",
                 "pyngrok", "timm", "--quiet"], check=True)
-print("✅ Thư viện đã cài xong!")
+print("Thư viện đã cài xong!")
 
 # ── Mount Drive ───────────────────────────────────────────────
 from google.colab import drive
@@ -24,11 +23,11 @@ from PIL import Image
 import cv2
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"🖥️  Device: {DEVICE}")
+print(f"Device: {DEVICE}")
 
 # ── Config lớp ───────────────────────────────────────────────
 CLASS_NAMES    = ["Unripe", "Semi-ripe", "Ripe", "Overripe"]
-CLASS_NAMES_VI = ["Chưa chín", "Sắp chín", "Đã chín", "Quá chín"]
+CLASS_NAMES_VI = ["Chưa chín", "Gần chín", "Đã chín", "Quá chín"]
 CLASS_COLORS   = ["#3b82f6", "#f59e0b", "#22c55e", "#ef4444"]
 CLASS_ICONS    = ["fas fa-seedling", "fas fa-leaf",
                   "fas fa-check-circle", "fas fa-exclamation-triangle"]
@@ -147,9 +146,9 @@ def load_efficientnet(arch: str, path: str) -> nn.Module:
 
     critical_missing = [k for k in missing if "num_batches_tracked" not in k]
     if critical_missing:
-        print(f"   ⚠️  {arch}: {len(critical_missing)} keys thiếu: {critical_missing[:3]}")
+        print(f"   {arch}: {len(critical_missing)} keys thiếu: {critical_missing[:3]}")
     if unexpected:
-        print(f"   ⚠️  {arch}: {len(unexpected)} keys thừa: {unexpected[:3]}")
+        print(f"   {arch}: {len(unexpected)} keys thừa: {unexpected[:3]}")
 
     model.to(DEVICE).eval()
     return model
@@ -180,7 +179,7 @@ def load_resnet50(path: str) -> nn.Module:
 
     critical_missing = [k for k in missing if "num_batches_tracked" not in k]
     if critical_missing:
-        print(f"   ⚠️  resnet50: {len(critical_missing)} keys thiếu: {critical_missing[:3]}")
+        print(f"   resnet50: {len(critical_missing)} keys thiếu: {critical_missing[:3]}")
 
     model.to(DEVICE).eval()
     return model
@@ -194,12 +193,12 @@ for key, cfg in MODEL_CONFIGS.items():
             MODELS[key] = load_efficientnet(cfg["arch"], cfg["path"])
         else:
             MODELS[key] = load_resnet50(cfg["path"])
-        print(f"   ✅ {key} — OK")
+        print(f"   {key} — OK")
     except Exception as e:
-        print(f"   ❌ {key} — LỖI: {e}")
+        print(f"   {key} — LỖI: {e}")
 
 DEFAULT_MODEL = "efficientnet_b4"
-print(f"\n✅ Đã load {len(MODELS)}/{len(MODEL_CONFIGS)} model!")
+print(f"\nĐã load {len(MODELS)}/{len(MODEL_CONFIGS)} model!")
 
 
 # ============================================================
@@ -400,23 +399,23 @@ tunnel = ngrok.connect(PORT, bind_tls=True)
 public_url = tunnel.public_url
 
 print("=" * 60)
-print("🚀 SERVER ĐÃ CHẠY THÀNH CÔNG!")
+print("SERVER ĐÃ CHẠY THÀNH CÔNG!")
 print("=" * 60)
 print(f"🌐 Public URL: {public_url}")
 print()
-print("📋 HƯỚNG DẪN:")
+print("HƯỚNG DẪN:")
 print(f"   Mở file durian-ai.js trong project của bạn")
 print(f"   Tìm dòng: const COLAB_API_URL = ...")
 print(f'   Thay bằng: const COLAB_API_URL = "{public_url}";')
 print("=" * 60)
-print("⚠️  Giữ tab Colab này mở. URL hết hạn khi đóng Colab.")
+print("Giữ tab Colab này mở. URL hết hạn khi đóng Colab.")
 print("=" * 60)
 
 # Health check
 time.sleep(1)
 try:
     r = requests.get(f"{public_url}/health", timeout=10)
-    print(f"\n✅ Health check OK: {r.json()}")
+    print(f"\nHealth check OK: {r.json()}")
 except Exception as e:
-    print(f"\n⚠️  Health check lỗi: {e}")
+    print(f"\nHealth check lỗi: {e}")
     print("   Thử chạy lại cell này một lần nữa.")
