@@ -82,11 +82,15 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
    AWS_ACCESS_KEY_ID=
    AWS_SECRET_ACCESS_KEY=
    BUCKET_NAME=
+   # Ganache CLI: Su dung private key cua tai khoan dau tien de trien khai hop dong
+   OWNER_PRIVATE_KEY=
    #Deploy on truffle migrate --network development
    #contract address: Deploying 'ActivityLogContract'
    ACTIVITY_LOG_CONTRACT_ADDRESS=
    #contract address: Deploying 'TraceabilityContract'
    TRACEABILITY_CONTRACT_ADDRESS=
+   #contract address: Deploying 'CorrectionContract'
+   CORRECTION_CONTRACT_ADDRESS=
    NODE_ENV=development
    BASE_URL=http://localhost:3000
    REDIS_URL=redis://localhost:6379
@@ -125,17 +129,20 @@ Dự án này là một hệ thống truy xuất nguồn gốc sầu riêng sử
    - Di chuyển vào thư mục blockchain: `cd blockchain`
    - Triển khai contract: `truffle migrate --network <your_network>`
 
-7. Lấy 2 giá trị:
+7. Lấy 4 giá trị:
+   - PRIVATE_KEY tai khoan dau tien
    - contract address: Deploying 'ActivityLogContract'
    - contract address: Deploying 'TraceabilityContract'
+   - contract address: Deploying 'CorrectionContract'
    - Dán vào `.env`
 
 8. Mở terminal
    - khởi chạy server redis: `redis-server`
 
 9. Chạy dự án:
-   - Môi trường phát triển: `npm run dev`
-   - Môi trường sản xuất: `npm start`
+
+- Môi trường phát triển: `npm run dev`
+- Môi trường sản xuất: `npm start`
 
 ## Cấu Trúc Dự Án
 
